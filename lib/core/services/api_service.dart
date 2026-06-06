@@ -1,0 +1,241 @@
+import 'dart:io' as io;
+import 'package:get/get.dart';
+
+class ApiService extends GetConnect {
+  // Define the base URL. The user can update this constant as needed.
+  static const String defaultBaseUrl =
+      'https://intensely-optimal-unicorn.ngrok-free.app';
+
+  @override
+  void onInit() {
+    httpClient.baseUrl = defaultBaseUrl;
+    httpClient.timeout = const Duration(seconds: 30);
+    super.onInit();
+  }
+
+  /// Sends a POST request to log in the user with email and password.
+  Future<Response> login(String email, String password) {
+    return post('/auth/login/', {'email': email, 'password': password});
+  }
+
+  /// Sends a POST request to register a user.
+  Future<Response> register(
+    String email,
+    String password,
+    String confirmPassword,
+  ) {
+    return post('/auth/register/', {
+      'email': email,
+      'password': password,
+      'confirm_password': confirmPassword,
+    });
+  }
+
+  /// Sends a POST request to verify the OTP code.
+  Future<Response> verifyOtp(String email, String otp) {
+    return post('/auth/register-otp-verification/', {
+      'email': email,
+      'otp': otp,
+    });
+  }
+
+  /// Sends a PUT request with Bearer token to update user profile.
+  Future<Response> updateProfile({
+    required String token,
+    String? fullName,
+    String? phone,
+    String? imagePath,
+  }) {
+    final Map<String, dynamic> fields = {};
+    if (fullName != null) fields['full_name'] = fullName;
+    if (phone != null) fields['phone'] = phone;
+
+    if (imagePath != null && imagePath.isNotEmpty) {
+      fields['image'] = MultipartFile(
+        imagePath,
+        filename: imagePath.split('/').last,
+      );
+    }
+
+    final formData = FormData(fields);
+    return put(
+      '/auth/profile/',
+      formData,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a GET request with Bearer token to fetch user profile.
+  Future<Response> getProfile(String token) {
+    return get('/auth/profile/', headers: {'Authorization': 'Bearer $token'});
+  }
+
+  /// Sends a GET request to fetch organization types.
+  Future<Response> getOrganizationTypes() {
+    return get('/event/organization-types/');
+  }
+
+  /// Sends a POST request with Bearer token to create a new event.
+  Future<Response> createEvent({
+    required String token,
+    required String type,
+    required String startDate,
+    required int estimatedParticipants,
+    required double minEstimatedEarning,
+    required double maxEstimatedEarning,
+    required String teamName,
+  }) {
+    return post(
+      '/event/create/',
+      {
+        'type': type,
+        'start_date': startDate,
+        'estimated_participants': estimatedParticipants,
+        'min_estimated_earning': minEstimatedEarning,
+        'max_estimated_earning': maxEstimatedEarning,
+        'team_name': teamName,
+      },
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a GET request with Bearer token to fetch user's events.
+  Future<Response> getMyEvents(String token) {
+    return get(
+      '/event/my-events/',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a POST request with Bearer token to join an event.
+  Future<Response> joinEvent(String token, String code) {
+    return post(
+      '/event/join/',
+      {'code': code},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a GET request with Bearer token to fetch fundraiser details.
+  Future<Response> getFundraiser(String token, int eventId) {
+    return get(
+      '/event/$eventId/my-fundraiser/',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a PUT request with Bearer token to update fundraiser name.
+  Future<Response> updateFundraiserName(
+    String token,
+    int fundraiserId,
+    String name,
+  ) {
+    return put(
+      '/event/fundraiser/$fundraiserId/name/',
+      {'name': name},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a PUT request with Bearer token to update fundraiser goal.
+  Future<Response> updateFundraiserGoal(
+    String token,
+    int fundraiserId,
+    double goal,
+  ) {
+    return put(
+      '/event/fundraiser/$fundraiserId/goal/',
+      {'goal': goal},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a PUT request with Bearer token to update fundraiser media.
+  Future<Response> updateFundraiserMedia({
+    required String token,
+    required int fundraiserId,
+    String? imagePath,
+    String? videoPath,
+  }) {
+    final Map<String, dynamic> fields = {};
+    if (imagePath != null && imagePath.isNotEmpty) {
+      final file = io.File(imagePath);
+      if (file.existsSync()) {
+        fields['image'] = MultipartFile(
+          file.readAsBytesSync(),
+          filename: imagePath.split('/').last,
+        );
+      }
+    }
+    if (videoPath != null && videoPath.isNotEmpty) {
+      final file = io.File(videoPath);
+      if (file.existsSync()) {
+        final bytes = file.readAsBytesSync();
+        // Support both possible field names to prevent validation issues
+        fields['video'] = MultipartFile(
+          bytes,
+          filename: videoPath.split('/').last,
+        );
+        fields['vide'] = MultipartFile(
+          bytes,
+          filename: videoPath.split('/').last,
+        );
+      }
+    }
+
+    final formData = FormData(fields);
+    return put(
+      '/event/fundraiser/$fundraiserId/media/',
+      formData,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a GET request with Bearer token to fetch fundraiser supporters.
+  Future<Response> getFundraiserSupporters(String token, int fundraiserId) {
+    return get(
+      '/event/fundraiser/$fundraiserId/supporters/',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a PUT request with Bearer token to update an event.
+  Future<Response> updateEvent({
+    required String token,
+    required int eventId,
+    String? type,
+    String? startDate,
+    int? estimatedParticipants,
+    double? minEstimatedEarning,
+    double? maxEstimatedEarning,
+    String? name,
+  }) {
+    final Map<String, dynamic> body = {};
+    if (type != null) body['type'] = type;
+    if (startDate != null) body['start_date'] = startDate;
+    if (estimatedParticipants != null) {
+      body['estimated_participants'] = estimatedParticipants;
+    }
+    if (minEstimatedEarning != null) {
+      body['min_estimated_earning'] = minEstimatedEarning;
+    }
+    if (maxEstimatedEarning != null) {
+      body['max_estimated_earning'] = maxEstimatedEarning;
+    }
+    if (name != null) body['name'] = name;
+    return put(
+      '/event/$eventId/update/',
+      body,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a POST request with Bearer token to extend an event.
+  Future<Response> extendEvent({required String token, required int eventId}) {
+    return post(
+      '/event/$eventId/extend/',
+      {},
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+}

@@ -7,8 +7,8 @@ import '../../features/login/view/login_screen.dart';
 import '../../features/signup/view/signup_screen.dart';
 import '../../features/signup/view/nameset_screen.dart';
 import '../../features/otp/view/otp_screen.dart';
-import '../../features/home/view/home_screen.dart';
-import '../../features/home/view/launch_event_screen.dart';
+import '../../features/create_event/view/launch_event_screen.dart';
+import '../../features/create_event/view/schedule_event_screen.dart';
 import '../../shared/widgets/bottom_navbar.dart';
 import '../constants/app_strings.dart';
 
@@ -30,6 +30,10 @@ class AppPages {
     GetPage(
       name: AppStrings.launchEventRoute,
       page: () => const LaunchEventScreen(),
+    ),
+    GetPage(
+      name: AppStrings.scheduleEventRoute,
+      page: () => const ScheduleEventScreen(),
     ),
   ];
 }

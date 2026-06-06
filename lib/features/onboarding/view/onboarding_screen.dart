@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -18,100 +19,110 @@ class OnboardingScreen extends StatelessWidget {
         0xFFE5E5E5,
       ), // Light grey background matching screenshot
       body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () {
-                  controller.skipToNext();
-                },
-                child: Text(
-                  'Skip',
-                  textAlign: TextAlign.right,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black.withValues(alpha: 0.6),
-                  ),
-                ),
-              ),
-            ),
-            // ── Upper Image (remains same) ─────────────────────────────
-            Image.asset(AppAssets.onboardingImage, fit: BoxFit.cover),
-
-            Spacer(),
-            Padding(
-              padding: const EdgeInsets.all(22.0),
-              child: Obx(() {
-                return Container(
-                  padding: const EdgeInsets.all(28),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.06),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
+        child: CustomScrollView(
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: TextButton(
+                      onPressed: () {
+                        controller.skipToNext();
+                      },
+                      child: Text(
+                        'Skip',
+                        textAlign: TextAlign.right,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black.withValues(alpha: 0.6),
+                        ),
                       ),
-                    ],
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Dynamic Styled Text based on active index
-                      _buildStepText(controller.currentIndex.value),
-                      const SizedBox(height: 32),
 
-                      // Next / Action Button
-                      // Next / Action Button with circular progress ring
-                      Center(
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Circular Progress Indicator representing 33%, 66%, and 100%
-                            SizedBox(
-                              width: 72,
-                              height: 72,
-                              child: CircularProgressIndicator(
-                                value:
-                                    (controller.currentIndex.value + 1) /
-                                    controller.totalSteps,
-                                strokeWidth: 3,
-                                backgroundColor: AppColors.primary.withValues(
-                                  alpha: 0.15,
-                                ),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.primary,
-                                ),
-                              ),
+                  // ── Upper Image (remains same) ─────────────────────────────
+                  Image.asset(AppAssets.onboardingImage, fit: BoxFit.cover),
+
+                  const Spacer(),
+                  Padding(
+                    padding: EdgeInsets.all(22.0.r),
+                    child: Obx(() {
+                      return Container(
+                        padding: EdgeInsets.all(28.r),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(32.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 20.r,
+                              offset: Offset(0, 8.h),
                             ),
-                            // Inner Pink Button
-                            GestureDetector(
-                              onTap: controller.nextStep,
-                              child: Container(
-                                width: 56,
-                                height: 56,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.primary,
-                                ),
-                                child: const Icon(
-                                  Icons.arrow_forward_rounded,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Dynamic Styled Text based on active index
+                            _buildStepText(controller.currentIndex.value),
+                            SizedBox(height: 32.h),
+
+                            // Next / Action Button
+                            // Next / Action Button with circular progress ring
+                            Center(
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Circular Progress Indicator representing 33%, 66%, and 100%
+                                  SizedBox(
+                                    width: 72.w,
+                                    height: 72.h,
+                                    child: CircularProgressIndicator(
+                                      value:
+                                          (controller.currentIndex.value + 1) /
+                                          controller.totalSteps,
+                                      strokeWidth: 3.w,
+                                      backgroundColor:
+                                          AppColors.primary.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                        AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  // Inner Pink Button
+                                  GestureDetector(
+                                    onTap: controller.nextStep,
+                                    child: Container(
+                                      width: 56.w,
+                                      height: 56.h,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.primary,
+                                      ),
+                                      child: Icon(
+                                        Icons.arrow_forward_rounded,
+                                        color: Colors.white,
+                                        size: 26.sp,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      );
+                    }),
                   ),
-                );
-              }),
+                ],
+              ),
             ),
           ],
         ),
@@ -123,7 +134,7 @@ class OnboardingScreen extends StatelessWidget {
   Widget _buildStepText(int index) {
     // Custom ultra-bold style for primary text
     final baseStyle = GoogleFonts.antonSc(
-      fontSize: 36,
+      fontSize: 36.sp,
       fontWeight: FontWeight.normal,
       height: 1.3,
       color: Colors.black87,

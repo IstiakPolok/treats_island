@@ -2,10 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/services/api_service.dart';
+import '../../../core/services/shared_preferences_helper.dart';
 
 class OTPController extends GetxController {
-  final List<TextEditingController> otpControllers =
-      List.generate(6, (index) => TextEditingController());
+  final List<TextEditingController> otpControllers = List.generate(
+    6,
+    (index) => TextEditingController(),
+  );
   final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
 
   final RxInt secondsRemaining = 45.obs;
@@ -13,6 +17,7 @@ class OTPController extends GetxController {
   final RxBool hasError = false.obs;
   final RxBool isLoading = false.obs;
   Timer? _timer;
+  final ApiService _apiService = Get.put(ApiService());
 
   @override
   void onInit() {
@@ -45,7 +50,7 @@ class OTPController extends GetxController {
     );
   }
 
-  void verifyOTP() {
+  void verifyOTP() async {
     String otp = otpControllers.map((controller) => controller.text).join();
     if (otp.length < 6) {
       hasError.value = true;
@@ -53,16 +58,78 @@ class OTPController extends GetxController {
     }
 
     isLoading.value = true;
-    Future.delayed(const Duration(seconds: 2), () {
-      isLoading.value = false;
-      if (otp == "140000") { // Simulated logic for success based on image hint
-         hasError.value = false;
-         Get.snackbar('Success', 'Phone number verified successfully!');
-         Get.offAllNamed(AppStrings.nameSetRoute);
+    hasError.value = false;
+    try {
+      final Map? args = Get.arguments as Map?;
+      final String email = args?['email'] ?? '';
+
+      if (email.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'User email not found. Please try signing up again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.red,
+        );
+        isLoading.value = false;
+        return;
+      }
+
+      final response = await _apiService.verifyOtp(email, otp);
+
+      if (response.status.isOk) {
+        final responseData = response.body;
+        if (responseData != null && responseData is Map) {
+          final accessToken = responseData['access']?.toString();
+          final refreshToken = responseData['refresh']?.toString();
+
+          if (accessToken != null) {
+            await SharedPreferencesHelper.saveToken(accessToken);
+          }
+          if (refreshToken != null) {
+            await SharedPreferencesHelper.saveRefreshToken(refreshToken);
+          }
+        }
+
+        Get.snackbar(
+          'Success',
+          'OTP verified successfully!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black.withAlpha(26),
+          colorText: Colors.black,
+        );
+
+        final bool fromSignUp = args?['fromSignUp'] ?? false;
+        if (fromSignUp) {
+          Get.offAllNamed(AppStrings.nameSetRoute);
+        } else {
+          Get.offAllNamed(AppStrings.navbarRoute);
+        }
       } else {
         hasError.value = true;
+        final errorMessage = response.body != null && response.body is Map
+            ? (response.body['message'] ?? 'OTP verification failed')
+            : 'Invalid OTP code';
+        Get.snackbar(
+          'Verification Failed',
+          errorMessage.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.red,
+        );
       }
-    });
+    } catch (e) {
+      hasError.value = true;
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.red,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override

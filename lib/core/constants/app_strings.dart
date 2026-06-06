@@ -14,4 +14,5 @@ class AppStrings {
   static const String navbarRoute = '/navbarRoute';
   static const String nameSetRoute = '/name-set';
   static const String launchEventRoute = '/launch-event';
+  static const String scheduleEventRoute = '/schedule-event';
 }

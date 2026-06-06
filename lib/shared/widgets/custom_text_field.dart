@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -29,28 +30,28 @@ class CustomTextField extends StatelessWidget {
       onChanged: onChanged,
       cursorColor: AppColors.primary,
       style: GoogleFonts.poppins(
-        fontSize: 16,
+        fontSize: 16.sp,
         color: AppColors.textPrimary,
         fontWeight: FontWeight.w500,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: GoogleFonts.poppins(
-          fontSize: 15,
+          fontSize: 15.sp,
           color: AppColors.textHint,
           fontWeight: FontWeight.w400,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 12),
-        enabledBorder: const UnderlineInputBorder(
+        contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+        enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Color(0xFFE0E0E0),
-            width: 1.5,
+            color: const Color(0xFFE0E0E0),
+            width: 1.5.w,
           ),
         ),
-        focusedBorder: const UnderlineInputBorder(
+        focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
             color: AppColors.primary,
-            width: 2.0,
+            width: 2.0.w,
           ),
         ),
       ),

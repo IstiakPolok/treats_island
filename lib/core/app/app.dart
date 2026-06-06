@@ -14,7 +14,7 @@ class TreatsIslandApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(375, 812), // Standard mobile size
+      designSize: const Size(412, 915), // Pixel 10 Pro XL/Large Android size
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {

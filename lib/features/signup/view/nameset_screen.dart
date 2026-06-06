@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_assets.dart';
@@ -19,7 +20,7 @@ class NameSetScreen extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0),
+              padding: EdgeInsets.symmetric(horizontal: 28.0.w),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: IntrinsicHeight(
@@ -27,17 +28,17 @@ class NameSetScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 120),
+                      SizedBox(height: 120.h),
 
                       // ── Centered Logo ──────────────────────────────────────────
                       Image.asset(
                         AppAssets.splashLogo,
-                        width: 200,
-                        height: 200,
+                        width: 200.w,
+                        height: 200.h,
                         fit: BoxFit.contain,
                       ),
 
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
 
                       // ── Header Text ──────────────────────────────────────────
                       Align(
@@ -45,7 +46,7 @@ class NameSetScreen extends StatelessWidget {
                         child: RichText(
                           text: TextSpan(
                             style: GoogleFonts.antonSc(
-                              fontSize: 48,
+                              fontSize: 48.sp,
                               fontWeight: FontWeight.normal,
                               color: const Color(0xFF1A1A2E),
                               height: 1.1,
@@ -54,31 +55,35 @@ class NameSetScreen extends StatelessWidget {
                               const TextSpan(text: "WHAT'S YOUR "),
                               TextSpan(
                                 text: 'FULL\nNAME ?',
-                                style: TextStyle(color: AppColors.primary),
+                                style: const TextStyle(color: AppColors.primary),
                               ),
                             ],
                           ),
                         ),
                       ),
 
-                      const SizedBox(height: 40),
+                      SizedBox(height: 40.h),
 
                       // ── Name Field ─────────────────────────────────────────
                       TextField(
                         controller: controller.nameController,
-                        style: GoogleFonts.poppins(fontSize: 16),
+                        style: GoogleFonts.poppins(fontSize: 16.sp),
                         decoration: InputDecoration(
                           hintText: 'Full name',
                           hintStyle: GoogleFonts.poppins(
                             color: Colors.grey.withValues(alpha: 0.6),
+                            fontSize: 16.sp,
                           ),
-                          enabledBorder: const UnderlineInputBorder(
-                            borderSide: BorderSide(color: Color(0xFFE0E0E0)),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: const Color(0xFFE0E0E0),
+                              width: 1.w,
+                            ),
                           ),
-                          focusedBorder: const UnderlineInputBorder(
+                          focusedBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
                               color: AppColors.primary,
-                              width: 2,
+                              width: 2.w,
                             ),
                           ),
                         ),
@@ -96,7 +101,7 @@ class NameSetScreen extends StatelessWidget {
                               ),
                       ),
 
-                      const SizedBox(height: 100),
+                      SizedBox(height: 100.h),
                     ],
                   ),
                 ),

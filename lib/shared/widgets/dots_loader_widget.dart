@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../core/constants/app_colors.dart';
 
@@ -38,7 +39,7 @@ class _DotsLoaderWidgetState extends State<DotsLoaderWidget>
     });
 
     _animations = _controllers.map((ctrl) {
-      return Tween<double>(begin: 0, end: -14).animate(
+      return Tween<double>(begin: 0, end: -14.h).animate(
         CurvedAnimation(parent: ctrl, curve: Curves.easeInOut),
       );
     }).toList();
@@ -67,23 +68,23 @@ class _DotsLoaderWidgetState extends State<DotsLoaderWidget>
       mainAxisSize: MainAxisSize.min,
       children: List.generate(widget.dotCount, (i) {
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: widget.spacing / 2),
+          padding: EdgeInsets.symmetric(horizontal: (widget.spacing / 2).w),
           child: AnimatedBuilder(
             animation: _animations[i],
             builder: (context, _) {
               return Transform.translate(
                 offset: Offset(0, _animations[i].value),
                 child: Container(
-                  width: widget.dotSize,
-                  height: widget.dotSize,
+                  width: widget.dotSize.r,
+                  height: widget.dotSize.r,
                   decoration: BoxDecoration(
                     color: widget.dotColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
                         color: widget.dotColor.withValues(alpha: 0.4),
-                        blurRadius: 6,
-                        offset: const Offset(0, 3),
+                        blurRadius: 6.r,
+                        offset: Offset(0, 3.h),
                       ),
                     ],
                   ),

@@ -5,6 +5,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../features/home/controller/bottom_nav_bar_controller.dart';
 import '../../features/home/view/home_screen.dart';
+import '../../features/profile/view/profile_screen.dart';
 
 class MainNavigationScreen extends StatelessWidget {
   final int initialIndex;
@@ -14,12 +15,7 @@ class MainNavigationScreen extends StatelessWidget {
 
   final List<Widget> pages = [
     const HomeScreen(),
-    const Center(
-      child: Text(
-        'Profile Screen',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    ),
+    const ProfileScreen(),
   ];
 
   @override
@@ -42,7 +38,7 @@ class MainNavigationScreen extends StatelessWidget {
               child: SafeArea(
                 top: false,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 125.w),
+                  padding: EdgeInsets.symmetric(horizontal: 140.w),
                   child: Container(
                     padding: EdgeInsets.all(6.r),
                     decoration: BoxDecoration(
@@ -51,8 +47,8 @@ class MainNavigationScreen extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
+                          blurRadius: 10.r,
+                          offset: Offset(0, 5.h),
                         ),
                       ],
                     ),
@@ -60,14 +56,15 @@ class MainNavigationScreen extends StatelessWidget {
                       rippleColor: Colors.grey[300]!,
                       hoverColor: Colors.grey[100]!,
                       haptic: true,
-                      tabBorderRadius: 50,
-                      gap: 0,
+                      tabBorderRadius: 50.r,
+                      gap: 8.w,
                       color: Colors.white,
                       activeColor: Colors.white,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       iconSize: 26.sp,
                       tabBackgroundColor: AppColors.primary,
                       padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
                       selectedIndex: controller.currentIndex.value,
                       onTabChange: controller.changeIndex,
                       tabs: const [
