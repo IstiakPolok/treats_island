@@ -107,6 +107,14 @@ class ApiService extends GetConnect {
     );
   }
 
+  /// Sends a GET request with Bearer token to fetch user's event history.
+  Future<Response> getMyEventsHistory(String token) {
+    return get(
+      '/event/my-events/history/',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
   /// Sends a POST request with Bearer token to join an event.
   Future<Response> joinEvent(String token, String code) {
     return post(

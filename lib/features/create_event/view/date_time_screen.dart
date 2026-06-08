@@ -27,7 +27,21 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
     super.initState();
     _selectedDateTime = widget.initialDateTime;
     final now = DateTime.now();
-    _visibleMonth = DateTime(now.year, now.month, 1);
+    final today = DateTime(now.year, now.month, now.day);
+    if (_selectedDateTime.isBefore(today)) {
+      _selectedDateTime = DateTime(
+        today.year,
+        today.month,
+        today.day,
+        widget.initialDateTime.hour,
+        widget.initialDateTime.minute,
+      );
+    }
+    _visibleMonth = DateTime(
+      _selectedDateTime.year,
+      _selectedDateTime.month,
+      1,
+    );
   }
 
   Future<void> _pickTime() async {
@@ -46,6 +60,13 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
         picked.minute,
       );
     });
+  }
+
+  bool _isPrevMonthDisabled() {
+    final now = DateTime.now();
+    final minMonth = DateTime(now.year, now.month, 1);
+    final prevMonth = DateTime(_visibleMonth.year, _visibleMonth.month - 1, 1);
+    return prevMonth.isBefore(minMonth);
   }
 
   @override
@@ -85,7 +106,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               child: Text(
-                '${widget.durationDays}-DAY FUNDRAISING\nWINDOW',
+                '${widget.durationDays}-day fundraising\nwindow',
                 style: GoogleFonts.antonSc(
                   fontSize: 36.sp,
                   fontWeight: FontWeight.normal,
@@ -132,9 +153,13 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                         Row(
                           children: [
                             IconButton(
-                              onPressed: () => _changeMonth(-1),
+                              onPressed: _isPrevMonthDisabled()
+                                  ? null
+                                  : () => _changeMonth(-1),
                               icon: const Icon(Icons.chevron_left),
-                              color: const Color(0xFF1A1A2E),
+                              color: _isPrevMonthDisabled()
+                                  ? Colors.black26
+                                  : const Color(0xFF1A1A2E),
                               iconSize: 20.sp,
                             ),
                             IconButton(
@@ -239,6 +264,8 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
 
   Widget _buildCalendarGrid() {
     final days = _daysForMonth(_visibleMonth);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(),
@@ -256,6 +283,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
             day.month == _visibleMonth.month && day.year == _visibleMonth.year;
         final isSelected = _isSameDate(day, _selectedDateTime);
         final isInRange = _isInSelectedRange(day);
+        final isPast = day.isBefore(today);
 
         final rangeColor = const Color(0xFFECECEF);
         final selectedColor = const Color(0xFFFF5AA5);
@@ -272,9 +300,11 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
         }
 
         return GestureDetector(
-          onTap: () {
-            _setSelectedDate(day);
-          },
+          onTap: isPast
+              ? null
+              : () {
+                  _setSelectedDate(day);
+                },
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -303,9 +333,11 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                   fontWeight: FontWeight.w600,
                   color: isSelected
                       ? Colors.white
-                      : isCurrentMonth
-                      ? const Color(0xFF1A1A2E)
-                      : Colors.black26,
+                      : isPast
+                          ? Colors.black12
+                          : isCurrentMonth
+                              ? const Color(0xFF1A1A2E)
+                              : Colors.black26,
                 ),
               ),
             ],
@@ -329,6 +361,10 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   }
 
   void _setSelectedDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    if (date.isBefore(today)) return;
+
     setState(() {
       _selectedDateTime = DateTime(
         date.year,
@@ -342,12 +378,18 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   }
 
   void _changeMonth(int delta) {
+    final now = DateTime.now();
+    final targetMonth = DateTime(
+      _visibleMonth.year,
+      _visibleMonth.month + delta,
+      1,
+    );
+    final minMonth = DateTime(now.year, now.month, 1);
+    if (targetMonth.isBefore(minMonth)) {
+      return;
+    }
     setState(() {
-      _visibleMonth = DateTime(
-        _visibleMonth.year,
-        _visibleMonth.month + delta,
-        1,
-      );
+      _visibleMonth = targetMonth;
     });
   }
 

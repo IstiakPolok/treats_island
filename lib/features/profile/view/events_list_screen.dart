@@ -2,59 +2,279 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-class EventsListScreen extends StatelessWidget {
+import '../../../core/services/api_service.dart';
+import '../../../core/services/shared_preferences_helper.dart';
+
+class EventsListScreen extends StatefulWidget {
   const EventsListScreen({super.key});
 
   @override
+  State<EventsListScreen> createState() => _EventsListScreenState();
+}
+
+class _EventsListScreenState extends State<EventsListScreen> {
+  int _selectedTab = 0; // 0 = Active, 1 = History
+  bool _isLoading = true;
+  List<dynamic> _activeEvents = [];
+  List<dynamic> _historyEvents = [];
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  Future<void> _fetchEvents() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final token = await SharedPreferencesHelper.getAccessToken();
+      if (token == null || token.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'Authentication token not found. Please log in again.';
+        });
+        return;
+      }
+
+      final apiService = Get.isRegistered<ApiService>()
+          ? Get.find<ApiService>()
+          : Get.put(ApiService());
+
+      // Fetch active events
+      final activeResponse = await apiService.getMyEvents(token);
+      // Fetch history events
+      final historyResponse = await apiService.getMyEventsHistory(token);
+
+      if (activeResponse.status.isOk && historyResponse.status.isOk) {
+        setState(() {
+          _activeEvents = activeResponse.body is List
+              ? activeResponse.body
+              : [];
+          _historyEvents = historyResponse.body is List
+              ? historyResponse.body
+              : [];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load events from server.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'An error occurred: $e';
+      });
+    }
+  }
+
+  String _formatDateRange(String startStr, String endStr) {
+    try {
+      final start = DateTime.parse(startStr).toLocal();
+      final end = DateTime.parse(endStr).toLocal();
+      final formatter = DateFormat('MMM dd, yyyy');
+      return '${formatter.format(start)} - ${formatter.format(end)}';
+    } catch (_) {
+      return 'N/A';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final eventsToShow = _selectedTab == 0 ? _activeEvents : _historyEvents;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header
               Row(
                 children: [
                   IconButton(
                     onPressed: () => Get.back(),
                     icon: const Icon(Icons.close),
+                    color: const Color(0xFF1A1A2E),
                   ),
                   Expanded(
                     child: Center(
                       child: Text(
-                        'Event',
+                        'Events',
                         style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF1A1A2E),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 40),
+                  SizedBox(width: 40.w),
                 ],
               ),
-              SizedBox(height: 10.h),
+              SizedBox(height: 16.h),
+
+              // Custom Tab/Segment Selector
+              Row(
+                children: [
+                  _buildTabButton('Active Events', 0),
+                  SizedBox(width: 12.w),
+                  _buildTabButton('History', 1),
+                ],
+              ),
+              SizedBox(height: 20.h),
+
+              // Content Area
               Expanded(
-                child: ListView.separated(
-                  itemCount: 3,
-                  separatorBuilder: (_, _) => SizedBox(height: 12.h),
-                  itemBuilder: (context, index) {
-                    return _EventItem(
-                      imagePath: index == 0
-                          ? 'assets/placeholder/homescreengetstarted1.png'
-                          : index == 1
-                          ? 'assets/placeholder/homescreengetstarted2.png'
-                          : 'assets/placeholder/homescreengetstarted3.png',
-                      title: 'Volunteer Drive',
-                      date: 'May 5, 2026 - May 5, 2026',
-                    );
-                  },
-                ),
+                child: _isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      )
+                    : _errorMessage != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 48.sp,
+                              color: Colors.redAccent,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              _errorMessage!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            SizedBox(height: 16.h),
+                            ElevatedButton(
+                              onPressed: _fetchEvents,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1A1A2E),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20.r),
+                                ),
+                              ),
+                              child: Text(
+                                'Retry',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : eventsToShow.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.event_note_outlined,
+                              size: 64.sp,
+                              color: Colors.black12,
+                            ),
+                            SizedBox(height: 12.h),
+                            Text(
+                              _selectedTab == 0
+                                  ? 'No active events found.'
+                                  : 'No history events found.',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                color: Colors.black38,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _fetchEvents,
+                        color: const Color(0xFF1A1A2E),
+                        child: ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: eventsToShow.length,
+                          separatorBuilder: (context, index) =>
+                              SizedBox(height: 12.h),
+                          itemBuilder: (context, index) {
+                            final event = eventsToShow[index];
+                            final creator =
+                                event['creator'] as Map<String, dynamic>?;
+                            var imagePath = '';
+                            if (creator != null &&
+                                creator['image'] != null &&
+                                creator['image'].toString().isNotEmpty) {
+                              final img = creator['image'].toString();
+                              imagePath = img.startsWith('/')
+                                  ? '${ApiService.defaultBaseUrl}$img'
+                                  : img;
+                            }
+
+                            return _EventItem(
+                              imagePath: imagePath,
+                              title:
+                                  event['name']?.toString() ?? 'Unnamed Event',
+                              date: _formatDateRange(
+                                event['start_date']?.toString() ?? '',
+                                event['end_date']?.toString() ?? '',
+                              ),
+                              status: event['status']?.toString() ?? 'Active',
+                              totalAchieved:
+                                  double.tryParse(
+                                    event['total_achieved']?.toString() ?? '0',
+                                  ) ??
+                                  0.0,
+                            );
+                          },
+                        ),
+                      ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabButton(String title, int index) {
+    final isSelected = _selectedTab == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTab = index;
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 8.h),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF1A1A2E) : const Color(0xFFF4F4F4),
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 12.sp,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+            color: isSelected ? Colors.white : Colors.black54,
           ),
         ),
       ),
@@ -66,58 +286,124 @@ class _EventItem extends StatelessWidget {
   final String imagePath;
   final String title;
   final String date;
+  final String status;
+  final double totalAchieved;
 
   const _EventItem({
     required this.imagePath,
     required this.title,
     required this.date,
+    required this.status,
+    required this.totalAchieved,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(10.w),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
+        border: Border.all(color: const Color(0xFFEDEDF2), width: 1),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12.r),
-            child: Image.asset(
-              imagePath,
-              width: 54.w,
-              height: 54.w,
-              fit: BoxFit.cover,
-            ),
+            child: imagePath.isNotEmpty
+                ? Image.network(
+                    imagePath,
+                    width: 54.w,
+                    height: 54.w,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/placeholder/homescreengetstarted1.png',
+                      width: 54.w,
+                      height: 54.w,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Image.asset(
+                    'assets/placeholder/homescreengetstarted1.png',
+                    width: 54.w,
+                    height: 54.w,
+                    fit: BoxFit.cover,
+                  ),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A2E),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1A1A2E),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.w,
+                        vertical: 3.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: status.toLowerCase() == 'completed'
+                            ? const Color(0xFFE8F5E9)
+                            : status.toLowerCase() == 'upcoming'
+                            ? const Color(0xFFE3F2FD)
+                            : const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Text(
+                        status,
+                        style: GoogleFonts.poppins(
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w600,
+                          color: status.toLowerCase() == 'completed'
+                              ? const Color(0xFF2E7D32)
+                              : status.toLowerCase() == 'upcoming'
+                              ? const Color(0xFF1565C0)
+                              : const Color(0xFFEF6C00),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 4.h),
+                SizedBox(height: 6.h),
                 Text(
                   date,
                   style: GoogleFonts.poppins(
                     fontSize: 10.5.sp,
                     color: Colors.black54,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  'Total Achieved: \$${totalAchieved.toStringAsFixed(2)}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A2E),
                   ),
                 ),
               ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -132,6 +133,178 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     );
   }
 
+  void _showShareBottomSheet(
+    BuildContext context,
+    Map<String, dynamic> fundraiser,
+  ) {
+    final String shareLink = fundraiser['share_link']?.toString() ?? '';
+    final String shopName = fundraiser['name']?.toString() ?? 'My Shop';
+
+    // Construct shop image URL
+    var shopImageUrl = '';
+    if (fundraiser['image'] != null &&
+        fundraiser['image'].toString().isNotEmpty) {
+      final img = fundraiser['image'].toString();
+      shopImageUrl = img.startsWith('/')
+          ? '${ApiService.defaultBaseUrl}$img'
+          : img;
+    }
+
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24.w,
+            right: 24.w,
+            top: 24.h,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 30.h,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Pull bar
+              Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                'Share Your Pop-Up Store',
+                style: GoogleFonts.poppins(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                ),
+              ),
+              SizedBox(height: 20.h),
+              // Shop image & name card
+              Container(
+                padding: EdgeInsets.all(16.w),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F8FB),
+                  borderRadius: BorderRadius.circular(20.r),
+                  border: Border.all(color: const Color(0xFFEAEAEE)),
+                ),
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: shopImageUrl.isNotEmpty
+                          ? Image.network(
+                              shopImageUrl,
+                              width: 60.w,
+                              height: 60.w,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    'assets/placeholder/homescreengetstarted1.png',
+                                    width: 60.w,
+                                    height: 60.w,
+                                    fit: BoxFit.cover,
+                                  ),
+                            )
+                          : Image.asset(
+                              'assets/placeholder/homescreengetstarted1.png',
+                              width: 60.w,
+                              height: 60.w,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            shopName,
+                            style: GoogleFonts.poppins(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            'Support my fundraising campaign!',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12.sp,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 24.h),
+              // Link display and copy button
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.w,
+                        vertical: 12.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F3F7),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Text(
+                        shareLink.isNotEmpty ? shareLink : 'No link available',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13.sp,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  GestureDetector(
+                    onTap: shareLink.isNotEmpty
+                        ? () {
+                            Clipboard.setData(ClipboardData(text: shareLink));
+                            Get.snackbar(
+                              'Copied',
+                              'Link copied to clipboard!',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.black.withAlpha(26),
+                              colorText: Colors.black,
+                            );
+                          }
+                        : null,
+                    child: Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1A2E),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Icon(Icons.copy, color: Colors.white, size: 20.sp),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 24.h),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildShopActionRow(Map<String, dynamic>? fundraiser) {
     final goalVal = fundraiser?['goal'];
     final double? parsedGoal = goalVal != null
@@ -234,24 +407,29 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         ),
                       ],
                     ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 18.w,
-                        vertical: 10.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.15),
+                    GestureDetector(
+                      onTap: fundraiser != null
+                          ? () => _showShareBottomSheet(context, fundraiser)
+                          : null,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 18.w,
+                          vertical: 10.h,
                         ),
-                        borderRadius: BorderRadius.circular(24.r),
-                      ),
-                      child: Text(
-                        'Share Link',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          border: Border.all(
+                            color: Colors.black.withValues(alpha: 0.15),
+                          ),
+                          borderRadius: BorderRadius.circular(24.r),
+                        ),
+                        child: Text(
+                          'Share Link',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
                         ),
                       ),
                     ),
@@ -1400,7 +1578,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   child: _InfoMini(title: 'Organizer', value: _organizerName),
                 ),
                 SizedBox(
-                  width: 120.w,
+                  width: 125.w,
                   height: 36.h,
                   child: ElevatedButton(
                     onPressed: () {},
@@ -1439,6 +1617,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
           ),
         ),
       ),
+      SizedBox(height: 20.h),
     ];
   }
 
@@ -2933,7 +3112,6 @@ class _InfoMini extends StatelessWidget {
   }
 }
 
-//5464646464646464646464646464646464646464646464646
 class _InfoMinidate extends StatelessWidget {
   final String title;
   final String value;
