@@ -18,6 +18,28 @@ class ApiService extends GetConnect {
     return post('/auth/login/', {'email': email, 'password': password});
   }
 
+  /// Sends a POST request with Bearer token to register the device notification token.
+  Future<Response> registerNotificationToken({
+    required String authToken,
+    required String token,
+    required String platform,
+    String? deviceName,
+    String? deviceId,
+    String? osVersion,
+  }) {
+    return post(
+      '/notification/register-token/',
+      {
+        'token': token,
+        'platform': platform,
+        'deviceName': deviceName ?? '',
+        'device_id': deviceId ?? '',
+        'osVersion': osVersion ?? '',
+      },
+      headers: {'Authorization': 'Bearer $authToken'},
+    );
+  }
+
   /// Sends a POST request to register a user.
   Future<Response> register(
     String email,

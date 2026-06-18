@@ -9,6 +9,7 @@ import '../controller/schedule_event_controller.dart';
 import 'date_time_screen.dart';
 import 'event_overview_screen.dart';
 import 'team_name_screen.dart';
+import '../../profile/view/terms_conditions_screen.dart';
 
 class ScheduleEventScreen extends StatelessWidget {
   const ScheduleEventScreen({super.key});
@@ -361,8 +362,8 @@ class ScheduleEventScreen extends StatelessWidget {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10.r,
-                        offset: Offset(0, 4.h),
+                          blurRadius: 10.r,
+                          offset: Offset(0, 4.h),
                         ),
                       ],
                     ),
@@ -374,7 +375,7 @@ class ScheduleEventScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Organization Details',
+                                'Organization Name',
                                 style: GoogleFonts.poppins(
                                   fontSize: 15.sp,
                                   fontWeight: FontWeight.w600,
@@ -504,27 +505,32 @@ class ScheduleEventScreen extends StatelessWidget {
                     ),
                     SizedBox(width: 12.w),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Terms and Conditions *',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1D1D2C),
+                      child: GestureDetector(
+                        onTap: () =>
+                            Get.to(() => const TermsConditionsScreen()),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Terms and Conditions *',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1D1D2C),
+                                decoration: TextDecoration.underline,
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'By signing up, you agree to our Terms and Conditions and Privacy Policy.',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
-                              color: Colors.black45,
-                              height: 1.4,
+                            SizedBox(height: 4.h),
+                            Text(
+                              'By signing up, you agree to our Terms and Conditions and Privacy Policy.',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.sp,
+                                color: Colors.black45,
+                                height: 1.4,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],

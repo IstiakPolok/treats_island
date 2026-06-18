@@ -76,7 +76,7 @@ class _TeamNameScreenState extends State<TeamNameScreen> {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        'WHAT IS THE NAME\nOF YOUR TEAM?',
+                        'WHAT IS THE NAME\nOF YOUR OF ORGANIZATION ?',
 
                         style: GoogleFonts.antonSc(
                           fontSize: 36.sp,

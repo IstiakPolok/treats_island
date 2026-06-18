@@ -8,6 +8,7 @@ import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/widgets.dart';
 import '../controller/signup_controller.dart';
+import '../../profile/view/terms_conditions_screen.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -140,11 +141,7 @@ class SignUpScreen extends StatelessWidget {
                                       ),
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = () {
-                                          Get.snackbar(
-                                            'Terms & Conditions',
-                                            'Displaying Terms and Conditions...',
-                                            snackPosition: SnackPosition.BOTTOM,
-                                          );
+                                          Get.to(() => const TermsConditionsScreen());
                                         },
                                     ),
                                   ],

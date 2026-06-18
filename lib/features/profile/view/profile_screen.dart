@@ -9,6 +9,7 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 import 'account_setting_screen.dart';
 import 'events_list_screen.dart';
+import 'terms_conditions_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -275,6 +276,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const _ProfileListItem(
                           icon: Icons.help_outline,
                           label: 'Help center',
+                        ),
+                        Divider(height: 1.h, color: const Color(0xFFEDEDF2)),
+                        _ProfileListItem(
+                          icon: Icons.description_outlined,
+                          label: 'Terms & conditions',
+                          onTap: () => Get.to(() => const TermsConditionsScreen()),
                         ),
                       ],
                     ),

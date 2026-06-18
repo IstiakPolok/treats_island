@@ -164,9 +164,9 @@ class _DisplayNameScreenState extends State<DisplayNameScreen> {
                     color: const Color(0xFF1A1A2E),
                   ),
                   children: const [
-                    TextSpan(text: 'DISPLAY '),
+                    TextSpan(text: 'enter '),
                     TextSpan(
-                      text: 'FULL\nNAME ? ',
+                      text: 'the name of\nyour pop-up store? ',
                       style: TextStyle(color: Color(0xFFFF6FB6)),
                     ),
                   ],

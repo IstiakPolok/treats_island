@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "363406116381",
+    "project_id": "treats-island-c407a",
+    "storage_bucket": "treats-island-c407a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363406116381:android:4c6a2976878ac5b8fea8f4",
+        "android_client_info": {
+          "package_name": "com.example.treats_island"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3DVX_113oDiP3sOWHpOk5NuH05bHuT3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

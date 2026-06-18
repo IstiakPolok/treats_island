@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
@@ -168,6 +170,29 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12.r),
+                child: shopImageUrl.isNotEmpty
+                    ? Image.network(
+                        shopImageUrl,
+                        width: 400.w,
+                        height: 400.w,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                              'assets/placeholder/homescreengetstarted1.png',
+                              width: 60.w,
+                              height: 60.w,
+                              fit: BoxFit.cover,
+                            ),
+                      )
+                    : Image.asset(
+                        'assets/placeholder/homescreengetstarted1.png',
+                        width: 60.w,
+                        height: 60.w,
+                        fit: BoxFit.cover,
+                      ),
+              ),
               // Pull bar
               Container(
                 width: 40.w,
@@ -177,17 +202,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
-              SizedBox(height: 20.h),
-              Text(
-                'Share Your Pop-Up Store',
-                style: GoogleFonts.poppins(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              // Shop image & name card
+
               Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
@@ -197,36 +212,14 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 ),
                 child: Row(
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: shopImageUrl.isNotEmpty
-                          ? Image.network(
-                              shopImageUrl,
-                              width: 60.w,
-                              height: 60.w,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Image.asset(
-                                    'assets/placeholder/homescreengetstarted1.png',
-                                    width: 60.w,
-                                    height: 60.w,
-                                    fit: BoxFit.cover,
-                                  ),
-                            )
-                          : Image.asset(
-                              'assets/placeholder/homescreengetstarted1.png',
-                              width: 60.w,
-                              height: 60.w,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
                     SizedBox(width: 16.w),
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            shopName,
+                            ' $shopName Pop-Up Store',
+
                             style: GoogleFonts.poppins(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w600,
@@ -252,22 +245,56 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 12.h,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F3F7),
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Text(
-                        shareLink.isNotEmpty ? shareLink : 'No link available',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13.sp,
-                          color: Colors.black87,
+                    child: GestureDetector(
+                      onTap: shareLink.isNotEmpty
+                          ? () async {
+                              final Uri url = Uri.parse(shareLink);
+                              try {
+                                if (!await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                )) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Could not launch $shareLink',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: Colors.red.withAlpha(26),
+                                    colorText: Colors.black,
+                                  );
+                                }
+                              } catch (e) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Invalid link format',
+                                  snackPosition: SnackPosition.BOTTOM,
+                                  backgroundColor: Colors.red.withAlpha(26),
+                                  colorText: Colors.black,
+                                );
+                              }
+                            }
+                          : null,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 12.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F3F7),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Text(
+                          shareLink.isNotEmpty
+                              ? shareLink
+                              : 'No link available',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13.sp,
+                            color: Colors.black87,
+                            decoration: shareLink.isNotEmpty
+                                ? TextDecoration.underline
+                                : null,
+                          ),
                         ),
                       ),
                     ),
@@ -293,6 +320,28 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         borderRadius: BorderRadius.circular(14.r),
                       ),
                       child: Icon(Icons.copy, color: Colors.white, size: 20.sp),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  GestureDetector(
+                    onTap: shareLink.isNotEmpty
+                        ? () {
+                            SharePlus.instance.share(
+                              ShareParams(text: shareLink),
+                            );
+                          }
+                        : null,
+                    child: Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF6FB6),
+                        borderRadius: BorderRadius.circular(14.r),
+                      ),
+                      child: Icon(
+                        Icons.share,
+                        color: Colors.white,
+                        size: 20.sp,
+                      ),
                     ),
                   ),
                 ],
@@ -1523,15 +1572,27 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               final code =
                   eventData?['code'] ??
                   widget.controller.createdEvent['code'] ??
-                  'ZVT AYF';
+                  'No Code Found';
 
-              return _DetailsRow(
-                label: 'EVENT CODE',
-                value: code.toString(),
-                trailing: Icon(
-                  Icons.copy_rounded,
-                  size: 16.sp,
-                  color: AppColors.primary,
+              return GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: code.toString()));
+                  Get.snackbar(
+                    'Copied',
+                    'Event code copied to clipboard!',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.black.withAlpha(26),
+                    colorText: Colors.black,
+                  );
+                },
+                child: _DetailsRow(
+                  label: 'EVENT CODE',
+                  value: code.toString(),
+                  trailing: Icon(
+                    Icons.copy_rounded,
+                    size: 16.sp,
+                    color: AppColors.primary,
+                  ),
                 ),
               );
             }),
@@ -1581,7 +1642,46 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   width: 125.w,
                   height: 36.h,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final Map<String, dynamic>? eventData =
+                          widget.controller.createdEvent['event']
+                              as Map<String, dynamic>?;
+                      final code =
+                          eventData?['code'] ??
+                          widget.controller.createdEvent['code'] ??
+                          '';
+                      final String teamNameStr =
+                          widget.controller.teamName.value;
+                      final String organizer = _organizerName;
+                      final String startDateStr = DateFormat(
+                        'EEEE, MMMM dd, yyyy',
+                      ).format(widget.controller.startDate.value);
+                      final String startTimeStr =
+                          widget.controller.formattedStartTime;
+                      final String endDateStr = DateFormat(
+                        'EEEE, MMMM dd, yyyy',
+                      ).format(widget.controller.endDate);
+                      final String endTimeStr =
+                          widget.controller.formattedEndTime;
+                      final String earnings =
+                          widget.controller.estimatedEarningsRange;
+                      final int sellersStr =
+                          widget.controller.sellerCount.value;
+
+                      final String shareText =
+                          'Island Treats Event Details:\n'
+                          '-----------------------------------\n'
+                          'Team Name: $teamNameStr\n'
+                          'Organizer: $organizer\n'
+                          'Event Code: $code\n'
+                          'Start: $startDateStr at $startTimeStr\n'
+                          'End: $endDateStr at $endTimeStr\n'
+                          'Estimated Sellers: $sellersStr\n'
+                          'Estimated Earnings: $earnings\n'
+                          '-----------------------------------';
+
+                      SharePlus.instance.share(ShareParams(text: shareText));
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
@@ -2252,7 +2352,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 ),
               ),
               SizedBox(height: 18.h),
-              _ChecklistRow(text: 'Create a fundraise event', checked: true),
+              _ChecklistRow(text: 'Fundraiser event created', checked: true),
               SizedBox(height: 12.h),
               _ChecklistRow(
                 text: 'Invite your team to fundraise',
@@ -2275,7 +2375,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               ),
               SizedBox(height: 12.h),
               _ChecklistRow(
-                text: 'Create your shop',
+                text: 'Create Organizer Pop-Up Store',
                 checked: hasShop,
                 showArrow: true,
                 onTap: () {
@@ -2928,7 +3028,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                 ),
                                 SizedBox(width: 6.w),
                                 Text(
-                                  'Store',
+                                  'Create Pop-UP Store',
                                   style: GoogleFonts.poppins(
                                     fontSize: 13.sp,
                                     fontWeight: FontWeight.w600,
