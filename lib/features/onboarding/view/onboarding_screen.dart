@@ -68,7 +68,37 @@ class OnboardingScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Dynamic Styled Text based on active index
-                            _buildStepText(controller.currentIndex.value),
+                            AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 350),
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                    final slideAnimation =
+                                        Tween<Offset>(
+                                          begin: const Offset(0.2, 0.0),
+                                          end: Offset.zero,
+                                        ).animate(
+                                          CurvedAnimation(
+                                            parent: animation,
+                                            curve: Curves.easeOutCubic,
+                                          ),
+                                        );
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: SlideTransition(
+                                        position: slideAnimation,
+                                        child: child,
+                                      ),
+                                    );
+                                  },
+                              child: KeyedSubtree(
+                                key: ValueKey<int>(
+                                  controller.currentIndex.value,
+                                ),
+                                child: _buildStepText(
+                                  controller.currentIndex.value,
+                                ),
+                              ),
+                            ),
                             SizedBox(height: 32.h),
 
                             // Next / Action Button
@@ -86,14 +116,12 @@ class OnboardingScreen extends StatelessWidget {
                                           (controller.currentIndex.value + 1) /
                                           controller.totalSteps,
                                       strokeWidth: 3.w,
-                                      backgroundColor:
-                                          AppColors.primary.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      backgroundColor: AppColors.primary
+                                          .withValues(alpha: 0.15),
                                       valueColor:
                                           const AlwaysStoppedAnimation<Color>(
-                                        AppColors.primary,
-                                      ),
+                                            AppColors.primary,
+                                          ),
                                     ),
                                   ),
                                   // Inner Pink Button
