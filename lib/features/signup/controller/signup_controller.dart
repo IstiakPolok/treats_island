@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_strings.dart';
@@ -12,12 +13,73 @@ class SignUpController extends GetxController {
   final RxBool isLoading = false.obs;
   final ApiService _apiService = Get.put(ApiService());
 
+  final RxString password = ''.obs;
+  final RxString confirmPassword = ''.obs;
+  final RxBool hidePassword = true.obs;
+  final RxBool hideConfirmPassword = true.obs;
+
+  void toggleHidePassword() {
+    hidePassword.value = !hidePassword.value;
+  }
+
+  void toggleHideConfirmPassword() {
+    hideConfirmPassword.value = !hideConfirmPassword.value;
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    passwordController.addListener(() {
+      password.value = passwordController.text;
+    });
+    confirmPasswordController.addListener(() {
+      confirmPassword.value = confirmPasswordController.text;
+    });
+  }
+
   @override
   void onClose() {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.onClose();
+  }
+
+  bool get hasMinLength => password.value.length >= 8;
+  bool get hasUppercase => password.value.contains(RegExp(r'[A-Z]'));
+  bool get hasLowercase => password.value.contains(RegExp(r'[a-z]'));
+  bool get hasDigits => password.value.contains(RegExp(r'[0-9]'));
+  bool get hasSpecialCharacters =>
+      password.value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+  bool get passwordsMatch =>
+      password.value.isNotEmpty && password.value == confirmPassword.value;
+
+  void generateStrongPassword() {
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    const special = '!@#\$%^&*';
+    const allChars = '$uppercase$lowercase$digits$special';
+
+    final rand = Random.secure();
+
+    final chars = [
+      uppercase[rand.nextInt(uppercase.length)],
+      lowercase[rand.nextInt(lowercase.length)],
+      digits[rand.nextInt(digits.length)],
+      special[rand.nextInt(special.length)],
+    ];
+
+    for (int i = 0; i < 8; i++) {
+      chars.add(allChars[rand.nextInt(allChars.length)]);
+    }
+
+    chars.shuffle(rand);
+    final generated = chars.join('');
+
+    passwordController.text = generated;
+    confirmPasswordController.text = generated;
+    password.value = generated;
   }
 
   void toggleTerms(bool? value) {
@@ -44,6 +106,15 @@ class SignUpController extends GetxController {
       Get.snackbar(
         'Required',
         'Please enter a password',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (password.length < 8) {
+      Get.snackbar(
+        'Required',
+        'Password must be at least 8 characters long',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -83,6 +154,13 @@ class SignUpController extends GetxController {
         password,
         confirmPassword,
       );
+
+      debugPrint('=== SIGNUP API RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Status Text: ${response.statusText}');
+      debugPrint('Headers: ${response.headers}');
+      debugPrint('Body: ${response.body}');
+      debugPrint('==========================');
 
       if (response.status.isOk) {
         final responseData = response.body;

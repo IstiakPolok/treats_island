@@ -68,11 +68,20 @@ class LoginScreen extends StatelessWidget {
                             keyboardType: TextInputType.emailAddress,
                           ),
                           SizedBox(height: 20.h),
-                          CustomTextField(
+                          Obx(() => CustomTextField(
                             controller: controller.passwordController,
                             hintText: 'Password',
-                            obscureText: true,
-                          ),
+                            obscureText: controller.hidePassword.value,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                controller.hidePassword.value
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: const Color(0xFF707080),
+                              ),
+                              onPressed: controller.toggleHidePassword,
+                            ),
+                          )),
                           SizedBox(height: 16.h),
                           // ── Forget Password Button ────────────────────────────────
                           Align(

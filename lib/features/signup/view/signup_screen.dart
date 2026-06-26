@@ -85,19 +85,135 @@ class SignUpScreen extends StatelessWidget {
 
                       SizedBox(height: 20.h),
 
-                      CustomTextField(
+                      Obx(() => CustomTextField(
                         controller: controller.passwordController,
                         hintText: 'Password',
-                        obscureText: true,
-                      ),
+                        obscureText: controller.hidePassword.value,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            controller.hidePassword.value
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xFF707080),
+                          ),
+                          onPressed: controller.toggleHidePassword,
+                        ),
+                      )),
+
+                      Obx(() {
+                        final pwd = controller.password.value;
+                        if (pwd.isEmpty) {
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 8.h),
+                              child: TextButton.icon(
+                                onPressed: controller.generateStrongPassword,
+                                icon: Icon(Icons.vpn_key_rounded, color: AppColors.primary, size: 18.sp),
+                                label: Text(
+                                  'Generate strong password',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 13.sp,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Container(
+                          margin: EdgeInsets.only(top: 15.h, bottom: 5.h),
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF9F9FB),
+                            borderRadius: BorderRadius.circular(12.r),
+                            border: Border.all(color: const Color(0xFFECECEF)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'PASSWORD STRENGTH GUIDANCE',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 11.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF707080),
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: controller.generateStrongPassword,
+                                    child: Text(
+                                      'Regenerate',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11.sp,
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10.h),
+                              _buildCriteriaItem('At least 8 characters', controller.hasMinLength),
+                              _buildCriteriaItem('One uppercase letter (A-Z)', controller.hasUppercase),
+                              _buildCriteriaItem('One lowercase letter (a-z)', controller.hasLowercase),
+                              _buildCriteriaItem('One number (0-9)', controller.hasDigits),
+                              _buildCriteriaItem('One special character (!@#\$%^&*)', controller.hasSpecialCharacters),
+                            ],
+                          ),
+                        );
+                      }),
 
                       SizedBox(height: 20.h),
 
-                      CustomTextField(
+                      Obx(() => CustomTextField(
                         controller: controller.confirmPasswordController,
                         hintText: 'Confirm Password',
-                        obscureText: true,
-                      ),
+                        obscureText: controller.hideConfirmPassword.value,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            controller.hideConfirmPassword.value
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: const Color(0xFF707080),
+                          ),
+                          onPressed: controller.toggleHideConfirmPassword,
+                        ),
+                      )),
+
+                      Obx(() {
+                        final confirmPwd = controller.confirmPassword.value;
+                        if (confirmPwd.isEmpty) return const SizedBox.shrink();
+
+                        final matches = controller.passwordsMatch;
+                        return Padding(
+                          padding: EdgeInsets.only(top: 8.h),
+                          child: Row(
+                            children: [
+                              Icon(
+                                matches ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                                color: matches ? Colors.green : Colors.red,
+                                size: 16.sp,
+                              ),
+                              SizedBox(width: 8.w),
+                              Text(
+                                matches ? 'Passwords match' : 'Passwords do not match',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: matches ? const Color(0xFF2E7D32) : Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
 
                       SizedBox(height: 20.h),
 
@@ -207,6 +323,31 @@ class SignUpScreen extends StatelessWidget {
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildCriteriaItem(String title, bool isValid) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      child: Row(
+        children: [
+          Icon(
+            isValid ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            color: isValid ? Colors.green : const Color(0xFFC0C0C5),
+            size: 16.sp,
+          ),
+          SizedBox(width: 8.w),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              color: isValid ? const Color(0xFF2E7D32) : const Color(0xFF707080),
+              decoration: isValid ? TextDecoration.lineThrough : null,
+            ),
+          ),
+        ],
       ),
     );
   }

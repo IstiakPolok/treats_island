@@ -61,11 +61,13 @@ class OTPScreen extends StatelessWidget {
                       Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          'Code Has Been Sent To 010******',
+                          'Code Has Been Sent To ${controller.email}',
                           style: GoogleFonts.poppins(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1A1A2E).withValues(alpha: 0.8),
+                            color: const Color(
+                              0xFF1A1A2E,
+                            ).withValues(alpha: 0.8),
                           ),
                         ),
                       ),
@@ -94,11 +96,15 @@ class OTPScreen extends StatelessWidget {
                                 text: TextSpan(
                                   style: GoogleFonts.poppins(
                                     fontSize: 14.sp,
-                                    color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                                    color: const Color(
+                                      0xFF1A1A2E,
+                                    ).withValues(alpha: 0.6),
                                     fontWeight: FontWeight.w500,
                                   ),
                                   children: [
-                                    const TextSpan(text: 'Didn’t receive the code? '),
+                                    const TextSpan(
+                                      text: 'Didn’t receive the code? ',
+                                    ),
                                     TextSpan(
                                       text: 'Resend',
                                       style: TextStyle(
@@ -116,13 +122,16 @@ class OTPScreen extends StatelessWidget {
                               text: TextSpan(
                                 style: GoogleFonts.poppins(
                                   fontSize: 14.sp,
-                                  color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
+                                  color: const Color(
+                                    0xFF1A1A2E,
+                                  ).withValues(alpha: 0.6),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 children: [
                                   const TextSpan(text: 'Resend code in '),
                                   TextSpan(
-                                    text: '${controller.secondsRemaining.value}s',
+                                    text:
+                                        '${controller.secondsRemaining.value}s',
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontSize: 14.sp,
@@ -145,13 +154,18 @@ class OTPScreen extends StatelessWidget {
                             padding: EdgeInsets.all(12.r),
                             decoration: BoxDecoration(
                               color: const Color(0xFFFFEBEE),
-                              border: Border.all(color: const Color(0xFFEF9A9A)),
+                              border: Border.all(
+                                color: const Color(0xFFEF9A9A),
+                              ),
                               borderRadius: BorderRadius.circular(20.r),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.error_outline,
-                                    color: Colors.red, size: 20.sp),
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 20.sp,
+                                ),
                                 SizedBox(width: 8.w),
                                 Expanded(
                                   child: Text(
@@ -206,7 +220,10 @@ class OTPScreen extends StatelessWidget {
   }
 
   Widget _buildOTPField(
-      BuildContext context, int index, OTPController controller) {
+    BuildContext context,
+    int index,
+    OTPController controller,
+  ) {
     return Container(
       width: 48.w,
       height: 48.h,
@@ -246,4 +263,3 @@ class OTPScreen extends StatelessWidget {
     );
   }
 }
-

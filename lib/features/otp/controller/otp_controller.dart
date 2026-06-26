@@ -19,9 +19,15 @@ class OTPController extends GetxController {
   Timer? _timer;
   final ApiService _apiService = Get.put(ApiService());
 
+  String email = '';
+  bool fromSignUp = false;
+
   @override
   void onInit() {
     startTimer();
+    final Map? args = Get.arguments as Map?;
+    email = args?['email'] ?? '';
+    fromSignUp = args?['fromSignUp'] ?? false;
     super.onInit();
   }
 
@@ -60,9 +66,6 @@ class OTPController extends GetxController {
     isLoading.value = true;
     hasError.value = false;
     try {
-      final Map? args = Get.arguments as Map?;
-      final String email = args?['email'] ?? '';
-
       if (email.isEmpty) {
         Get.snackbar(
           'Error',
@@ -99,7 +102,6 @@ class OTPController extends GetxController {
           colorText: Colors.black,
         );
 
-        final bool fromSignUp = args?['fromSignUp'] ?? false;
         if (fromSignUp) {
           Get.offAllNamed(AppStrings.nameSetRoute);
         } else {

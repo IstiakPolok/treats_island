@@ -13,6 +13,7 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
     this.onChanged,
+    this.suffixIcon,
   });
 
   final TextEditingController controller;
@@ -20,6 +21,7 @@ class CustomTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final bool obscureText;
   final ValueChanged<String>? onChanged;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +38,7 @@ class CustomTextField extends StatelessWidget {
       ),
       decoration: InputDecoration(
         hintText: hintText,
+        suffixIcon: suffixIcon,
         hintStyle: GoogleFonts.poppins(
           fontSize: 15.sp,
           color: AppColors.textHint,

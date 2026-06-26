@@ -13,6 +13,12 @@ class LoginController extends GetxController {
   final RxBool isLoading = false.obs;
   final ApiService _apiService = Get.put(ApiService());
 
+  final RxBool hidePassword = true.obs;
+
+  void toggleHidePassword() {
+    hidePassword.value = !hidePassword.value;
+  }
+
   @override
   void onClose() {
     emailController.dispose();
