@@ -3,8 +3,7 @@ import 'package:get/get.dart';
 
 class ApiService extends GetConnect {
   // Define the base URL. The user can update this constant as needed.
-  static const String defaultBaseUrl =
-      'https://intensely-optimal-unicorn.ngrok-free.app';
+  static const String defaultBaseUrl = 'https://api.treatsislandvf.tech';
 
   @override
   void onInit() {

@@ -13,10 +13,7 @@ class MainNavigationScreen extends StatelessWidget {
 
   final BottomNavbarController controller = Get.put(BottomNavbarController());
 
-  final List<Widget> pages = [
-    const HomeScreen(),
-    const ProfileScreen(),
-  ];
+  final List<Widget> pages = [const HomeScreen(), const ProfileScreen()];
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +60,10 @@ class MainNavigationScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       iconSize: 26.sp,
                       tabBackgroundColor: AppColors.primary,
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 12.h,
+                      ),
                       selectedIndex: controller.currentIndex.value,
                       onTabChange: controller.changeIndex,
                       tabs: const [
@@ -82,4 +81,3 @@ class MainNavigationScreen extends StatelessWidget {
     });
   }
 }
-

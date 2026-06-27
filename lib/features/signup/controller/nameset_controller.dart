@@ -26,6 +26,18 @@ class NameSetController extends GetxController {
       return;
     }
 
+    final RegExp nameRegExp = RegExp(r"^[a-zA-Z\s]+$");
+    if (!nameRegExp.hasMatch(name)) {
+      Get.snackbar(
+        'Invalid Name',
+        'Name must contain only letters and spaces',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.red,
+      );
+      return;
+    }
+
     isLoading.value = true;
     try {
       final token = await SharedPreferencesHelper.getAccessToken();
