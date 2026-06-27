@@ -57,7 +57,7 @@ class MainNavigationScreen extends StatelessWidget {
                       gap: 50.w,
                       color: Colors.white,
                       activeColor: Colors.white,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       iconSize: 26.sp,
                       tabBackgroundColor: AppColors.primary,
                       padding: EdgeInsets.symmetric(

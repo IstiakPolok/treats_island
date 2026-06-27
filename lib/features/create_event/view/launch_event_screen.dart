@@ -66,6 +66,7 @@ class LaunchEventScreen extends StatelessWidget {
                       'grow faster.',
                 ),
                 SizedBox(height: 16.h),
+                Spacer(),
                 SizedBox(
                   width: double.infinity,
                   height: 48.h,
