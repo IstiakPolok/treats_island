@@ -54,10 +54,10 @@ class MainNavigationScreen extends StatelessWidget {
                       hoverColor: Colors.grey[100]!,
                       haptic: true,
                       tabBorderRadius: 50.r,
-                      gap: 8.w,
+                      gap: 50.w,
                       color: Colors.white,
                       activeColor: Colors.white,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       iconSize: 26.sp,
                       tabBackgroundColor: AppColors.primary,
                       padding: EdgeInsets.symmetric(
