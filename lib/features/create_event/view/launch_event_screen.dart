@@ -23,74 +23,77 @@ class LaunchEventScreen extends StatelessWidget {
             ),
           ),
 
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'LAUNCH YOUR\nFUNDRAISING EVENT',
-                  style: GoogleFonts.antonSc(
-                    fontSize: 32.sp,
-                    fontWeight: FontWeight.normal,
-                    color: const Color(0xFF1A1A2E),
-                  ),
-                ),
-                SizedBox(height: 22.h),
-                _InfoRow(
-                  iconAsset: 'assets/icons/icon1.png',
-                  title: 'Choose your fundraising window',
-                  subtitle:
-                      'Select when your candy fundraiser will go live\n'
-                      'and how long supporters can shop.',
-                ),
-                SizedBox(height: 16.h),
-                _InfoRow(
-                  iconAsset: 'assets/icons/icon2.png',
-                  title: 'Invite your team',
-                  subtitle:
-                      'Share your unique event link so members can\n'
-                      'join and create their personal pop-up stores.',
-                ),
-                SizedBox(height: 16.h),
-                _InfoRow(
-                  iconAsset: 'assets/icons/icon3.png',
-                  title: 'Raise together',
-                  subtitle:
-                      'Every team member gets a personalized\n'
-                      'storefront to share, helping your fundraiser\n'
-                      'grow faster.',
-                ),
-                SizedBox(height: 16.h),
-                //Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48.h,
-                  child: ElevatedButton(
-                    onPressed: () => Get.toNamed(AppStrings.scheduleEventRoute),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.r),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Create Event',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'LAUNCH YOUR\nFUNDRAISING EVENT',
+                    style: GoogleFonts.antonSc(
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.normal,
+                      color: const Color(0xFF1A1A2E),
                     ),
                   ),
-                ),
-                SizedBox(height: 4.h),
-              ],
+                  SizedBox(height: 22.h),
+                  _InfoRow(
+                    iconAsset: 'assets/icons/icon1.png',
+                    title: 'Choose your fundraising window',
+                    subtitle:
+                        'Select when your candy fundraiser will go live\n'
+                        'and how long supporters can shop.',
+                  ),
+                  SizedBox(height: 16.h),
+                  _InfoRow(
+                    iconAsset: 'assets/icons/icon2.png',
+                    title: 'Invite your team',
+                    subtitle:
+                        'Share your unique event link so members can\n'
+                        'join and create their personal pop-up stores.',
+                  ),
+                  SizedBox(height: 16.h),
+                  _InfoRow(
+                    iconAsset: 'assets/icons/icon3.png',
+                    title: 'Raise together',
+                    subtitle:
+                        'Every team member gets a personalized\n'
+                        'storefront to share, helping your fundraiser\n'
+                        'grow faster.',
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48.h,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Get.toNamed(AppStrings.scheduleEventRoute),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Create Event',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                  const Spacer(),
+                ],
+              ),
             ),
           ),
         ],

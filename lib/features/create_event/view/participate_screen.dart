@@ -20,6 +20,7 @@ class ParticipateScreen extends StatefulWidget {
 
 class _ParticipateScreenState extends State<ParticipateScreen> {
   late final TextEditingController _rangeController;
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -27,11 +28,22 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
     _rangeController = TextEditingController(
       text: widget.controller.estimatedEarningsRange,
     );
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        if (_rangeController.text.trim().isEmpty) {
+          setState(() {
+            final display = widget.controller.estimatedEarningsRange;
+            _rangeController.text = display;
+          });
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _rangeController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -109,7 +121,8 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
                           Obx(() {
                             final display =
                                 widget.controller.estimatedEarningsRange;
-                            if (widget.controller.earningsOverride.value
+                            if (!_focusNode.hasFocus &&
+                                widget.controller.earningsOverride.value
                                     .isEmpty &&
                                 _rangeController.text != display) {
                               _rangeController.text = display;
@@ -120,6 +133,7 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
                             }
                             return TextField(
                               controller: _rangeController,
+                              focusNode: _focusNode,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
                                 fontSize: 26.sp,

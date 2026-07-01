@@ -546,7 +546,7 @@ class ScheduleEventScreen extends StatelessWidget {
                   () => PrimaryButton(
                     text: controller.isLoading.value
                         ? 'Scheduling...'
-                        : 'Schedul Event',
+                        : 'Schedule Event',
                     onPressed: controller.isLoading.value
                         ? null
                         : () async {

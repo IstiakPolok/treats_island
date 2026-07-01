@@ -481,7 +481,7 @@ class ScheduleEventScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: PrimaryButton(
-                  text: 'Schedul Event',
+                  text: 'Schedule Event',
                   onPressed: controller.scheduleEvent,
                 ),
               ),

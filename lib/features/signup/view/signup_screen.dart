@@ -85,20 +85,22 @@ class SignUpScreen extends StatelessWidget {
 
                       SizedBox(height: 20.h),
 
-                      Obx(() => CustomTextField(
-                        controller: controller.passwordController,
-                        hintText: 'Password',
-                        obscureText: controller.hidePassword.value,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.hidePassword.value
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: const Color(0xFF707080),
+                      Obx(
+                        () => CustomTextField(
+                          controller: controller.passwordController,
+                          hintText: 'Password',
+                          obscureText: controller.hidePassword.value,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.hidePassword.value
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: const Color(0xFF707080),
+                            ),
+                            onPressed: controller.toggleHidePassword,
                           ),
-                          onPressed: controller.toggleHidePassword,
                         ),
-                      )),
+                      ),
 
                       Obx(() {
                         final pwd = controller.password.value;
@@ -109,7 +111,11 @@ class SignUpScreen extends StatelessWidget {
                               padding: EdgeInsets.only(top: 8.h),
                               child: TextButton.icon(
                                 onPressed: controller.generateStrongPassword,
-                                icon: Icon(Icons.vpn_key_rounded, color: AppColors.primary, size: 18.sp),
+                                icon: Icon(
+                                  Icons.vpn_key_rounded,
+                                  color: AppColors.primary,
+                                  size: 18.sp,
+                                ),
                                 label: Text(
                                   'Generate strong password',
                                   style: GoogleFonts.poppins(
@@ -135,7 +141,8 @@ class SignUpScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     'PASSWORD STRENGTH GUIDANCE',
@@ -160,11 +167,26 @@ class SignUpScreen extends StatelessWidget {
                                 ],
                               ),
                               SizedBox(height: 10.h),
-                              _buildCriteriaItem('At least 8 characters', controller.hasMinLength),
-                              _buildCriteriaItem('One uppercase letter (A-Z)', controller.hasUppercase),
-                              _buildCriteriaItem('One lowercase letter (a-z)', controller.hasLowercase),
-                              _buildCriteriaItem('One number (0-9)', controller.hasDigits),
-                              _buildCriteriaItem('One special character (!@#\$%^&*)', controller.hasSpecialCharacters),
+                              _buildCriteriaItem(
+                                'At least 8 characters',
+                                controller.hasMinLength,
+                              ),
+                              _buildCriteriaItem(
+                                'One uppercase letter (A-Z)',
+                                controller.hasUppercase,
+                              ),
+                              _buildCriteriaItem(
+                                'One lowercase letter (a-z)',
+                                controller.hasLowercase,
+                              ),
+                              _buildCriteriaItem(
+                                'One number (0-9)',
+                                controller.hasDigits,
+                              ),
+                              _buildCriteriaItem(
+                                'One special character (!@#\$%^&*)',
+                                controller.hasSpecialCharacters,
+                              ),
                             ],
                           ),
                         );
@@ -172,20 +194,22 @@ class SignUpScreen extends StatelessWidget {
 
                       SizedBox(height: 20.h),
 
-                      Obx(() => CustomTextField(
-                        controller: controller.confirmPasswordController,
-                        hintText: 'Confirm Password',
-                        obscureText: controller.hideConfirmPassword.value,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.hideConfirmPassword.value
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: const Color(0xFF707080),
+                      Obx(
+                        () => CustomTextField(
+                          controller: controller.confirmPasswordController,
+                          hintText: 'Confirm Password',
+                          obscureText: controller.hideConfirmPassword.value,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.hideConfirmPassword.value
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: const Color(0xFF707080),
+                            ),
+                            onPressed: controller.toggleHideConfirmPassword,
                           ),
-                          onPressed: controller.toggleHideConfirmPassword,
                         ),
-                      )),
+                      ),
 
                       Obx(() {
                         final confirmPwd = controller.confirmPassword.value;
@@ -197,17 +221,23 @@ class SignUpScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               Icon(
-                                matches ? Icons.check_circle_rounded : Icons.error_outline_rounded,
+                                matches
+                                    ? Icons.check_circle_rounded
+                                    : Icons.error_outline_rounded,
                                 color: matches ? Colors.green : Colors.red,
                                 size: 16.sp,
                               ),
                               SizedBox(width: 8.w),
                               Text(
-                                matches ? 'Passwords match' : 'Passwords do not match',
+                                matches
+                                    ? 'Passwords match'
+                                    : 'Passwords do not match',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.w500,
-                                  color: matches ? const Color(0xFF2E7D32) : Colors.red,
+                                  color: matches
+                                      ? const Color(0xFF2E7D32)
+                                      : Colors.red,
                                 ),
                               ),
                             ],
@@ -219,7 +249,7 @@ class SignUpScreen extends StatelessWidget {
 
                       // ── Terms & Conditions Checkbox ──────────────────────────
                       Align(
-                        alignment: Alignment.centerLeft,
+                        alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -257,7 +287,9 @@ class SignUpScreen extends StatelessWidget {
                                       ),
                                       recognizer: TapGestureRecognizer()
                                         ..onTap = () {
-                                          Get.to(() => const TermsConditionsScreen());
+                                          Get.to(
+                                            () => const TermsConditionsScreen(),
+                                          );
                                         },
                                     ),
                                   ],
@@ -333,7 +365,9 @@ class SignUpScreen extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            isValid ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            isValid
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
             color: isValid ? Colors.green : const Color(0xFFC0C0C5),
             size: 16.sp,
           ),
@@ -343,7 +377,9 @@ class SignUpScreen extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 12.sp,
               fontWeight: FontWeight.w500,
-              color: isValid ? const Color(0xFF2E7D32) : const Color(0xFF707080),
+              color: isValid
+                  ? const Color(0xFF2E7D32)
+                  : const Color(0xFF707080),
               decoration: isValid ? TextDecoration.lineThrough : null,
             ),
           ),
