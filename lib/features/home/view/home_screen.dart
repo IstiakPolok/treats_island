@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import '../../../core/constants/app_assets.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
@@ -222,6 +223,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
+                      Image.asset(
+                        AppAssets.splashLogo,
+                        width: 48.w,
+                        height: 48.h,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(height: 8.h),
                       Text(
                         _currentDateString,
                         style: GoogleFonts.poppins(
@@ -658,12 +666,16 @@ class _PinkActionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.antonSc(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.normal,
-                      color: const Color(0xFF1A1A2E),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      title,
+                      style: GoogleFonts.antonSc(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.normal,
+                        color: const Color(0xFF1A1A2E),
+                      ),
                     ),
                   ),
                   const Spacer(),

@@ -9,10 +9,7 @@ import 'schedule_event_screen.dart';
 class ParticipateScreen extends StatefulWidget {
   final ScheduleEventController controller;
 
-  const ParticipateScreen({
-    super.key,
-    required this.controller,
-  });
+  const ParticipateScreen({super.key, required this.controller});
 
   @override
   State<ParticipateScreen> createState() => _ParticipateScreenState();
@@ -122,14 +119,17 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
                             final display =
                                 widget.controller.estimatedEarningsRange;
                             if (!_focusNode.hasFocus &&
-                                widget.controller.earningsOverride.value
+                                widget
+                                    .controller
+                                    .earningsOverride
+                                    .value
                                     .isEmpty &&
                                 _rangeController.text != display) {
                               _rangeController.text = display;
                               _rangeController.selection =
                                   TextSelection.fromPosition(
-                                TextPosition(offset: display.length),
-                              );
+                                    TextPosition(offset: display.length),
+                                  );
                             }
                             return TextField(
                               controller: _rangeController,

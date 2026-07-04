@@ -100,12 +100,12 @@ class _DisplayNameScreenState extends State<DisplayNameScreen> {
           _eventController.fundraiserDetails.refresh();
         }
 
+        Get.back();
         Get.snackbar(
           'Success',
           body['message']?.toString() ?? 'Name updated successfully',
           snackPosition: SnackPosition.BOTTOM,
         );
-        Get.back();
       } else {
         String errorMsg = 'Failed to update name';
         if (response.body != null && response.body is Map) {

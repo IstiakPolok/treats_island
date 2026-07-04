@@ -452,57 +452,60 @@ class _UploadCard extends StatelessWidget {
                     horizontal: 12.w,
                     vertical: 16.h,
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        isVideo
-                            ? Icons.videocam_outlined
-                            : Icons.image_outlined,
-                        size: 28.sp,
-                        color: Colors.black45,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        title,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        subtitle,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 9.sp,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isVideo
+                              ? Icons.videocam_outlined
+                              : Icons.image_outlined,
+                          size: 28.sp,
                           color: Colors.black45,
-                          height: 1.3,
                         ),
-                      ),
-                      SizedBox(height: 10.h),
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 14.w,
-                          vertical: 6.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(16.r),
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
-                        ),
-                        child: Text(
-                          buttonText,
+                        SizedBox(height: 8.h),
+                        Text(
+                          title,
+                          textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontSize: 10.sp,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 4.h),
+                        Text(
+                          subtitle,
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 9.sp,
+                            color: Colors.black45,
+                            height: 1.3,
+                          ),
+                        ),
+                        SizedBox(height: 10.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: const Color(0xFFE0E0E0)),
+                          ),
+                          child: Text(
+                            buttonText,
+                            style: GoogleFonts.poppins(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
         ),

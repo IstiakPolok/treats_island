@@ -1706,7 +1706,37 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       ),
       SizedBox(height: 16.h),
       InkWell(
-        onTap: () {},
+        onTap: () async {
+          final String? shareLink =
+              widget.controller.fundraiserDetails['share_link']?.toString();
+          if (shareLink != null && shareLink.isNotEmpty) {
+            final Uri url = Uri.parse(shareLink);
+            try {
+              if (!await launchUrl(
+                url,
+                mode: LaunchMode.externalApplication,
+              )) {
+                Get.snackbar(
+                  'Error',
+                  'Could not launch $shareLink',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.black.withAlpha(26),
+                  colorText: Colors.black,
+                );
+              }
+            } catch (e) {
+              debugPrint('Launch URL Exception: $e');
+            }
+          } else {
+            Get.snackbar(
+              'Info',
+              'Share link is not available yet',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.black.withAlpha(26),
+              colorText: Colors.black,
+            );
+          }
+        },
         borderRadius: BorderRadius.circular(20.r),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20.r),
@@ -2546,20 +2576,33 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
   Future<Map<String, dynamic>?> _getFundraiserDetails() async {
     final token = await SharedPreferencesHelper.getAccessToken();
-    if (token == null || token.isEmpty) return null;
+    if (token == null || token.isEmpty) {
+      debugPrint('GET FUNDRAISER: No access token found');
+      return null;
+    }
 
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
     final int? eventId =
         eventData?['id'] as int? ??
         widget.controller.createdEvent['id'] as int?;
-    if (eventId == null) return null;
+    if (eventId == null) {
+      debugPrint('GET FUNDRAISER: Event ID is null');
+      return null;
+    }
 
+    debugPrint('=== GET FUNDRAISER API REQUEST ===');
+    debugPrint('Event ID: $eventId');
     try {
       final apiService = Get.isRegistered<ApiService>()
           ? Get.find<ApiService>()
           : Get.put(ApiService());
       final response = await apiService.getFundraiser(token, eventId);
+
+      debugPrint('=== GET FUNDRAISER API RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
       if (response.status.isOk &&
           response.body != null &&
           response.body is Map) {
@@ -2569,7 +2612,10 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         widget.controller.fundraiserDetails.value = result;
         return result;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('=== GET FUNDRAISER API EXCEPTION ===');
+      debugPrint('Exception: $e');
+    }
     return null;
   }
 
@@ -2968,28 +3014,31 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                     : Colors.transparent,
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.calendar_today_rounded,
-                                  size: 14.sp,
-                                  color: _isShopSelected
-                                      ? Colors.black45
-                                      : Colors.white,
-                                ),
-                                SizedBox(width: 6.w),
-                                Text(
-                                  'Event',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 14.sp,
                                     color: _isShopSelected
                                         ? Colors.black45
                                         : Colors.white,
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 6.w),
+                                  Text(
+                                    'Event',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: _isShopSelected
+                                          ? Colors.black45
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -3016,28 +3065,43 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                     : Colors.black12,
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.storefront_outlined,
-                                  size: 14.sp,
-                                  color: _isShopSelected
-                                      ? Colors.white
-                                      : Colors.black45,
-                                ),
-                                SizedBox(width: 6.w),
-                                Text(
-                                  'Create Pop-UP Store',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w600,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.storefront_outlined,
+                                    size: 14.sp,
                                     color: _isShopSelected
                                         ? Colors.white
                                         : Colors.black45,
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 6.w),
+                                  Obx(() {
+                                    final String? shopName = widget
+                                        .controller
+                                        .fundraiserDetails['name']
+                                        ?.toString();
+                                    final bool hasName =
+                                        shopName != null &&
+                                        shopName.trim().isNotEmpty &&
+                                        shopName != 'null';
+                                    return Text(
+                                      hasName
+                                          ? 'Pop-UP Store'
+                                          : 'Create Pop-UP Store',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: _isShopSelected
+                                            ? Colors.white
+                                            : Colors.black45,
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
                             ),
                           ),
                         ),

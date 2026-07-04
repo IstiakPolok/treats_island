@@ -17,7 +17,7 @@ class FundraisingGoalScreen extends StatefulWidget {
 class _FundraisingGoalScreenState extends State<FundraisingGoalScreen> {
   int _goal = 500;
   bool _isLoading = false;
-  
+
   final ApiService _apiService = Get.isRegistered<ApiService>()
       ? Get.find<ApiService>()
       : Get.put(ApiService());
@@ -81,19 +81,22 @@ class _FundraisingGoalScreenState extends State<FundraisingGoalScreen> {
       if (response.status.isOk && response.body != null) {
         final body = response.body as Map;
         if (body.containsKey('fundraiser') && body['fundraiser'] is Map) {
-          _eventController.fundraiserDetails.value =
-              Map<String, dynamic>.from(body['fundraiser']);
+          _eventController.fundraiserDetails.value = Map<String, dynamic>.from(
+            body['fundraiser'],
+          );
         } else {
-          _eventController.fundraiserDetails['goal'] = _goal.toDouble().toString();
+          _eventController.fundraiserDetails['goal'] = _goal
+              .toDouble()
+              .toString();
           _eventController.fundraiserDetails.refresh();
         }
 
+        Get.back();
         Get.snackbar(
           'Success',
           body['message']?.toString() ?? 'Goal updated successfully',
           snackPosition: SnackPosition.BOTTOM,
         );
-        Get.back();
       } else {
         String errorMsg = 'Failed to update goal';
         if (response.body != null && response.body is Map) {
@@ -104,11 +107,7 @@ class _FundraisingGoalScreenState extends State<FundraisingGoalScreen> {
             errorMsg = bodyMap.values.first.toString();
           }
         }
-        Get.snackbar(
-          'Error',
-          errorMsg,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
       Get.snackbar(
@@ -184,10 +183,7 @@ class _FundraisingGoalScreenState extends State<FundraisingGoalScreen> {
                     ),
                   ),
                   SizedBox(width: 16.w),
-                  _GoalButton(
-                    icon: Icons.add,
-                    onTap: () => _updateGoal(100),
-                  ),
+                  _GoalButton(icon: Icons.add, onTap: () => _updateGoal(100)),
                 ],
               ),
               SizedBox(height: 20.h),
@@ -234,10 +230,7 @@ class _GoalButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _GoalButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _GoalButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -250,11 +243,7 @@ class _GoalButton extends StatelessWidget {
           color: Colors.black,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          icon,
-          size: 18.sp,
-          color: Colors.white,
-        ),
+        child: Icon(icon, size: 18.sp, color: Colors.white),
       ),
     );
   }

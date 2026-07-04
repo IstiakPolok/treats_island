@@ -67,30 +67,23 @@ class _TeamNameScreenState extends State<TeamNameScreen> {
               ),
             ),
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'WHAT IS THE NAME\nOF YOUR OF ORGANIZATION ?',
-
-                        style: GoogleFonts.antonSc(
-                          fontSize: 36.sp,
-                          fontWeight: FontWeight.normal,
-                          height: 1.1,
-                          color: const Color(0xFF1A1A2E),
-                        ),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(height: 40.h),
+                    Text(
+                      'WHAT IS THE NAME\nOF YOUR OF ORGANIZATION ?',
+                      style: GoogleFonts.antonSc(
+                        fontSize: 36.sp,
+                        fontWeight: FontWeight.normal,
+                        height: 1.1,
+                        color: const Color(0xFF1A1A2E),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 28.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    child: Container(
+                    SizedBox(height: 28.h),
+                    Container(
                       padding: EdgeInsets.symmetric(horizontal: 18.w),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -115,26 +108,21 @@ class _TeamNameScreenState extends State<TeamNameScreen> {
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 140.h),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 18.h,
-                    ),
-                    child: PrimaryButton(
-                      text: 'Next',
-                      onPressed: () {
-                        widget.controller.teamName.value = _nameController.text
-                            .trim();
-                        Get.to(
-                          () =>
-                              ParticipateScreen(controller: widget.controller),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+              child: PrimaryButton(
+                text: 'Next',
+                onPressed: () {
+                  widget.controller.teamName.value = _nameController.text
+                      .trim();
+                  Get.to(
+                    () => ParticipateScreen(controller: widget.controller),
+                  );
+                },
               ),
             ),
           ],

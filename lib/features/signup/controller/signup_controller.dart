@@ -29,6 +29,7 @@ class SignUpController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    debugPrint('SignUpController: onInit called');
     passwordController.addListener(() {
       password.value = passwordController.text;
     });
@@ -148,12 +149,15 @@ class SignUpController extends GetxController {
     }
 
     isLoading.value = true;
+    debugPrint('SignUpController: Attempting registration for email: $email');
     try {
       final response = await _apiService.register(
         email,
         password,
         confirmPassword,
       );
+      debugPrint('SignUpController: Response Status = ${response.statusCode}');
+      debugPrint('SignUpController: Response Body = ${response.body}');
 
       debugPrint('=== SIGNUP API RESPONSE ===');
       debugPrint('Status Code: ${response.statusCode}');
@@ -194,6 +198,7 @@ class SignUpController extends GetxController {
         );
       }
     } catch (e) {
+      debugPrint('SignUpController: Registration error: $e');
       Get.snackbar(
         'Error',
         'An unexpected error occurred: $e',
