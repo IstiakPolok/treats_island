@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../../core/constants/app_colors.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../controller/schedule_event_controller.dart';
@@ -10,6 +9,7 @@ import 'date_time_screen.dart';
 import 'event_overview_screen.dart';
 import 'team_name_screen.dart';
 import '../../profile/view/terms_conditions_screen.dart';
+import '../../../core/services/api_service.dart';
 
 class ScheduleEventScreen extends StatelessWidget {
   const ScheduleEventScreen({super.key});
@@ -549,16 +549,16 @@ class ScheduleEventScreen extends StatelessWidget {
                         : 'Schedule Event',
                     onPressed: controller.isLoading.value
                         ? null
-                        : () async {
-                            final success = await controller.scheduleEvent();
-                            if (success) {
-                              Get.to(
-                                () => EventOverviewScreen(
-                                  controller: controller,
-                                  showCongratsSheet: true,
-                                ),
+                        : () {
+                            if (!controller.agreeToTerms.value) {
+                              Get.snackbar(
+                                'Required',
+                                'Please agree to the Terms and Conditions to schedule the event.',
+                                snackPosition: SnackPosition.BOTTOM,
                               );
+                              return;
                             }
+                            _showConfirmationDialog(context, controller);
                           },
                   ),
                 ),
@@ -573,50 +573,6 @@ class ScheduleEventScreen extends StatelessWidget {
   }
 
   // ── Helper Sheets & Dialogs ────────────────────────────────────────
-
-  void _showDurationSelector(
-    BuildContext context,
-    ScheduleEventController controller,
-  ) {
-    Get.bottomSheet(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Select Event Duration',
-              style: GoogleFonts.poppins(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1D1D2C),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            ...[3, 5, 7, 10, 14, 30].map(
-              (days) => ListTile(
-                title: Text('$days days'),
-                trailing: Obx(
-                  () => controller.durationDays.value == days
-                      ? const Icon(Icons.check_circle, color: AppColors.primary)
-                      : const Icon(Icons.circle_outlined),
-                ),
-                onTap: () {
-                  controller.setDuration(days);
-                  Get.back();
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Future<void> _openDateTimeSelector(
     BuildContext context,
@@ -748,5 +704,183 @@ class ScheduleEventScreen extends StatelessWidget {
     ScheduleEventController controller,
   ) {
     Get.to(() => TeamNameScreen(controller: controller));
+  }
+
+  void _showConfirmationDialog(
+    BuildContext context,
+    ScheduleEventController controller,
+  ) {
+    debugPrint("DEBUG Confirmation Dialog Opened:");
+    debugPrint("  - Organizer Name: ${controller.organizerName.value}");
+    debugPrint("  - Organization Type: ${controller.organization.value}");
+    debugPrint("  - Organization Name: ${controller.teamName.value}");
+    debugPrint("  - Location: ${controller.teamLocation.value}");
+    debugPrint("  - Duration: ${controller.durationDays.value} Days");
+    debugPrint("  - Starts: ${controller.formattedStartDate} at ${controller.formattedStartTime}");
+    debugPrint("  - Ends: ${controller.formattedEndDate} at ${controller.formattedEndTime}");
+    debugPrint("  - Target URL: ${ApiService.defaultBaseUrl}/event/create/");
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(24.w),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Confirm Event Details',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1D1D2C),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Icon(
+                        Icons.close,
+                        size: 24.sp,
+                        color: const Color(0xFF1D1D2C),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                Text(
+                  'Please review your event settings before scheduling.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13.sp,
+                    color: Colors.black45,
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                const Divider(color: Color(0xFFEEEEF2), height: 1),
+                SizedBox(height: 16.h),
+
+                // Details List
+                _buildInfoRow(
+                  'Organizer Name',
+                  controller.organizerName.value.isEmpty
+                      ? 'Not specified'
+                      : controller.organizerName.value,
+                ),
+                _buildInfoRow(
+                  'Organization Type',
+                  controller.organization.value,
+                ),
+                _buildInfoRow(
+                  'Organization Name',
+                  controller.teamName.value.isEmpty
+                      ? 'My Team'
+                      : controller.teamName.value,
+                ),
+                _buildInfoRow(
+                  'Location',
+                  controller.teamLocation.value.isEmpty
+                      ? 'Not specified'
+                      : controller.teamLocation.value,
+                ),
+                _buildInfoRow(
+                  'Duration',
+                  '${controller.durationDays.value} Days',
+                ),
+                _buildInfoRow(
+                  'Starts',
+                  '${controller.formattedStartDate} at ${controller.formattedStartTime}',
+                ),
+                _buildInfoRow(
+                  'Ends',
+                  '${controller.formattedEndDate} at ${controller.formattedEndTime}',
+                ),
+
+                SizedBox(height: 12.h),
+
+                // Action Buttons
+                Obx(
+                  () => PrimaryButton(
+                    text: controller.isLoading.value
+                        ? 'Scheduling...'
+                        : 'Confirm & Schedule',
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () async {
+                            final success = await controller.scheduleEvent();
+                            if (success) {
+                              Get.back(); // close confirmation dialog
+                              Get.to(
+                                () => EventOverviewScreen(
+                                  controller: controller,
+                                  showCongratsSheet: true,
+                                ),
+                              );
+                            }
+                          },
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                SizedBox(
+                  width: double.infinity,
+                  child: TextButton(
+                    onPressed: () => Get.back(),
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                    ),
+                    child: Text(
+                      'Cancel & Edit',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 14.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label.toUpperCase(),
+            style: GoogleFonts.poppins(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.black38,
+              letterSpacing: 0.5,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFF1D1D2C),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

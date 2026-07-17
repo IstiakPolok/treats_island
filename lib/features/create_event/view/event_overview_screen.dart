@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -139,219 +140,227 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     BuildContext context,
     Map<String, dynamic> fundraiser,
   ) {
-    final String shareLink = fundraiser['share_link']?.toString() ?? '';
-    final String shopName = fundraiser['name']?.toString() ?? 'My Shop';
+    try {
+      final String shareLink = fundraiser['share_link']?.toString() ?? '';
+      final String shopName = fundraiser['name']?.toString() ?? 'My Shop';
 
-    // Construct shop image URL
-    var shopImageUrl = '';
-    if (fundraiser['image'] != null &&
-        fundraiser['image'].toString().isNotEmpty) {
-      final img = fundraiser['image'].toString();
-      shopImageUrl = img.startsWith('/')
-          ? '${ApiService.defaultBaseUrl}$img'
-          : img;
-    }
+      // Construct shop image URL
+      var shopImageUrl = '';
+      if (fundraiser['image'] != null &&
+          fundraiser['image'].toString().isNotEmpty) {
+        shopImageUrl = ApiService.formatImageUrl(
+          fundraiser['image'].toString(),
+        );
+      }
 
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24.w,
-            right: 24.w,
-            top: 24.h,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 30.h,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: shopImageUrl.isNotEmpty
-                    ? Image.network(
-                        shopImageUrl,
-                        width: 400.w,
-                        height: 400.w,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Image.asset(
-                              'assets/placeholder/homescreengetstarted1.png',
-                              width: 60.w,
-                              height: 60.w,
-                              fit: BoxFit.cover,
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
+        ),
+        builder: (sheetContext) {
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 24.w,
+              right: 24.w,
+              top: 24.h,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 30.h,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12.r),
+                  child: shopImageUrl.isNotEmpty
+                      ? Image.network(
+                          shopImageUrl,
+                          width: 400.w,
+                          height: 400.w,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Image.asset(
+                                'assets/placeholder/link.png',
+                                width: 400.w,
+                                height: 400.w,
+                                fit: BoxFit.cover,
+                              ),
+                        )
+                      : Image.asset(
+                          'assets/placeholder/link.png',
+                          width: 400.w,
+                          height: 400.w,
+                          fit: BoxFit.cover,
+                        ),
+                ),
+                // Pull bar
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F8FB),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: const Color(0xFFEAEAEE)),
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              ' $shopName Pop-Up Store',
+
+                              style: GoogleFonts.poppins(
+                                fontSize: 15.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
                             ),
-                      )
-                    : Image.asset(
-                        'assets/placeholder/homescreengetstarted1.png',
-                        width: 60.w,
-                        height: 60.w,
-                        fit: BoxFit.cover,
+                            SizedBox(height: 4.h),
+                            Text(
+                              'Support my fundraising campaign!',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.sp,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-              ),
-              // Pull bar
-              Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(2.r),
+                    ],
+                  ),
                 ),
-              ),
-
-              Container(
-                padding: EdgeInsets.all(16.w),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F8FB),
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: const Color(0xFFEAEAEE)),
-                ),
-                child: Row(
+                SizedBox(height: 24.h),
+                // Link display and copy button
+                Row(
                   children: [
-                    SizedBox(width: 16.w),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            ' $shopName Pop-Up Store',
-
-                            style: GoogleFonts.poppins(
-                              fontSize: 15.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'Support my fundraising campaign!',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
-                              color: Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 24.h),
-              // Link display and copy button
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: shareLink.isNotEmpty
-                          ? () async {
-                              final Uri url = Uri.parse(shareLink);
-                              try {
-                                if (!await launchUrl(
-                                  url,
-                                  mode: LaunchMode.externalApplication,
-                                )) {
+                      child: GestureDetector(
+                        onTap: shareLink.isNotEmpty
+                            ? () async {
+                                final Uri url = Uri.parse(shareLink);
+                                try {
+                                  if (!await launchUrl(
+                                    url,
+                                    mode: LaunchMode.externalApplication,
+                                  )) {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Could not launch $shareLink',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: Colors.red.withAlpha(26),
+                                      colorText: Colors.black,
+                                    );
+                                  }
+                                } catch (e) {
                                   Get.snackbar(
                                     'Error',
-                                    'Could not launch $shareLink',
+                                    'Invalid link format',
                                     snackPosition: SnackPosition.BOTTOM,
                                     backgroundColor: Colors.red.withAlpha(26),
                                     colorText: Colors.black,
                                   );
                                 }
-                              } catch (e) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Invalid link format',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                  backgroundColor: Colors.red.withAlpha(26),
-                                  colorText: Colors.black,
-                                );
                               }
-                            }
-                          : null,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 12.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F3F7),
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                        child: Text(
-                          shareLink.isNotEmpty
-                              ? shareLink
-                              : 'No link available',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13.sp,
-                            color: Colors.black87,
-                            decoration: shareLink.isNotEmpty
-                                ? TextDecoration.underline
-                                : null,
+                            : null,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 12.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F3F7),
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                          child: Text(
+                            shareLink.isNotEmpty
+                                ? shareLink
+                                : 'No link available',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13.sp,
+                              color: Colors.black87,
+                              decoration: shareLink.isNotEmpty
+                                  ? TextDecoration.underline
+                                  : null,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(width: 12.w),
-                  GestureDetector(
-                    onTap: shareLink.isNotEmpty
-                        ? () {
-                            Clipboard.setData(ClipboardData(text: shareLink));
-                            Get.snackbar(
-                              'Copied',
-                              'Link copied to clipboard!',
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Colors.black.withAlpha(26),
-                              colorText: Colors.black,
-                            );
-                          }
-                        : null,
-                    child: Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1A1A2E),
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Icon(Icons.copy, color: Colors.white, size: 20.sp),
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  GestureDetector(
-                    onTap: shareLink.isNotEmpty
-                        ? () {
-                            SharePlus.instance.share(
-                              ShareParams(text: shareLink),
-                            );
-                          }
-                        : null,
-                    child: Container(
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFF6FB6),
-                        borderRadius: BorderRadius.circular(14.r),
-                      ),
-                      child: Icon(
-                        Icons.share,
-                        color: Colors.white,
-                        size: 20.sp,
+                    GestureDetector(
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: shareLink));
+                        Get.snackbar(
+                          'Copied',
+                          'Link copied to clipboard!',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.black.withAlpha(26),
+                          colorText: Colors.black,
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A2E),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Icon(
+                          Icons.copy,
+                          color: Colors.white,
+                          size: 20.sp,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24.h),
-            ],
-          ),
-        );
-      },
-    );
+                    SizedBox(width: 12.w),
+                    GestureDetector(
+                      onTap: () {
+                        SharePlus.instance.share(ShareParams(text: shareLink));
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(12.w),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF6FB6),
+                          borderRadius: BorderRadius.circular(14.r),
+                        ),
+                        child: Icon(
+                          Icons.share,
+                          color: Colors.white,
+                          size: 20.sp,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 24.h),
+              ],
+            ),
+          );
+        },
+      );
+    } catch (e, stack) {
+      debugPrint('=== EXCEPTION IN _showShareBottomSheet: $e ===');
+      debugPrint(stack.toString());
+      Get.snackbar(
+        'Error',
+        'Could not show share options: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.black,
+      );
+    }
   }
 
   Widget _buildShopActionRow(Map<String, dynamic>? fundraiser) {
@@ -457,9 +466,22 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: fundraiser != null
-                          ? () => _showShareBottomSheet(context, fundraiser)
-                          : null,
+                      onTap: () {
+                        debugPrint(
+                          '=== SHARE LINK TAP: fundraiser = $fundraiser ===',
+                        );
+                        if (fundraiser != null) {
+                          _showShareBottomSheet(context, fundraiser);
+                        } else {
+                          Get.snackbar(
+                            'Loading',
+                            'Pop-up store details are loading. Please try again.',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.black.withAlpha(26),
+                            colorText: Colors.black,
+                          );
+                        }
+                      },
                       child: Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 18.w,
@@ -621,18 +643,36 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               ],
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFF6FB6),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Text(
-              'Share Link',
-              style: GoogleFonts.poppins(
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+          GestureDetector(
+            onTap: () {
+              debugPrint(
+                '=== SHARE LINK TAP (not ongoing): fundraiser = $fundraiser ===',
+              );
+              if (fundraiser != null) {
+                _showShareBottomSheet(context, fundraiser);
+              } else {
+                Get.snackbar(
+                  'Loading',
+                  'Pop-up store details are loading. Please try again.',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: Colors.black.withAlpha(26),
+                  colorText: Colors.black,
+                );
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF6FB6),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Text(
+                'Share Link',
+                style: GoogleFonts.poppins(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
@@ -699,21 +739,18 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
     final String imageUrl =
         (imgPath != null && imgPath.isNotEmpty && imgPath != 'null')
-        ? (imgPath.startsWith('/')
-              ? ApiService.defaultBaseUrl + imgPath
-              : imgPath)
+        ? ApiService.formatImageUrl(imgPath)
         : 'https://cdn.vectorstock.com/i/500p/28/59/flat-style-male-avatar-person-icon-vector-59492859.jpg';
 
     final String? videoUrl =
         (vidPath != null && vidPath.isNotEmpty && vidPath != 'null')
-        ? (vidPath.startsWith('/')
-              ? ApiService.defaultBaseUrl + vidPath
-              : vidPath)
+        ? ApiService.formatImageUrl(vidPath)
         : null;
 
     return [
       GestureDetector(
         onTap: () {
+          debugPrint('=== TAP VIDEO CARD: videoUrl = $videoUrl ===');
           if (videoUrl != null) {
             Get.to(() => VideoPlayerScreen(videoUrl: videoUrl));
           }
@@ -729,7 +766,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               children: [
                 Image.network(
                   imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.fitHeight,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: const Color(0xFFF1F1F5),
@@ -769,7 +806,11 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       SizedBox(height: 12.h),
       _buildShopListItem(
         title: 'Store Note',
-        onTap: () => Get.to(() => const StoreNoteScreen()),
+        onTap: () => Get.to(() => const StoreNoteScreen())?.then((value) {
+          if (value == true) {
+            setState(() {});
+          }
+        }),
         subtitle:
             fundraiser?['description']?.toString() != null &&
                 fundraiser!['description'].toString().trim().isNotEmpty
@@ -1035,9 +1076,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     participant['full_name']?.toString() ?? 'Unnamed Seller';
                 final String imageSubpath =
                     participant['image']?.toString() ?? '';
-                final String avatarUrl = imageSubpath.startsWith('http')
-                    ? imageSubpath
-                    : '${ApiService.defaultBaseUrl}$imageSubpath';
+                final String avatarUrl = ApiService.formatImageUrl(
+                  imageSubpath,
+                );
                 final double achieved =
                     double.tryParse(
                       participant['shop_achieved']?.toString() ?? '0',
@@ -1409,12 +1450,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   final String name =
                       participant['full_name']?.toString() ?? 'No Name';
                   final String? imageRelPath = participant['image']?.toString();
-                  final String imageUrl =
-                      (imageRelPath != null && imageRelPath.isNotEmpty)
-                      ? (imageRelPath.startsWith('http')
-                            ? imageRelPath
-                            : '${ApiService.defaultBaseUrl}$imageRelPath')
-                      : '';
+                  final String imageUrl = ApiService.formatImageUrl(
+                    imageRelPath,
+                  );
 
                   return Row(
                     children: [
@@ -1639,7 +1677,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   child: _InfoMini(title: 'Organizer', value: _organizerName),
                 ),
                 SizedBox(
-                  width: 125.w,
+                  //width: 125.w,
                   height: 36.h,
                   child: ElevatedButton(
                     onPressed: () {
@@ -1650,35 +1688,45 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           eventData?['code'] ??
                           widget.controller.createdEvent['code'] ??
                           '';
-                      final String teamNameStr =
-                          widget.controller.teamName.value;
-                      final String organizer = _organizerName;
-                      final String startDateStr = DateFormat(
-                        'EEEE, MMMM dd, yyyy',
-                      ).format(widget.controller.startDate.value);
-                      final String startTimeStr =
-                          widget.controller.formattedStartTime;
-                      final String endDateStr = DateFormat(
-                        'EEEE, MMMM dd, yyyy',
-                      ).format(widget.controller.endDate);
-                      final String endTimeStr =
-                          widget.controller.formattedEndTime;
-                      final String earnings =
-                          widget.controller.estimatedEarningsRange;
-                      final int sellersStr =
-                          widget.controller.sellerCount.value;
+
+                      DateTime? startDateTime;
+                      DateTime? endDateTime;
+                      if (eventData?['start_date'] != null) {
+                        startDateTime = DateTime.tryParse(
+                          eventData!['start_date'].toString(),
+                        )?.toLocal();
+                      }
+                      if (eventData?['end_date'] != null) {
+                        endDateTime = DateTime.tryParse(
+                          eventData!['end_date'].toString(),
+                        )?.toLocal();
+                      }
+
+                      final String startD = startDateTime != null
+                          ? DateFormat('MM/dd/yy').format(startDateTime)
+                          : '___/___/26';
+                      final String startT = startDateTime != null
+                          ? DateFormat(
+                              'h:mm a',
+                            ).format(startDateTime).toLowerCase()
+                          : '9:00 am';
+                      final String endD = endDateTime != null
+                          ? DateFormat('MM/dd/yy').format(endDateTime)
+                          : '___/___/26';
+                      final String endT = endDateTime != null
+                          ? DateFormat(
+                              'h:mm a',
+                            ).format(endDateTime).toLowerCase()
+                          : '9:00 am';
+
+                      final String inviteLink =
+                          'https://treatsislandcandy.store/join-event?je=$code';
 
                       final String shareText =
-                          'Island Treats Event Details:\n'
-                          '-----------------------------------\n'
-                          'Team Name: $teamNameStr\n'
-                          'Organizer: $organizer\n'
-                          'Event Code: $code\n'
-                          'Start: $startDateStr at $startTimeStr\n'
-                          'End: $endDateStr at $endTimeStr\n'
-                          'Estimated Sellers: $sellersStr\n'
-                          'Estimated Earnings: $earnings\n'
-                          '-----------------------------------';
+                          'Hello Team - I set up a virtual fundraiser with Treats Island Candy! It is 100% contactless. We get to keep 50% of total profit and Treat Island Candy will ship the product directly to our buyers. Each of us will create a Pop-Up Store selling this specialized candy! The prices range from \$15 to \$25 per container and you won\'t find these premium products in general stores. Our fundraising window begins on $startD at $startT and goes until $endD, at $endT. Before the fundraiser begins:\n\n'
+                          'Click on the link $inviteLink to JOIN THE EVENT\n\n'
+                          'Confirm the Event Code $code.   Download the APP.\n\n'
+                          'Create your personalized Pop-Up Store';
 
                       SharePlus.instance.share(ShareParams(text: shareText));
                     },
@@ -1707,15 +1755,14 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       SizedBox(height: 16.h),
       InkWell(
         onTap: () async {
-          final String? shareLink =
-              widget.controller.fundraiserDetails['share_link']?.toString();
+          final String? shareLink = widget
+              .controller
+              .fundraiserDetails['share_link']
+              ?.toString();
           if (shareLink != null && shareLink.isNotEmpty) {
             final Uri url = Uri.parse(shareLink);
             try {
-              if (!await launchUrl(
-                url,
-                mode: LaunchMode.externalApplication,
-              )) {
+              if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
                 Get.snackbar(
                   'Error',
                   'Could not launch $shareLink',
@@ -2581,13 +2628,25 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       return null;
     }
 
-    final Map<String, dynamic>? eventData =
+    Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
-    final int? eventId =
+    int? eventId =
         eventData?['id'] as int? ??
         widget.controller.createdEvent['id'] as int?;
     if (eventId == null) {
-      debugPrint('GET FUNDRAISER: Event ID is null');
+      debugPrint(
+        'GET FUNDRAISER: Event ID is null initially. Fetching my events...',
+      );
+      await widget.controller.fetchMyEvents();
+      eventData =
+          widget.controller.createdEvent['event'] as Map<String, dynamic>?;
+      eventId =
+          eventData?['id'] as int? ??
+          widget.controller.createdEvent['id'] as int?;
+    }
+
+    if (eventId == null) {
+      debugPrint('GET FUNDRAISER: Event ID is null after fetching my events');
       return null;
     }
 
@@ -2643,83 +2702,93 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       onPressed: () => Get.offAll(MainNavigationScreen()),
                       icon: const Icon(Icons.close),
                     ),
-                    Obx(() {
-                      final Map<String, dynamic>? eventData =
-                          widget.controller.createdEvent['event']
-                              as Map<String, dynamic>?;
-                      final String status =
-                          eventData?['status']?.toString() ?? '';
-                      final bool isOngoing = status.toLowerCase() == 'ongoing';
+                    Expanded(
+                      child: Center(
+                        child: Obx(() {
+                          final Map<String, dynamic>? eventData =
+                              widget.controller.createdEvent['event']
+                                  as Map<String, dynamic>?;
+                          final String status =
+                              eventData?['status']?.toString() ?? '';
+                          final bool isOngoing =
+                              status.toLowerCase() == 'ongoing';
 
-                      if (isOngoing) {
-                        // Calculate detailed countdown timer
-                        int days = 0;
-                        int hours = 0;
-                        int minutes = 0;
-                        int seconds = 0;
-                        if (eventData?['start_date'] != null &&
-                            eventData?['duration'] != null) {
-                          final parsedStart = DateTime.tryParse(
-                            eventData!['start_date'].toString(),
-                          );
-                          final durationDays =
-                              int.tryParse(eventData['duration'].toString()) ??
-                              5;
-                          if (parsedStart != null) {
-                            final end = parsedStart.add(
-                              Duration(days: durationDays),
-                            );
-                            final now = DateTime.now();
-                            final diff = end.difference(now);
-                            if (!diff.isNegative) {
-                              days = diff.inDays;
-                              hours = diff.inHours % 24;
-                              minutes = diff.inMinutes % 60;
-                              seconds = diff.inSeconds % 60;
+                          if (isOngoing) {
+                            // Calculate detailed countdown timer
+                            int days = 0;
+                            int hours = 0;
+                            int minutes = 0;
+                            int seconds = 0;
+                            if (eventData?['start_date'] != null &&
+                                eventData?['duration'] != null) {
+                              final parsedStart = DateTime.tryParse(
+                                eventData!['start_date'].toString(),
+                              );
+                              final durationDays =
+                                  int.tryParse(
+                                    eventData['duration'].toString(),
+                                  ) ??
+                                  5;
+                              if (parsedStart != null) {
+                                final end = parsedStart.add(
+                                  Duration(days: durationDays),
+                                );
+                                final now = DateTime.now();
+                                final diff = end.difference(now);
+                                if (!diff.isNegative) {
+                                  days = diff.inDays;
+                                  hours = diff.inHours % 24;
+                                  minutes = diff.inMinutes % 60;
+                                  seconds = diff.inSeconds % 60;
+                                }
+                              }
                             }
-                          }
-                        }
 
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 8.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF00C566), // Vibrant green
-                            borderRadius: BorderRadius.circular(30.r),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                size: 16.sp,
-                                color: Colors.white,
+                            return Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16.w,
+                                vertical: 8.h,
                               ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                'Live Event ${days}D ${hours}h ${minutes}m ${seconds}s',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00C566), // Vibrant green
+                                borderRadius: BorderRadius.circular(30.r),
+                              ),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 16.sp,
+                                      color: Colors.white,
+                                    ),
+                                    SizedBox(width: 6.w),
+                                    Text(
+                                      'Live Event ${days}D ${hours}h ${minutes}m ${seconds}s',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      }
+                            );
+                          }
 
-                      return Text(
-                        _isShopSelected ? 'Shop' : 'Event',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      );
-                    }),
+                          return Text(
+                            _isShopSelected ? 'Shop' : 'Event',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
                     Obx(() {
                       final Map<String, dynamic>? eventData =
                           widget.controller.createdEvent['event']
@@ -2805,14 +2874,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         size: 18.sp,
                                       ),
                                       SizedBox(width: 12.w),
-                                      Text(
-                                        'Edit Event',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: isOngoing
-                                              ? Colors.grey
-                                              : const Color(0xFF1A1A2E),
+                                      Expanded(
+                                        child: Text(
+                                          'Edit Event',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: isOngoing
+                                                ? Colors.grey
+                                                : const Color(0xFF1A1A2E),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -2831,14 +2902,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         size: 18.sp,
                                       ),
                                       SizedBox(width: 12.w),
-                                      Text(
-                                        'Start Event Now',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: isOngoing
-                                              ? Colors.grey
-                                              : const Color(0xFF1A1A2E),
+                                      Expanded(
+                                        child: Text(
+                                          'Start Event Now',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: isOngoing
+                                                ? Colors.grey
+                                                : const Color(0xFF1A1A2E),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -2857,14 +2930,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         size: 18.sp,
                                       ),
                                       SizedBox(width: 12.w),
-                                      Text(
-                                        'Extend 3 Days More',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14.sp,
-                                          fontWeight: FontWeight.w500,
-                                          color: isUpcoming
-                                              ? Colors.grey
-                                              : const Color(0xFF1A1A2E),
+                                      Expanded(
+                                        child: Text(
+                                          'Extend 3 Days More',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w500,
+                                            color: isUpcoming
+                                                ? Colors.grey
+                                                : const Color(0xFF1A1A2E),
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -3454,24 +3529,80 @@ class VideoPlayerScreen extends StatefulWidget {
 }
 
 class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
-  late VideoPlayerController _controller;
+  VideoPlayerController? _controller;
   bool _initialized = false;
+  bool _downloading = false;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..initialize().then((_) {
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    final String urlStr = widget.videoUrl;
+    debugPrint('=== VideoPlayerScreen _initVideo: urlStr = $urlStr ===');
+    if (urlStr.startsWith('http')) {
+      setState(() {
+        _downloading = true;
+      });
+      try {
+        final tempDir = Directory.systemTemp;
+        final String filename = 'video_${urlStr.hashCode}.mp4';
+        final localFile = File('${tempDir.path}/$filename');
+
+        if (!localFile.existsSync()) {
+          final client = HttpClient();
+          client.connectionTimeout = const Duration(seconds: 15);
+          final request = await client.getUrl(Uri.parse(urlStr));
+          final response = await request.close();
+          if (response.statusCode == 200) {
+            final IOSink sink = localFile.openWrite();
+            await response.pipe(sink);
+            await sink.close();
+          } else {
+            throw Exception(
+              'Server returned status code ${response.statusCode}',
+            );
+          }
+        }
+        _controller = VideoPlayerController.file(localFile);
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _downloading = false;
+            _errorMessage = 'Failed to load video: $e';
+          });
+        }
+        return;
+      }
+    } else {
+      _controller = VideoPlayerController.file(File(urlStr));
+    }
+
+    try {
+      await _controller!.initialize();
+      if (mounted) {
         setState(() {
           _initialized = true;
+          _downloading = false;
         });
-        _controller.play();
-      });
+        _controller!.play();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _downloading = false;
+          _errorMessage = 'Failed to initialize player: $e';
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
@@ -3482,10 +3613,37 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       body: Stack(
         children: [
           Center(
-            child: _initialized
+            child: _downloading
+                ? Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const CircularProgressIndicator(color: Color(0xFFFF6FB6)),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'Buffering video...',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white70,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ],
+                  )
+                : _errorMessage != null
+                ? Padding(
+                    padding: EdgeInsets.all(24.w),
+                    child: Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        color: Colors.redAccent,
+                        fontSize: 14.sp,
+                      ),
+                    ),
+                  )
+                : _initialized && _controller != null
                 ? AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
+                    aspectRatio: _controller!.value.aspectRatio,
+                    child: VideoPlayer(_controller!),
                   )
                 : const CircularProgressIndicator(color: Colors.white),
           ),
@@ -3497,21 +3655,24 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               icon: const Icon(Icons.arrow_back, color: Colors.white),
             ),
           ),
-          if (_initialized)
+          if (_initialized &&
+              _controller != null &&
+              _errorMessage == null &&
+              !_downloading)
             Center(
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    _controller.value.isPlaying
-                        ? _controller.pause()
-                        : _controller.play();
+                    _controller!.value.isPlaying
+                        ? _controller!.pause()
+                        : _controller!.play();
                   });
                 },
                 child: CircleAvatar(
                   backgroundColor: Colors.black54,
                   radius: 30.r,
                   child: Icon(
-                    _controller.value.isPlaying
+                    _controller!.value.isPlaying
                         ? Icons.pause
                         : Icons.play_arrow,
                     color: Colors.white,

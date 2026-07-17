@@ -1,14 +1,23 @@
 import 'dart:io' as io;
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class ApiService extends GetConnect {
   // Define the base URL. The user can update this constant as needed.
-  static const String defaultBaseUrl = 'https://api.treatsislandvf.tech';
+  //static const String defaultBaseUrl = 'https://api.treatsislandvf.tech';
+  static const String defaultBaseUrl = 'https://api.treatsislandgo.com';
+
+  static String formatImageUrl(String? path) {
+    if (path == null || path.isEmpty || path == 'null') return '';
+    if (path.startsWith('http')) return path;
+    final cleanPath = path.startsWith('/') ? path : '/$path';
+    return '$defaultBaseUrl$cleanPath';
+  }
 
   @override
   void onInit() {
     httpClient.baseUrl = defaultBaseUrl;
-    httpClient.timeout = const Duration(seconds: 30);
+    httpClient.timeout = const Duration(minutes: 5);
     super.onInit();
   }
 
@@ -200,12 +209,7 @@ class ApiService extends GetConnect {
       final file = io.File(videoPath);
       if (file.existsSync()) {
         final bytes = file.readAsBytesSync();
-        // Support both possible field names to prevent validation issues
         fields['video'] = MultipartFile(
-          bytes,
-          filename: videoPath.split('/').last,
-        );
-        fields['vide'] = MultipartFile(
           bytes,
           filename: videoPath.split('/').last,
         );
@@ -213,10 +217,20 @@ class ApiService extends GetConnect {
     }
 
     final formData = FormData(fields);
-    return put(
-      '/event/fundraiser/$fundraiserId/media/',
-      formData,
-      headers: {'Authorization': 'Bearer $token'},
+    final String url = '/event/fundraiser/$fundraiserId/media/';
+    debugPrint('=== API REQUEST: PUT $url ===');
+    debugPrint('Fields: ${fields.keys.toList()}');
+    if (imagePath != null) debugPrint('imagePath: $imagePath');
+    if (videoPath != null) debugPrint('videoPath: $videoPath');
+
+    return put(url, formData, headers: {'Authorization': 'Bearer $token'}).then(
+      (response) {
+        debugPrint('=== API RESPONSE: PUT $url ===');
+        debugPrint('Status Code: ${response.statusCode}');
+        debugPrint('Status Text: ${response.statusText}');
+        debugPrint('Response Body: ${response.body}');
+        return response;
+      },
     );
   }
 
@@ -252,9 +266,33 @@ class ApiService extends GetConnect {
       body['max_estimated_earning'] = maxEstimatedEarning;
     }
     if (name != null) body['name'] = name;
+
+    final String base = httpClient.baseUrl ?? defaultBaseUrl;
+    final String cleanBase = base.endsWith('/')
+        ? base.substring(0, base.length - 1)
+        : base;
+    final String fullUrl = '$cleanBase/event/$eventId/update/';
+    debugPrint('=== API_SERVICE UPDATE EVENT REQUEST ===');
+    debugPrint('URL: $fullUrl');
+    debugPrint('Body: $body');
+    debugPrint('=======================================');
+
     return put(
       '/event/$eventId/update/',
       body,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+  }
+
+  /// Sends a PUT request with Bearer token to update fundraiser description.
+  Future<Response> updateFundraiserDescription(
+    String token,
+    int fundraiserId,
+    String description,
+  ) {
+    return put(
+      '/event/fundraiser/$fundraiserId/description/',
+      {'description': description},
       headers: {'Authorization': 'Bearer $token'},
     );
   }

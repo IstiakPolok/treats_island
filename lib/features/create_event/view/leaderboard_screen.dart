@@ -606,12 +606,9 @@ class LeaderboardScreen extends StatelessWidget {
                                       '0',
                                 ) ??
                                 0.0,
-                            avatarUrl:
-                                (sortedParticipants[0]['image']?.toString() ??
-                                        '')
-                                    .startsWith('http')
-                                ? sortedParticipants[0]['image'].toString()
-                                : '${ApiService.defaultBaseUrl}${sortedParticipants[0]['image'] ?? ""}',
+                            avatarUrl: ApiService.formatImageUrl(
+                              sortedParticipants[0]['image']?.toString(),
+                            ),
                             supporters: int.tryParse(
                                   sortedParticipants[0]['total_supporters']
                                           ?.toString() ??
@@ -638,12 +635,9 @@ class LeaderboardScreen extends StatelessWidget {
                                       '0',
                                 ) ??
                                 0.0,
-                            avatarUrl:
-                                (sortedParticipants[1]['image']?.toString() ??
-                                        '')
-                                    .startsWith('http')
-                                ? sortedParticipants[1]['image'].toString()
-                                : '${ApiService.defaultBaseUrl}${sortedParticipants[1]['image'] ?? ""}',
+                            avatarUrl: ApiService.formatImageUrl(
+                              sortedParticipants[1]['image']?.toString(),
+                            ),
                             supporters: int.tryParse(
                                   sortedParticipants[1]['total_supporters']
                                           ?.toString() ??
@@ -670,12 +664,9 @@ class LeaderboardScreen extends StatelessWidget {
                                       '0',
                                 ) ??
                                 0.0,
-                            avatarUrl:
-                                (sortedParticipants[2]['image']?.toString() ??
-                                        '')
-                                    .startsWith('http')
-                                ? sortedParticipants[2]['image'].toString()
-                                : '${ApiService.defaultBaseUrl}${sortedParticipants[2]['image'] ?? ""}',
+                            avatarUrl: ApiService.formatImageUrl(
+                              sortedParticipants[2]['image']?.toString(),
+                            ),
                             supporters: int.tryParse(
                                   sortedParticipants[2]['total_supporters']
                                           ?.toString() ??
@@ -722,14 +713,13 @@ class LeaderboardScreen extends StatelessWidget {
                                     0.0)
                               : 0.0,
                           avatarUrl:
-                              meObj != null &&
-                                  (meObj['image']?.toString() ?? '').startsWith(
-                                    'http',
-                                  )
-                              ? meObj['image'].toString()
-                              : (meObj != null
-                                    ? '${ApiService.defaultBaseUrl}${meObj['image'] ?? ""}'
-                                    : 'https://i.pravatar.cc/150?img=33'),
+                              (meObj != null &&
+                                      meObj['image'] != null &&
+                                      meObj['image'].toString().isNotEmpty)
+                                  ? ApiService.formatImageUrl(
+                                      meObj['image'].toString(),
+                                    )
+                                  : 'https://i.pravatar.cc/150?img=33',
                           supporters: meObj != null
                               ? (int.tryParse(
                                       meObj['total_supporters']?.toString() ??
@@ -772,9 +762,7 @@ class LeaderboardScreen extends StatelessWidget {
                             final String pName =
                                 p['full_name']?.toString() ?? 'Unnamed';
                             final String img = p['image']?.toString() ?? '';
-                            final String pAvatar = img.startsWith('http')
-                                ? img
-                                : '${ApiService.defaultBaseUrl}$img';
+                            final String pAvatar = ApiService.formatImageUrl(img);
                             final double pAmount =
                                 double.tryParse(
                                   p['shop_achieved']?.toString() ?? '0',

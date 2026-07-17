@@ -47,33 +47,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchMyEvents() async {
     final token = await SharedPreferencesHelper.getAccessToken();
-    if (token != null && token.isNotEmpty) {
-      try {
-        final apiService = Get.isRegistered<ApiService>()
-            ? Get.find<ApiService>()
-            : Get.put(ApiService());
-        final response = await apiService.getMyEvents(token);
-        if (response.status.isOk &&
-            response.body != null &&
-            response.body is List) {
-          final List events = response.body;
-          if (events.isNotEmpty) {
-            final latestEvent = events.last;
-            final isStarted = latestEvent['is_active'] == true;
-            if (mounted) {
-              setState(() {
-                _eventData = Map<String, dynamic>.from(latestEvent);
-                _homeState = _homeState.copyWith(
-                  eventCreated: true,
-                  started: isStarted,
-                );
-              });
-            }
+    if (token == null || token.isEmpty) {
+      debugPrint('=== FETCH MY EVENTS: NO ACCESS TOKEN FOUND ===');
+      return;
+    }
+
+    debugPrint('=== FETCH MY EVENTS START ===');
+    try {
+      final apiService = Get.isRegistered<ApiService>()
+          ? Get.find<ApiService>()
+          : Get.put(ApiService());
+      final response = await apiService.getMyEvents(token);
+
+      debugPrint('=== FETCH MY EVENTS RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+
+      if (response.status.isOk &&
+          response.body != null &&
+          response.body is List) {
+        final List events = response.body;
+        if (events.isNotEmpty) {
+          final latestEvent = events.last;
+          final isStarted = latestEvent['is_active'] == true;
+          if (mounted) {
+            setState(() {
+              _eventData = Map<String, dynamic>.from(latestEvent);
+              _homeState = _homeState.copyWith(
+                eventCreated: true,
+                started: isStarted,
+              );
+            });
           }
         }
-      } catch (e) {
-        // Handle gracefully
       }
+    } catch (e) {
+      debugPrint('=== FETCH MY EVENTS EXCEPTION ===');
+      debugPrint('Error: $e');
     }
   }
 
@@ -282,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'START A FUNDRAISER',
                       subtitle:
                           'Launch your fundraiser campaign in under 90 seconds',
-                      assetPath: 'assets/images/myeventhomecard.png',
+                      assetPath: 'assets/images/unsplash_lhTF57zrDRs.png',
                       onTap: () => Get.toNamed(AppStrings.launchEventRoute),
                     ),
               if (_eventData?['status']?.toString().toLowerCase() ==
@@ -582,54 +592,45 @@ class _EventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24.r),
-        child: Stack(
-          children: [
-            SizedBox(
-              height: 200.h,
-              width: double.infinity,
-              child: Image.asset(assetPath, fit: BoxFit.cover),
-            ),
-            Positioned.fill(
-              child: Container(color: Colors.black.withOpacity(0.25)),
-            ),
-            Positioned(
-              left: 16.w,
-              top: 16.h,
-              right: 16.w,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.antonSc(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                      letterSpacing: 0.4,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.poppins(
-                      fontSize: 18.sp,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24.r),
+          image: DecorationImage(
+            image: AssetImage(assetPath),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.antonSc(
+                  fontSize: 28.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  letterSpacing: 0.4,
+                ),
               ),
-            ),
-            Positioned(
-              left: 16.w,
-              bottom: 16.h,
-              child: _ArrowButton(
+              SizedBox(height: 6.h),
+              Text(
+                subtitle,
+                style: GoogleFonts.poppins(
+                  fontSize: 14.sp,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 18.h),
+              _ArrowButton(
                 backgroundColor: Colors.white,
                 iconColor: AppColors.primary,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -647,7 +648,7 @@ class _PinkActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 140.h,
+        height: 160.h,
         decoration: BoxDecoration(
           color: const Color(0xFFF6DDE8),
           borderRadius: BorderRadius.circular(26.r),
@@ -666,16 +667,12 @@ class _PinkActionCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      title,
-                      style: GoogleFonts.antonSc(
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF1A1A2E),
-                      ),
+                  Text(
+                    title,
+                    style: GoogleFonts.antonSc(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.normal,
+                      color: const Color(0xFF1A1A2E),
                     ),
                   ),
                   const Spacer(),

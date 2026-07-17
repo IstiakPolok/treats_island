@@ -183,12 +183,7 @@ class _SupportersScreenState extends State<SupportersScreen> {
                               supporter['name']?.toString() ?? 'Anonymous';
                           final email = supporter['email']?.toString() ?? '';
                           final rawImg = supporter['image']?.toString();
-                          final String avatarUrl =
-                              (rawImg != null && rawImg.isNotEmpty)
-                              ? (rawImg.startsWith('http')
-                                    ? rawImg
-                                    : ApiService.defaultBaseUrl + rawImg)
-                              : '';
+                          final String avatarUrl = ApiService.formatImageUrl(rawImg);
                           final amountVal = supporter['total_purchased_amount'];
                           final double amount = amountVal != null
                               ? double.tryParse(amountVal.toString()) ?? 0.0

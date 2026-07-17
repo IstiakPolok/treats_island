@@ -247,7 +247,7 @@ class ScheduleEventController extends GetxController {
           : teamName.value;
 
       print("DEBUG: Sending Event Creation Payload:");
-      print("  - Endpoint: /event/create/");
+      print("  - URL: ${ApiService.defaultBaseUrl}/event/create/");
       print("  - Authorization token: $token");
       print("  - type: $selectedCategorySlug");
       print("  - start_date: $formattedDateStr");
@@ -329,6 +329,16 @@ class ScheduleEventController extends GetxController {
 
     isUpdating.value = true;
     try {
+      debugPrint('=== UPDATE EVENT API REQUEST ===');
+      debugPrint('Event ID: $eventId');
+      debugPrint('Type Slug: $typeSlug');
+      debugPrint('Start Date ISO: $startDateIso');
+      debugPrint('Estimated Participants: $estimatedParticipants');
+      debugPrint('Min Estimated Earning: $minEstimatedEarning');
+      debugPrint('Max Estimated Earning: $maxEstimatedEarning');
+      debugPrint('Name: $name');
+      debugPrint('================================');
+
       final response = await _apiService.updateEvent(
         token: token,
         eventId: eventId,
@@ -340,6 +350,13 @@ class ScheduleEventController extends GetxController {
         name: name,
       );
       isUpdating.value = false;
+
+      debugPrint('=== UPDATE EVENT API RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Status Text: ${response.statusText}');
+      debugPrint('Headers: ${response.headers}');
+      debugPrint('Body: ${response.body}');
+      debugPrint('=================================');
 
       if (response.status.isOk &&
           response.body != null &&
@@ -388,6 +405,9 @@ class ScheduleEventController extends GetxController {
       }
     } catch (e) {
       isUpdating.value = false;
+      debugPrint('=== UPDATE EVENT API EXCEPTION ===');
+      debugPrint('Exception: $e');
+      debugPrint('==================================');
       Get.snackbar(
         'Error',
         'An error occurred: $e',

@@ -3,8 +3,122 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class StoreNoteScreen extends StatelessWidget {
+import '../../../core/services/api_service.dart';
+import '../../../core/services/shared_preferences_helper.dart';
+import '../../create_event/controller/schedule_event_controller.dart';
+
+class StoreNoteScreen extends StatefulWidget {
   const StoreNoteScreen({super.key});
+
+  @override
+  State<StoreNoteScreen> createState() => _StoreNoteScreenState();
+}
+
+class _StoreNoteScreenState extends State<StoreNoteScreen> {
+  final TextEditingController _controller = TextEditingController();
+  bool _isLoading = false;
+
+  final ApiService _apiService = Get.isRegistered<ApiService>()
+      ? Get.find<ApiService>()
+      : Get.put(ApiService());
+
+  late final ScheduleEventController _eventController;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventController = Get.isRegistered<ScheduleEventController>()
+        ? Get.find<ScheduleEventController>()
+        : Get.put(ScheduleEventController());
+
+    final descVal = _eventController.fundraiserDetails['description'];
+    if (descVal != null) {
+      _controller.text = descVal.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveDescription() async {
+    final fundraiserId = _eventController.fundraiserDetails['id'];
+    if (fundraiserId == null) {
+      Get.snackbar(
+        'Error',
+        'Fundraiser details not found.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    final token = await SharedPreferencesHelper.getAccessToken();
+    if (token == null || token.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Authentication required.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final desc = _controller.text.trim();
+      final response = await _apiService.updateFundraiserDescription(
+        token,
+        int.parse(fundraiserId.toString()),
+        desc,
+      );
+
+      if (response.status.isOk && response.body != null) {
+        final body = response.body as Map;
+        if (body.containsKey('fundraiser') && body['fundraiser'] is Map) {
+          _eventController.fundraiserDetails.value = Map<String, dynamic>.from(
+            body['fundraiser'],
+          );
+        } else {
+          _eventController.fundraiserDetails['description'] = desc;
+          _eventController.fundraiserDetails.refresh();
+        }
+
+        Get.back(result: true);
+        Get.snackbar(
+          'Success',
+          body['message']?.toString() ?? 'Description updated successfully',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        String errorMsg = 'Failed to update description';
+        if (response.body != null && response.body is Map) {
+          final bodyMap = response.body as Map;
+          if (bodyMap.containsKey('detail')) {
+            errorMsg = bodyMap['detail'].toString();
+          } else if (bodyMap.isNotEmpty) {
+            errorMsg = bodyMap.values.first.toString();
+          }
+        }
+        Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +147,10 @@ class StoreNoteScreen extends StatelessWidget {
               Align(
                 alignment: Alignment.center,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 6.h,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEAF4),
                     borderRadius: BorderRadius.circular(16.r),
@@ -78,7 +195,12 @@ class StoreNoteScreen extends StatelessWidget {
               ),
               SizedBox(height: 14.h),
               TextField(
+                controller: _controller,
                 maxLines: 5,
+                style: GoogleFonts.poppins(
+                  fontSize: 13.sp,
+                  color: const Color(0xFF1A1A2E),
+                ),
                 decoration: InputDecoration(
                   hintText: "What's the goal of this fundraiser?",
                   hintStyle: GoogleFonts.poppins(
@@ -98,7 +220,7 @@ class StoreNoteScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 52.h,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _isLoading ? null : _saveDescription,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF6FB6),
                     elevation: 0,
@@ -106,14 +228,23 @@ class StoreNoteScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(30.r),
                     ),
                   ),
-                  child: Text(
-                    'Save',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          'Save',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               SizedBox(height: 20.h),

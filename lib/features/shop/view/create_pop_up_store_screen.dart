@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:video_player/video_player.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 import '../../create_event/controller/schedule_event_controller.dart';
@@ -62,6 +63,76 @@ class CreatePopUpStoreScreen extends StatelessWidget {
     }
 
     if (pickedFile == null) return;
+
+    if (isVideo) {
+      // Validate file format
+      final String path = pickedFile.path.toLowerCase();
+      final List<String> supportedExtensions = [
+        '.mp4',
+        '.mov',
+        '.3gp',
+        '.avi',
+        '.mkv',
+      ];
+      final bool isSupported = supportedExtensions.any(
+        (ext) => path.endsWith(ext),
+      );
+      if (!isSupported) {
+        Get.snackbar(
+          'Invalid Format',
+          'Only MP4, MOV, AVI, 3GP, and MKV video formats are supported.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.black,
+        );
+        return;
+      }
+
+      // Validate file size (20MB limit)
+      final file = File(pickedFile.path);
+      final int fileSizeInBytes = await file.length();
+      final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
+      if (fileSizeInMB > 20) {
+        Get.snackbar(
+          'File Too Large',
+          'The selected video is ${fileSizeInMB.toStringAsFixed(1)} MB. Maximum allowed size is 20 MB.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.black,
+        );
+        return;
+      }
+
+      // Validate video duration (15 seconds limit)
+      final VideoPlayerController tempController = VideoPlayerController.file(
+        file,
+      );
+      try {
+        await tempController.initialize();
+        final duration = tempController.value.duration;
+        await tempController.dispose();
+        if (duration.inSeconds > 15) {
+          Get.snackbar(
+            'Video Too Long',
+            'The selected video is ${duration.inSeconds} seconds. Maximum allowed duration is 15 seconds.',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red.withAlpha(26),
+            colorText: Colors.black,
+          );
+          return;
+        }
+      } catch (e) {
+        await tempController.dispose();
+        Get.snackbar(
+          'Validation Error',
+          'Failed to validate video duration: $e',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.black,
+        );
+        return;
+      }
+    }
 
     Get.dialog(
       const Center(
@@ -246,11 +317,17 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                       );
                     }),
                     Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
-                    _InfoRow(
-                      title: 'Fundraiser description',
-                      value: '',
-                      onTap: () => Get.to(() => const StoreNoteScreen()),
-                    ),
+                    Obx(() {
+                      final String desc =
+                          controller.fundraiserDetails['description']
+                              ?.toString() ??
+                          '';
+                      return _InfoRow(
+                        title: 'Fundraiser description',
+                        value: desc,
+                        onTap: () => Get.to(() => const StoreNoteScreen()),
+                      );
+                    }),
                     Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
                     Obx(() {
                       final goalVal = controller.fundraiserDetails['goal'];

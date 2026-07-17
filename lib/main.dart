@@ -21,25 +21,8 @@ Future<void> main() async {
     // Register background message handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    // Request FCM permission and get token
-    final messaging = FirebaseMessaging.instance;
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      final token = await messaging.getToken();
-      debugPrint('FCM Registration Token: $token');
-    } else {
-      debugPrint('User declined or has not accepted notification permissions.');
-    }
-
-    // Handle foreground messages
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('Received a foreground message: ${message.notification?.title}');
-    });
+    // Setup FCM asynchronously without blocking the UI launch
+    _setupFCM();
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
   }
@@ -59,4 +42,29 @@ Future<void> main() async {
   );
 
   runApp(const TreatsIslandApp());
+}
+
+Future<void> _setupFCM() async {
+  try {
+    final messaging = FirebaseMessaging.instance;
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      final token = await messaging.getToken();
+      debugPrint('FCM Registration Token: $token');
+    } else {
+      debugPrint('User declined or has not accepted notification permissions.');
+    }
+
+    // Handle foreground messages
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      debugPrint('Received a foreground message: ${message.notification?.title}');
+    });
+  } catch (e) {
+    debugPrint('FCM setup failed: $e');
+  }
 }
