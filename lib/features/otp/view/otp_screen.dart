@@ -61,7 +61,7 @@ class OTPScreen extends StatelessWidget {
                       Align(
                         alignment: Alignment.topLeft,
                         child: Text(
-                          'Code Has Been Sent To ${controller.email}',
+                          'Code Has Been Sent To ${controller.phone}',
                           style: GoogleFonts.poppins(
                             fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
