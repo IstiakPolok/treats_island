@@ -7,42 +7,24 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 
 class LoginController extends GetxController {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final phoneController = TextEditingController();
 
   final RxBool isLoading = false.obs;
   final ApiService _apiService = Get.put(ApiService());
 
-  final RxBool hidePassword = true.obs;
-
-  void toggleHidePassword() {
-    hidePassword.value = !hidePassword.value;
-  }
-
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
+    phoneController.dispose();
     super.onClose();
   }
 
   void loginUser() async {
-    final email = emailController.text.trim();
-    final password = passwordController.text;
+    final phone = phoneController.text.trim();
 
-    if (email.isEmpty) {
+    if (phone.isEmpty) {
       Get.snackbar(
         'Required',
-        'Please enter your email address',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
-    if (password.isEmpty) {
-      Get.snackbar(
-        'Required',
-        'Please enter your password',
+        'Please enter your phone number',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -50,9 +32,9 @@ class LoginController extends GetxController {
 
     isLoading.value = true;
     try {
-      final response = await _apiService.login(email, password);
+      final response = await _apiService.sendOtp(phone);
 
-      debugPrint('=== LOGIN API RESPONSE ===');
+      debugPrint('=== SEND OTP API RESPONSE ===');
       debugPrint('Status Code: ${response.statusCode}');
       debugPrint('Status Text: ${response.statusText}');
       debugPrint('Headers: ${response.headers}');
@@ -60,63 +42,29 @@ class LoginController extends GetxController {
       debugPrint('==========================');
 
       if (response.status.isOk) {
-        final responseData = response.body;
-        String? token;
-
-        // Extract token from API response keys
-        if (responseData != null && responseData is Map) {
-          token = responseData['access']?.toString();
-          final refreshToken = responseData['refresh']?.toString();
-          if (refreshToken != null) {
-            await SharedPreferencesHelper.saveRefreshToken(refreshToken);
-          }
-
-          // Optionally save user info if returned
-          final userId =
-              responseData['userId']?.toString() ??
-              responseData['data']?['userId']?.toString();
-          if (userId != null) {
-            await SharedPreferencesHelper.saveUserId(userId);
-          }
-          final userName =
-              responseData['name']?.toString() ??
-              responseData['data']?['name']?.toString();
-          if (userName != null) {
-            await SharedPreferencesHelper.saveName(userName);
-          }
-          final userEmail =
-              responseData['email']?.toString() ??
-              responseData['data']?['email']?.toString();
-          if (userEmail != null) {
-            await SharedPreferencesHelper.saveEmail(userEmail);
-          }
-        }
-
-        // Fallback placeholder token for testing if the server returned success but no token key was found
-        token ??= 'demo_placeholder_token';
-
-        await SharedPreferencesHelper.saveToken(token);
-        await _registerDeviceToken(token);
-
         Get.snackbar(
           'Success',
-          'Logged in successfully',
+          'OTP sent successfully',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.black.withAlpha(26),
           colorText: Colors.black,
         );
 
-        // Navigate directly to the main application and remove login from history
-        Get.offAllNamed(AppStrings.navbarRoute);
+        Get.toNamed(
+          AppStrings.otpRoute,
+          arguments: {
+            'phone': phone,
+            'fromSignUp': false,
+          },
+        );
       } else {
-        // Handle error responses from API
         final errorMessage = response.body != null && response.body is Map
             ? (response.body['error'] ??
                   response.body['message'] ??
-                  'Login failed')
-            : 'Invalid email or password';
+                  'Failed to send OTP')
+            : 'Failed to send OTP';
         Get.snackbar(
-          'Login Failed',
+          'Failed',
           errorMessage.toString(),
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withAlpha(26),

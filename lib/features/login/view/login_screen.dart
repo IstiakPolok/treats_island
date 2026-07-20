@@ -63,40 +63,9 @@ class LoginScreen extends StatelessWidget {
                           SizedBox(height: 30.h),
                           // ── Input Fields ─────────────────────────────────────────
                           CustomTextField(
-                            controller: controller.emailController,
-                            hintText: 'email address',
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          SizedBox(height: 20.h),
-                          Obx(() => CustomTextField(
-                            controller: controller.passwordController,
-                            hintText: 'Password',
-                            obscureText: controller.hidePassword.value,
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                controller.hidePassword.value
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: const Color(0xFF707080),
-                              ),
-                              onPressed: controller.toggleHidePassword,
-                            ),
-                          )),
-                          SizedBox(height: 16.h),
-                          // ── Forget Password Button ────────────────────────────────
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: GestureDetector(
-                              onTap: controller.forgetPassword,
-                              child: Text(
-                                'Forget password?',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1A1A2E),
-                                ),
-                              ),
-                            ),
+                            controller: controller.phoneController,
+                            hintText: 'phone number',
+                            keyboardType: TextInputType.phone,
                           ),
                           SizedBox(height: 48.h),
                           // ── Login Button ─────────────────────────────────────────

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -28,17 +29,17 @@ class NameSetScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(height: 120.h),
+                      SizedBox(height: 40.h),
 
                       // ── Centered Logo ──────────────────────────────────────────
                       Image.asset(
                         AppAssets.splashLogo,
-                        width: 200.w,
-                        height: 200.h,
+                        width: 120.w,
+                        height: 120.h,
                         fit: BoxFit.contain,
                       ),
 
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 20.h),
 
                       // ── Header Text ──────────────────────────────────────────
                       Align(
@@ -46,15 +47,15 @@ class NameSetScreen extends StatelessWidget {
                         child: RichText(
                           text: TextSpan(
                             style: GoogleFonts.antonSc(
-                              fontSize: 48.sp,
+                              fontSize: 40.sp,
                               fontWeight: FontWeight.normal,
                               color: const Color(0xFF1A1A2E),
                               height: 1.1,
                             ),
                             children: [
-                              const TextSpan(text: "WHAT'S YOUR "),
+                              const TextSpan(text: "SETUP YOUR\n"),
                               TextSpan(
-                                text: 'FULL\nNAME ?',
+                                text: 'PROFILE',
                                 style: const TextStyle(color: AppColors.primary),
                               ),
                             ],
@@ -62,9 +63,47 @@ class NameSetScreen extends StatelessWidget {
                         ),
                       ),
 
-                      SizedBox(height: 40.h),
+                      SizedBox(height: 30.h),
 
-                      // ── Name Field ─────────────────────────────────────────
+                      // ── Image Picker ─────────────────────────────────────────
+                      GestureDetector(
+                        onTap: controller.pickImage,
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Obx(() => CircleAvatar(
+                              radius: 54.r,
+                              backgroundColor: const Color(0xFFF0F0F3),
+                              backgroundImage: controller.selectedImagePath.value != null
+                                  ? FileImage(File(controller.selectedImagePath.value!))
+                                  : null,
+                              child: controller.selectedImagePath.value == null
+                                  ? Icon(
+                                      Icons.person_outline_rounded,
+                                      size: 54.sp,
+                                      color: const Color(0xFF707080),
+                                    )
+                                  : null,
+                            )),
+                            Container(
+                              padding: EdgeInsets.all(8.w),
+                              decoration: const BoxDecoration(
+                                color: AppColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.camera_alt_rounded,
+                                size: 18.sp,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 30.h),
+
+                      // ── Full Name Field ─────────────────────────────────────────
                       TextField(
                         controller: controller.nameController,
                         style: GoogleFonts.poppins(fontSize: 16.sp),
@@ -89,19 +128,48 @@ class NameSetScreen extends StatelessWidget {
                         ),
                       ),
 
+                      SizedBox(height: 20.h),
+
+                      // ── Email Field ─────────────────────────────────────────
+                      TextField(
+                        controller: controller.emailController,
+                        style: GoogleFonts.poppins(fontSize: 16.sp),
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          hintText: 'Email address',
+                          hintStyle: GoogleFonts.poppins(
+                            color: Colors.grey.withValues(alpha: 0.6),
+                            fontSize: 16.sp,
+                          ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: const Color(0xFFE0E0E0),
+                              width: 1.w,
+                            ),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.primary,
+                              width: 2.w,
+                            ),
+                          ),
+                        ),
+                      ),
+
                       const Spacer(),
+                      SizedBox(height: 40.h),
 
                       // ── Get Started Button ──────────────────────────────────
                       Obx(
                         () => controller.isLoading.value
                             ? const CircularProgressIndicator()
                             : PrimaryButton(
-                                text: 'Get start!',
+                                text: 'Get started!',
                                 onPressed: controller.submitName,
                               ),
                       ),
 
-                      SizedBox(height: 100.h),
+                      SizedBox(height: 60.h),
                     ],
                   ),
                 ),

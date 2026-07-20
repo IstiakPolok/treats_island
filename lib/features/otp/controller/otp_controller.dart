@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_strings.dart';
@@ -19,14 +21,14 @@ class OTPController extends GetxController {
   Timer? _timer;
   final ApiService _apiService = Get.put(ApiService());
 
-  String email = '';
+  String phone = '';
   bool fromSignUp = false;
 
   @override
   void onInit() {
     startTimer();
     final Map? args = Get.arguments as Map?;
-    email = args?['email'] ?? '';
+    phone = args?['phone'] ?? args?['email'] ?? '';
     fromSignUp = args?['fromSignUp'] ?? false;
     super.onInit();
   }
@@ -45,15 +47,55 @@ class OTPController extends GetxController {
     });
   }
 
-  void resendCode() {
-    // Implement resend logic here
+  void resendCode() async {
     hasError.value = false;
-    startTimer();
-    Get.snackbar(
-      'OTP Resent',
-      'A new verification code has been sent.',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (phone.isEmpty) return;
+    try {
+      final response = await _apiService.sendOtp(phone);
+      if (response.status.isOk) {
+        startTimer();
+        Get.snackbar(
+          'OTP Resent',
+          'A new verification code has been sent.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to resend code.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.red,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.red,
+      );
+    }
+  }
+
+  Future<void> _registerDeviceToken(String authToken) async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null || fcmToken.isEmpty) return;
+      await _apiService.registerNotificationToken(
+        authToken: authToken,
+        token: fcmToken,
+        platform: kIsWeb
+            ? 'web'
+            : (defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android'),
+        deviceName: '',
+        deviceId: '',
+        osVersion: '',
+      );
+    } catch (e) {
+      debugPrint('FCM Token registration error: $e');
+    }
   }
 
   void verifyOTP() async {
@@ -66,10 +108,10 @@ class OTPController extends GetxController {
     isLoading.value = true;
     hasError.value = false;
     try {
-      if (email.isEmpty) {
+      if (phone.isEmpty) {
         Get.snackbar(
           'Error',
-          'User email not found. Please try signing up again.',
+          'Phone number not found. Please try again.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withAlpha(26),
           colorText: Colors.red,
@@ -78,7 +120,7 @@ class OTPController extends GetxController {
         return;
       }
 
-      final response = await _apiService.verifyOtp(email, otp);
+      final response = await _apiService.verifyOtp(phone, otp);
 
       if (response.status.isOk) {
         final responseData = response.body;
@@ -88,24 +130,54 @@ class OTPController extends GetxController {
 
           if (accessToken != null) {
             await SharedPreferencesHelper.saveToken(accessToken);
+            await _registerDeviceToken(accessToken);
           }
           if (refreshToken != null) {
             await SharedPreferencesHelper.saveRefreshToken(refreshToken);
           }
-        }
 
-        Get.snackbar(
-          'Success',
-          'OTP verified successfully!',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.black.withAlpha(26),
-          colorText: Colors.black,
-        );
+          final user = responseData['user'];
+          String? userEmail;
+          String? userPhone;
+          if (user != null && user is Map) {
+            userEmail = user['email']?.toString();
+            userPhone = user['phone']?.toString();
+            final fullName = user['full_name']?.toString();
+            final image = user['image']?.toString();
+            final userId = user['id']?.toString();
 
-        if (fromSignUp) {
-          Get.offAllNamed(AppStrings.nameSetRoute);
-        } else {
-          Get.offAllNamed(AppStrings.navbarRoute);
+            if (userId != null) {
+              await SharedPreferencesHelper.saveUserId(userId);
+            }
+            if (fullName != null && fullName.isNotEmpty && fullName != 'null') {
+              await SharedPreferencesHelper.saveName(fullName);
+            }
+            if (userEmail != null && userEmail.isNotEmpty && userEmail != 'null') {
+              await SharedPreferencesHelper.saveEmail(userEmail);
+            }
+            if (userPhone != null && userPhone.isNotEmpty && userPhone != 'null') {
+              await SharedPreferencesHelper.savePhone(userPhone);
+            }
+            if (image != null && image.isNotEmpty && image != 'null') {
+              await SharedPreferencesHelper.saveUserImage(image);
+            }
+          }
+
+          Get.snackbar(
+            'Success',
+            'OTP verified successfully!',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.black.withAlpha(26),
+            colorText: Colors.black,
+          );
+
+          if (userEmail == null || userEmail.isEmpty || userEmail == 'null') {
+            Get.offAllNamed(AppStrings.nameSetRoute, arguments: {
+              'phone': userPhone ?? phone,
+            });
+          } else {
+            Get.offAllNamed(AppStrings.navbarRoute);
+          }
         }
       } else {
         hasError.value = true;

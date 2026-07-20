@@ -61,10 +61,17 @@ class ApiService extends GetConnect {
     });
   }
 
+  /// Sends a POST request to send OTP code to the phone number.
+  Future<Response> sendOtp(String phone) {
+    return post('/auth/send-otp/', {
+      'phone': phone,
+    });
+  }
+
   /// Sends a POST request to verify the OTP code.
-  Future<Response> verifyOtp(String email, String otp) {
-    return post('/auth/register-otp-verification/', {
-      'email': email,
+  Future<Response> verifyOtp(String phone, String otp) {
+    return post('/auth/verify-otp/', {
+      'phone': phone,
       'otp': otp,
     });
   }
@@ -74,11 +81,13 @@ class ApiService extends GetConnect {
     required String token,
     String? fullName,
     String? phone,
+    String? email,
     String? imagePath,
   }) {
     final Map<String, dynamic> fields = {};
     if (fullName != null) fields['full_name'] = fullName;
     if (phone != null) fields['phone'] = phone;
+    if (email != null) fields['email'] = email;
 
     if (imagePath != null && imagePath.isNotEmpty) {
       fields['image'] = MultipartFile(

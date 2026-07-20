@@ -158,4 +158,16 @@ class SharedPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('user_image') ?? '';
   }
+
+  // Save user phone
+  static Future<void> savePhone(String phone) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_phone', phone);
+  }
+
+  // Retrieve user phone
+  static Future<String> getPhone() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_phone') ?? '';
+  }
 }
