@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../features/splash/view/splash_screen.dart';
 import '../../features/onboarding/view/onboarding_screen.dart';
 import '../../features/welcome/view/welcome_screen.dart';
+import '../../features/welcome/view/join_in_screen.dart';
 import '../../features/login/view/login_screen.dart';
 import '../../features/signup/view/signup_screen.dart';
 import '../../features/signup/view/nameset_screen.dart';
@@ -22,6 +23,7 @@ class AppPages {
       page: () => const OnboardingScreen(),
     ),
     GetPage(name: AppStrings.welcomeRoute, page: () => const WelcomeScreen()),
+    GetPage(name: AppStrings.joinInRoute, page: () => const JoinInScreen()),
     GetPage(name: AppStrings.loginRoute, page: () => const LoginScreen()),
     GetPage(name: AppStrings.signupRoute, page: () => const SignUpScreen()),
     GetPage(name: AppStrings.otpRoute, page: () => const OTPScreen()),

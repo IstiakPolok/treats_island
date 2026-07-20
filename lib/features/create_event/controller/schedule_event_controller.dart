@@ -15,6 +15,7 @@ class ScheduleEventController extends GetxController {
   final RxString organizerName = "".obs;
   final RxMap<String, dynamic> createdEvent = <String, dynamic>{}.obs;
   final RxMap<String, dynamic> fundraiserDetails = <String, dynamic>{}.obs;
+  final RxBool isTermsAccepted = false.obs;
 
   @override
   void onInit() {

@@ -43,8 +43,8 @@ class PrimaryButton extends StatelessWidget {
         child: Text(
           text,
           style: GoogleFonts.poppins(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.normal,
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w900,
             letterSpacing: 1.2,
           ),
         ),

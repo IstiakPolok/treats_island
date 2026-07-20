@@ -15,4 +15,5 @@ class AppStrings {
   static const String nameSetRoute = '/name-set';
   static const String launchEventRoute = '/launch-event';
   static const String scheduleEventRoute = '/schedule-event';
+  static const String joinInRoute = '/join-in';
 }

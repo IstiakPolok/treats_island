@@ -162,7 +162,7 @@ class OnboardingScreen extends StatelessWidget {
   Widget _buildStepText(int index) {
     // Custom ultra-bold style for primary text
     final baseStyle = GoogleFonts.antonSc(
-      fontSize: 36.sp,
+      fontSize: 30.sp,
       fontWeight: FontWeight.normal,
       height: 1.3,
       color: Colors.black87,
@@ -178,9 +178,9 @@ class OnboardingScreen extends StatelessWidget {
           text: TextSpan(
             style: baseStyle,
             children: [
-              const TextSpan(text: 'SWEET '),
-              TextSpan(text: 'FUNDRAISING,', style: highlightStyle),
-              const TextSpan(text: '\nMADE SIMPLE.'),
+              const TextSpan(text: 'The easiest '),
+              TextSpan(text: 'FUNDRAISER', style: highlightStyle),
+              const TextSpan(text: '\nyour team has ever run.'),
             ],
           ),
         );
@@ -189,22 +189,54 @@ class OnboardingScreen extends StatelessWidget {
           text: TextSpan(
             style: baseStyle,
             children: [
-              const TextSpan(text: 'KEEP '),
-              TextSpan(text: '50% OF SALES.', style: highlightStyle),
-              const TextSpan(text: '\nNO UPFRONT COSTS.'),
-              const TextSpan(text: '\nNO HASSLE.'),
-              const TextSpan(text: '\nJUST SWEETNESS.'),
+              const TextSpan(
+                text: 'Every sale helps your team reach its goal ',
+              ),
+              TextSpan(text: '\nkeep 50% ', style: highlightStyle),
+              const TextSpan(text: 'of every order.'),
             ],
           ),
         );
       case 2:
       default:
-        return RichText(
-          text: TextSpan(
-            style: baseStyle,
+        return SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const TextSpan(text: 'DELIVERED STRAIGHT TO\nYOUR '),
-              TextSpan(text: "SUPPORTERS'\nDOORS.", style: highlightStyle),
+              Text(
+                'TRUSTED BY 300+ TEAMS',
+                textAlign: TextAlign.center,
+                style: baseStyle,
+              ),
+              SizedBox(height: 12.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  5,
+                  (index) => Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w),
+                    child: Icon(
+                      Icons.star_rounded,
+                      color: const Color(0xFFFFB800),
+                      size: 36.sp,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                '4.9/5 AVERAGE RATING',
+                textAlign: TextAlign.center,
+                style: baseStyle,
+              ),
+              SizedBox(height: 12.h),
+              Text(
+                '\$2.8M+ RAISED',
+                textAlign: TextAlign.center,
+                style: baseStyle,
+              ),
             ],
           ),
         );
