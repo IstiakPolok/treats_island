@@ -3,6 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:sms_autofill/sms_autofill.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
@@ -14,6 +15,7 @@ class OTPController extends GetxController {
   );
   final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
 
+  final RxInt activeIndex = 0.obs;
   final RxInt secondsRemaining = 45.obs;
   final RxBool canResend = false.obs;
   final RxBool hasError = false.obs;
@@ -31,6 +33,25 @@ class OTPController extends GetxController {
     phone = args?['phone'] ?? args?['email'] ?? '';
     fromSignUp = args?['fromSignUp'] ?? false;
     super.onInit();
+    _listenForSms();
+  }
+
+  void _listenForSms() async {
+    try {
+      final appSignature = await SmsAutoFill().getAppSignature;
+      debugPrint('=== App Signature for SMS: $appSignature ===');
+      await SmsAutoFill().listenForCode();
+      SmsAutoFill().code.listen((code) {
+        if (code.isNotEmpty && code.length == 6) {
+          for (int i = 0; i < 6; i++) {
+            otpControllers[i].text = code[i];
+          }
+          verifyOTP();
+        }
+      });
+    } catch (e) {
+      debugPrint('Error starting SMS autofill: $e');
+    }
   }
 
   void startTimer() {
@@ -209,6 +230,11 @@ class OTPController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
+    try {
+      SmsAutoFill().unregisterListener();
+    } catch (e) {
+      debugPrint('Error unregistering SMS listener: $e');
+    }
     for (var controller in otpControllers) {
       controller.dispose();
     }

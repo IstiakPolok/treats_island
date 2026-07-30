@@ -261,6 +261,7 @@ class ApiService extends GetConnect {
     double? minEstimatedEarning,
     double? maxEstimatedEarning,
     String? name,
+    String? payoutManager,
   }) {
     final Map<String, dynamic> body = {};
     if (type != null) body['type'] = type;
@@ -275,6 +276,7 @@ class ApiService extends GetConnect {
       body['max_estimated_earning'] = maxEstimatedEarning;
     }
     if (name != null) body['name'] = name;
+    if (payoutManager != null) body['payout_manager'] = payoutManager;
 
     final String base = httpClient.baseUrl ?? defaultBaseUrl;
     final String cleanBase = base.endsWith('/')

@@ -16,184 +16,210 @@ class SignUpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(SignUpController());
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+    final logoSize = isTablet ? 200.0 : 160.r;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 28.0.w),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 20.h),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 420.0 : double.infinity,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24.0 : 28.0.w,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
 
-                      // ── Centered Logo ──────────────────────────────────────────
-                      Image.asset(
-                        AppAssets.splashLogo,
-                        width: 200.w,
-                        height: 200.h,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 120.w,
-                            height: 120.h,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.primary.withValues(alpha: 0.1),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.restaurant_menu_rounded,
-                                size: 50.sp,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      // ── Header Text ──────────────────────────────────────────
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          'SIGN UP',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.antonSc(
-                            fontSize: 48.sp,
-                            fontWeight: FontWeight.normal,
-                            color: const Color(0xFF1A1A2E),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: 30.h),
-
-                      // ── Input Fields ─────────────────────────────────────────
-                      CustomTextField(
-                        controller: controller.phoneController,
-                        hintText: 'phone number',
-                        keyboardType: TextInputType.phone,
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      // ── Terms & Conditions Checkbox ──────────────────────────
-                      Align(
-                        alignment: Alignment.center,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Obx(
-                              () => Checkbox(
-                                value: controller.agreeToTerms.value,
-                                onChanged: controller.toggleTerms,
-                                activeColor: AppColors.primary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4.r),
+                          // ── Centered Logo ──────────────────────────────────────────
+                          Image.asset(
+                            AppAssets.splashLogo,
+                            width: logoSize,
+                            height: logoSize,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: isTablet ? 120.0 : 120.r,
+                                height: isTablet ? 120.0 : 120.r,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primary.withValues(alpha: 0.1),
                                 ),
-                                side: BorderSide(
-                                  color: const Color(0xFFB0B0B0),
-                                  width: 1.5.w,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 8.w),
-                            Flexible(
-                              child: RichText(
-                                // ignore: deprecated_member_use
-                                textScaleFactor: 1.0,
-                                text: TextSpan(
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14.sp,
-                                    color: const Color(0xFF1A1A2E),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  children: [
-                                    const TextSpan(text: 'I agree to the '),
-                                    TextSpan(
-                                      text: 'terms and conditions.',
-                                      style: TextStyle(
-                                        color: AppColors.primary,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                      recognizer: TapGestureRecognizer()
-                                        ..onTap = () {
-                                          Get.to(
-                                            () => const TermsConditionsScreen(),
-                                          );
-                                        },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 48.h),
-
-                      // ── Send Verification Code Button ────────────────────────
-                      Obx(() {
-                        return controller.isLoading.value
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary,
+                                child: Center(
+                                  child: Icon(
+                                    Icons.restaurant_menu_rounded,
+                                    size: isTablet ? 50.0 : 50.r,
+                                    color: AppColors.primary,
                                   ),
                                 ),
-                              )
-                            : PrimaryButton(
-                                text: 'Send verification code',
-                                onPressed: controller.sendVerificationCode,
                               );
-                      }),
+                            },
+                          ),
 
-                      SizedBox(height: 28.h),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
 
-                      // ── Login Navigation Footer ──────────────────────────────
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: RichText(
-                          textAlign: TextAlign.center,
-                          text: TextSpan(
-                            style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
-                              color: const Color(0xFF1A1A2E),
-                              fontWeight: FontWeight.w500,
+                          // ── Header Text ──────────────────────────────────────────
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              'SIGN UP',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.antonSc(
+                                fontSize: isTablet ? 38.0 : 48.sp,
+                                fontWeight: FontWeight.normal,
+                                color: const Color(0xFF1A1A2E),
+                              ),
                             ),
+                          ),
+
+                          SizedBox(height: isTablet ? 30.0 : 30.h),
+
+                          // ── Input Fields ─────────────────────────────────────────
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const TextSpan(text: 'Already have an account? '),
-                              TextSpan(
-                                text: 'Login',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w700,
+                              Obx(() => CountryCodePicker(
+                                    selectedCountry: controller.selectedCountry.value,
+                                    onSelect: (country) {
+                                      controller.selectedCountry.value = country;
+                                    },
+                                  )),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.phoneController,
+                                  hintText: 'phone number',
+                                  keyboardType: TextInputType.phone,
                                 ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = controller.navigateToLogin,
                               ),
                             ],
                           ),
-                        ),
+
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
+
+                          // ── Terms & Conditions Checkbox ──────────────────────────
+                          Align(
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Obx(
+                                  () => Checkbox(
+                                    value: controller.agreeToTerms.value,
+                                    onChanged: controller.toggleTerms,
+                                    activeColor: AppColors.primary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(isTablet ? 4.0 : 4.r),
+                                    ),
+                                    side: BorderSide(
+                                      color: const Color(0xFFB0B0B0),
+                                      width: isTablet ? 1.5 : 1.5.w,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: isTablet ? 8.0 : 8.w),
+                                Flexible(
+                                  child: RichText(
+                                    // ignore: deprecated_member_use
+                                    textScaleFactor: 1.0,
+                                    text: TextSpan(
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 14.0 : 14.sp,
+                                        color: const Color(0xFF1A1A2E),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      children: [
+                                        const TextSpan(text: 'I agree to the '),
+                                        TextSpan(
+                                          text: 'terms and conditions.',
+                                          style: TextStyle(
+                                            color: AppColors.primary,
+                                            fontSize: isTablet ? 14.0 : 14.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              Get.to(
+                                                () => const TermsConditionsScreen(),
+                                              );
+                                            },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          SizedBox(height: isTablet ? 48.0 : 48.h),
+
+                          // ── Send Verification Code Button ────────────────────────
+                          Obx(() {
+                            return controller.isLoading.value
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.primary,
+                                      ),
+                                    ),
+                                  )
+                                : PrimaryButton(
+                                    text: 'Send verification code',
+                                    onPressed: controller.sendVerificationCode,
+                                  );
+                          }),
+
+                          SizedBox(height: isTablet ? 28.0 : 28.h),
+
+                          // ── Login Navigation Footer ──────────────────────────────
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: RichText(
+                              textAlign: TextAlign.center,
+                              text: TextSpan(
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  color: const Color(0xFF1A1A2E),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                children: [
+                                  const TextSpan(text: 'Already have an account? '),
+                                  TextSpan(
+                                    text: 'Login',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontSize: isTablet ? 14.0 : 14.sp,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = controller.navigateToLogin,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                       ),
-                      const SizedBox(height: 20),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

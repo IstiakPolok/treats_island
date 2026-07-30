@@ -14,42 +14,58 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final bool isTablet = size.width >= 600;
 
     return Scaffold(
       body: Stack(
         children: [
           // ── Full-screen background image ───────────────────────────
-          Image.asset(
-            AppAssets.welcomeBg,
-            width: size.width,
-            height: size.height,
-            fit: BoxFit.fill,
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/onboardbg.png',
+              width: size.width,
+              height: size.height,
+              fit: BoxFit.cover,
+            ),
           ),
 
           // ── Centered Logo ──────────────────────────────────────────
           Center(
             child: Image.asset(
               AppAssets.splashLogo,
-              width: 200.w,
-              height: 200.h,
+              width: isTablet ? 220.0 : 200.w,
+              height: isTablet ? 220.0 : 200.h,
               fit: BoxFit.contain,
             ),
           ),
 
           // ── Bottom Reusable button ─────────────────────────────────
           Positioned(
-            bottom: 50,
-            left: 24,
-            right: 24,
-            child: Column(
-              children: [
-                PrimaryButton(
-                  text: 'GET STARTED',
-                  onPressed: () {
-                    Get.toNamed(AppStrings.joinInRoute);
-                  },
+            bottom: isTablet ? 60.0 : 50.h,
+            left: 0,
+            right: 0,
+            child: Align(
+              alignment: Alignment.center,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 450.0 : double.infinity,
                 ),
-              ],
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 32.0 : 24.w,
+                  ),
+                  child: Column(
+                    children: [
+                      PrimaryButton(
+                        text: 'GET STARTED',
+                        onPressed: () {
+                          Get.toNamed(AppStrings.joinInRoute);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

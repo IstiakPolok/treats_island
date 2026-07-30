@@ -21,6 +21,9 @@ class MainNavigationScreen extends StatelessWidget {
       controller.setInitialIndex(initialIndex);
     });
 
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return Obx(() {
       return Scaffold(
         backgroundColor: Colors.transparent,
@@ -31,45 +34,49 @@ class MainNavigationScreen extends StatelessWidget {
             Positioned(
               left: 0,
               right: 0,
-              bottom: 18.h,
+              bottom: isTablet ? 24.0 : 18.h,
               child: SafeArea(
                 top: false,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 140.w),
-                  child: Container(
-                    padding: EdgeInsets.all(6.r),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(164, 211, 211, 211),
-                      borderRadius: BorderRadius.circular(50.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10.r,
-                          offset: Offset(0, 5.h),
+                child: Center(
+                  child: SizedBox(
+                    width: isTablet ? 180.0 : 140.0,
+                    child: Container(
+                      padding: EdgeInsets.all(isTablet ? 6.0 : 6.r),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(164, 211, 211, 211),
+                        borderRadius: BorderRadius.circular(
+                          isTablet ? 50.0 : 50.r,
                         ),
-                      ],
-                    ),
-                    child: GNav(
-                      rippleColor: Colors.grey[300]!,
-                      hoverColor: Colors.grey[100]!,
-                      haptic: true,
-                      tabBorderRadius: 50.r,
-                      gap: 50.w,
-                      color: Colors.white,
-                      activeColor: Colors.white,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      iconSize: 26.sp,
-                      tabBackgroundColor: AppColors.primary,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12.w,
-                        vertical: 12.h,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: isTablet ? 10.0 : 10.r,
+                            offset: Offset(0, isTablet ? 5.0 : 5.h),
+                          ),
+                        ],
                       ),
-                      selectedIndex: controller.currentIndex.value,
-                      onTabChange: controller.changeIndex,
-                      tabs: const [
-                        GButton(icon: Icons.home_outlined),
-                        GButton(icon: Icons.person_rounded),
-                      ],
+                      child: GNav(
+                        rippleColor: Colors.grey[300]!,
+                        hoverColor: Colors.grey[100]!,
+                        haptic: true,
+                        tabBorderRadius: isTablet ? 50.0 : 50.r,
+                        gap: isTablet ? 24.0 : 24.w,
+                        color: Colors.white,
+                        activeColor: Colors.white,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        iconSize: isTablet ? 26.0 : 26.sp,
+                        tabBackgroundColor: AppColors.primary,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 12.0 : 12.w,
+                          vertical: isTablet ? 12.0 : 12.h,
+                        ),
+                        selectedIndex: controller.currentIndex.value,
+                        onTabChange: controller.changeIndex,
+                        tabs: const [
+                          GButton(icon: Icons.home_outlined),
+                          GButton(icon: Icons.person_rounded),
+                        ],
+                      ),
                     ),
                   ),
                 ),

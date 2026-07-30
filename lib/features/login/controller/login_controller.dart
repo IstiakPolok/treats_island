@@ -4,10 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../core/services/api_service.dart';
-import '../../../core/services/shared_preferences_helper.dart';
+import '../../../shared/widgets/widgets.dart';
 
 class LoginController extends GetxController {
   final phoneController = TextEditingController();
+  final Rx<Country> selectedCountry = const Country(
+    name: 'United States',
+    flag: '🇺🇸',
+    code: '+1',
+  ).obs;
 
   final RxBool isLoading = false.obs;
   final ApiService _apiService = Get.put(ApiService());
@@ -19,7 +24,7 @@ class LoginController extends GetxController {
   }
 
   void loginUser() async {
-    final phone = phoneController.text.trim();
+    var phone = phoneController.text.trim();
 
     if (phone.isEmpty) {
       Get.snackbar(
@@ -30,9 +35,14 @@ class LoginController extends GetxController {
       return;
     }
 
+    if (phone.startsWith('0')) {
+      phone = phone.substring(1);
+    }
+    final fullPhone = '${selectedCountry.value.code}$phone';
+
     isLoading.value = true;
     try {
-      final response = await _apiService.sendOtp(phone);
+      final response = await _apiService.sendOtp(fullPhone);
 
       debugPrint('=== SEND OTP API RESPONSE ===');
       debugPrint('Status Code: ${response.statusCode}');
@@ -53,7 +63,7 @@ class LoginController extends GetxController {
         Get.toNamed(
           AppStrings.otpRoute,
           arguments: {
-            'phone': phone,
+            'phone': fullPhone,
             'fromSignUp': false,
           },
         );

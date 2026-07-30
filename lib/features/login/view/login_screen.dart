@@ -15,38 +15,44 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+    final logoSize = isTablet ? 200.0 : 160.r;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: true,
-              child: Builder(
-                builder: (context) {
-                  return AnimatedPadding(
-                    duration: const Duration(milliseconds: 200),
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 420.0 : double.infinity,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24.0 : 28.0.w,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
                     ),
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      padding: EdgeInsets.symmetric(horizontal: 28.0.w),
+                    child: IntrinsicHeight(
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(height: 20.h),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
                           // ── Centered Logo ──────────────────────────────────────────
                           Image.asset(
                             AppAssets.splashLogo,
-                            width: 200.w,
-                            height: 200.h,
+                            width: logoSize,
+                            height: logoSize,
                             fit: BoxFit.contain,
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
                           // ── Header Text ──────────────────────────────────────────
                           Align(
                             alignment: Alignment.topLeft,
@@ -54,20 +60,37 @@ class LoginScreen extends StatelessWidget {
                               'LOGIN',
                               textAlign: TextAlign.center,
                               style: GoogleFonts.antonSc(
-                                fontSize: 48.sp,
+                                fontSize: isTablet ? 38.0 : 48.sp,
                                 fontWeight: FontWeight.normal,
                                 color: const Color(0xFF1A1A2E),
                               ),
                             ),
                           ),
-                          SizedBox(height: 30.h),
+                          SizedBox(height: isTablet ? 30.0 : 30.h),
                           // ── Input Fields ─────────────────────────────────────────
-                          CustomTextField(
-                            controller: controller.phoneController,
-                            hintText: 'phone number',
-                            keyboardType: TextInputType.phone,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Obx(
+                                () => CountryCodePicker(
+                                  selectedCountry:
+                                      controller.selectedCountry.value,
+                                  onSelect: (country) {
+                                    controller.selectedCountry.value = country;
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: CustomTextField(
+                                  controller: controller.phoneController,
+                                  hintText: 'phone number',
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ),
+                            ],
                           ),
-                          SizedBox(height: 48.h),
+                          SizedBox(height: isTablet ? 48.0 : 48.h),
                           // ── Login Button ─────────────────────────────────────────
                           Obx(() {
                             return controller.isLoading.value
@@ -83,7 +106,7 @@ class LoginScreen extends StatelessWidget {
                                     onPressed: controller.loginUser,
                                   );
                           }),
-                          SizedBox(height: 28.h),
+                          SizedBox(height: isTablet ? 28.0 : 28.h),
                           // ── Sign Up Navigation Footer ────────────────────────────
                           Align(
                             alignment: Alignment.centerLeft,
@@ -91,7 +114,7 @@ class LoginScreen extends StatelessWidget {
                               textAlign: TextAlign.center,
                               text: TextSpan(
                                 style: GoogleFonts.poppins(
-                                  fontSize: 14.sp,
+                                  fontSize: isTablet ? 14.0 : 14.sp,
                                   color: const Color(0xFF1A1A2E),
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -103,7 +126,7 @@ class LoginScreen extends StatelessWidget {
                                     text: 'Sign Up',
                                     style: TextStyle(
                                       color: AppColors.primary,
-                                      fontSize: 14.sp,
+                                      fontSize: isTablet ? 14.0 : 14.sp,
                                       fontWeight: FontWeight.w700,
                                     ),
                                     recognizer: TapGestureRecognizer()
@@ -113,15 +136,15 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 20.h),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
-          ],
+          ),
         ),
       ),
     );

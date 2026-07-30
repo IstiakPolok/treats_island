@@ -191,191 +191,207 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final showCreated = _homeState.eventCreated || _homeState.shopCreated;
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 650.0 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 24.0 : 24.w,
+                vertical: isTablet ? 16.0 : 16.h,
+              ),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'HELLO,',
-                          style: GoogleFonts.antonSc(
-                            fontSize: 48.sp,
-                            fontWeight: FontWeight.w800,
-                            color: const Color(0xFF1A1A2E),
-                            letterSpacing: -0.5,
-                          ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'HELLO,',
+                              style: GoogleFonts.antonSc(
+                                fontSize: isTablet ? 38.0 : 48.sp,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF1A1A2E),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            SizedBox(height: isTablet ? 4.0 : 4.h),
+                            Text(
+                              _userName,
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 24.0 : 32.sp,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          _userName,
-                          style: GoogleFonts.poppins(
-                            fontSize: 32.sp,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1A1A2E),
+                      ),
+                      SizedBox(width: isTablet ? 12.0 : 12.w),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Image.asset(
+                            AppAssets.splashLogo,
+                            width: isTablet ? 48.0 : 48.w,
+                            height: isTablet ? 48.0 : 48.h,
+                            fit: BoxFit.contain,
                           ),
+                          SizedBox(height: isTablet ? 8.0 : 8.h),
+                          Text(
+                            _currentDateString,
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 12.0 : 12.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 2.0 : 2.h),
+                          Text(
+                            _currentTimeString,
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 11.0 : 11.sp,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: isTablet ? 24.0 : 24.h),
+                  Text(
+                    'MY EVENT',
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 16.0 : 18.sp,
+                      fontWeight: FontWeight.normal,
+                      color: const Color(0xFF262626),
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 10.0 : 10.h),
+                  showCreated
+                      ? _EventStatusCard(
+                          eventData: _eventData,
+                          started: _homeState.started,
+                          onTap: () {
+                            final controller =
+                                Get.isRegistered<ScheduleEventController>()
+                                ? Get.find<ScheduleEventController>()
+                                : Get.put(ScheduleEventController());
+                            Get.to(
+                              () => EventOverviewScreen(
+                                controller: controller,
+                                showShopTab: _homeState.shopCreated,
+                              ),
+                            );
+                          },
+                        )
+                      : _EventCard(
+                          title: 'START A FUNDRAISER',
+                          subtitle:
+                              'Launch your fundraiser campaign in under 90 seconds',
+                          assetPath: 'assets/images/unsplash_lhTF57zrDRs.png',
+                          onTap: () => Get.toNamed(AppStrings.launchEventRoute),
+                        ),
+                  if (_eventData?['status']?.toString().toLowerCase() ==
+                      'ongoing') ...[
+                    SizedBox(height: isTablet ? 16.0 : 16.h),
+                    Builder(
+                      builder: (context) {
+                        final remaining = _getRemainingTime(
+                          _eventData?['end_date']?.toString(),
+                        );
+                        final participant = _getMyParticipant();
+                        final name =
+                            participant?['full_name']?.toString() ?? _userName;
+                        final double goal =
+                            double.tryParse(
+                              participant?['shop_goal']?.toString() ?? '',
+                            ) ??
+                            0.0;
+                        final double achieved =
+                            double.tryParse(
+                              participant?['shop_achieved']?.toString() ?? '',
+                            ) ??
+                            0.0;
+                        return _FundraisingGoalCard(
+                          remainingTime: remaining,
+                          displayName: name,
+                          goal: goal,
+                          achieved: achieved,
+                        );
+                      },
+                    ),
+                  ],
+                  if (!showCreated) ...[
+                    SizedBox(height: isTablet ? 16.0 : 16.h),
+                    _PinkActionCard(
+                      title: 'ENTER EVENT CODE',
+                      onTap: () => Get.to(() => const EventCodeScreen()),
+                    ),
+                  ],
+                  SizedBox(height: isTablet ? 24.0 : 24.h),
+                  Text(
+                    'GET STARTED IN MINUTES',
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 13.0 : 14.sp,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black54,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 12.0 : 12.h),
+                  SizedBox(
+                    height: isTablet ? 210.0 : 210.h,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        const _MiniVideoCard(
+                          title: 'Launch Your\nPop-Up Store',
+                          subtitle:
+                              'Set up your personalized candy\nstorefront in just a few taps.',
+                          duration: '1:23',
+                          assetPath:
+                              'assets/placeholder/homescreengetstarted1.png',
+                        ),
+                        SizedBox(width: isTablet ? 14.0 : 14.w),
+                        const _MiniVideoCard(
+                          title: 'Share Your Store',
+                          subtitle:
+                              'Send your unique fund link\nthrough text, email, or social.',
+                          duration: '0:58',
+                          assetPath:
+                              'assets/placeholder/homescreengetstarted2.png',
+                        ),
+                        SizedBox(width: isTablet ? 14.0 : 14.w),
+                        const _MiniVideoCard(
+                          title: 'Share Your Store',
+                          subtitle:
+                              'Send your unique fund link\nthrough text, email, or social.',
+                          duration: '0:58',
+                          assetPath:
+                              'assets/placeholder/homescreengetstarted3.png',
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(width: 12.w),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Image.asset(
-                        AppAssets.splashLogo,
-                        width: 48.w,
-                        height: 48.h,
-                        fit: BoxFit.contain,
-                      ),
-                      SizedBox(height: 8.h),
-                      Text(
-                        _currentDateString,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        _currentTimeString,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
+                  SizedBox(height: isTablet ? 40.0 : 70.h),
                 ],
               ),
-              SizedBox(height: 24.h),
-              Text(
-                'MY EVENT',
-                style: GoogleFonts.poppins(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.normal,
-                  color: const Color(0xFF262626),
-                ),
-              ),
-              SizedBox(height: 10.h),
-              showCreated
-                  ? _EventStatusCard(
-                      eventData: _eventData,
-                      started: _homeState.started,
-                      onTap: () {
-                        final controller =
-                            Get.isRegistered<ScheduleEventController>()
-                            ? Get.find<ScheduleEventController>()
-                            : Get.put(ScheduleEventController());
-                        Get.to(
-                          () => EventOverviewScreen(
-                            controller: controller,
-                            showShopTab: _homeState.shopCreated,
-                          ),
-                        );
-                      },
-                    )
-                  : _EventCard(
-                      title: 'START A FUNDRAISER',
-                      subtitle:
-                          'Launch your fundraiser campaign in under 90 seconds',
-                      assetPath: 'assets/images/unsplash_lhTF57zrDRs.png',
-                      onTap: () => Get.toNamed(AppStrings.launchEventRoute),
-                    ),
-              if (_eventData?['status']?.toString().toLowerCase() ==
-                  'ongoing') ...[
-                SizedBox(height: 16.h),
-                Builder(
-                  builder: (context) {
-                    final remaining = _getRemainingTime(
-                      _eventData?['end_date']?.toString(),
-                    );
-                    final participant = _getMyParticipant();
-                    final name =
-                        participant?['full_name']?.toString() ?? _userName;
-                    final double goal =
-                        double.tryParse(
-                          participant?['shop_goal']?.toString() ?? '',
-                        ) ??
-                        0.0;
-                    final double achieved =
-                        double.tryParse(
-                          participant?['shop_achieved']?.toString() ?? '',
-                        ) ??
-                        0.0;
-                    return _FundraisingGoalCard(
-                      remainingTime: remaining,
-                      displayName: name,
-                      goal: goal,
-                      achieved: achieved,
-                    );
-                  },
-                ),
-              ],
-              if (!showCreated) ...[
-                SizedBox(height: 16.h),
-                _PinkActionCard(
-                  title: 'ENTER EVENT CODE',
-                  onTap: () => Get.to(() => const EventCodeScreen()),
-                ),
-              ],
-              SizedBox(height: 24.h),
-              Text(
-                'GET STARTED IN MINUTES',
-                style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.black54,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              SizedBox(
-                height: 210.h,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    const _MiniVideoCard(
-                      title: 'Launch Your\nPop-Up Store',
-                      subtitle:
-                          'Set up your personalized candy\nstorefront in just a few taps.',
-                      duration: '1:23',
-                      assetPath: 'assets/placeholder/homescreengetstarted1.png',
-                    ),
-                    SizedBox(width: 14.w),
-                    const _MiniVideoCard(
-                      title: 'Share Your Store',
-                      subtitle:
-                          'Send your unique fund link\nthrough text, email, or social.',
-                      duration: '0:58',
-                      assetPath: 'assets/placeholder/homescreengetstarted2.png',
-                    ),
-                    SizedBox(width: 14.w),
-                    const _MiniVideoCard(
-                      title: 'Share Your Store',
-                      subtitle:
-                          'Send your unique fund link\nthrough text, email, or social.',
-                      duration: '0:58',
-                      assetPath: 'assets/placeholder/homescreengetstarted3.png',
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 70.h),
-            ],
+            ),
           ),
         ),
       ),
@@ -420,6 +436,9 @@ class _EventStatusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     String dateLabel = '';
     IconData dateIcon = Icons.calendar_today_outlined;
     final String status = eventData?['status']?.toString().toLowerCase() ?? '';
@@ -463,11 +482,11 @@ class _EventStatusCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(24.r),
+        borderRadius: BorderRadius.circular(isTablet ? 24.0 : 24.r),
         child: Stack(
           children: [
             SizedBox(
-              height: 200.h,
+              height: isTablet ? 200.0 : 200.h,
               width: double.infinity,
               child: Image.asset(
                 'assets/images/myeventhomecard.png',
@@ -478,15 +497,15 @@ class _EventStatusCard extends StatelessWidget {
               child: Container(color: Colors.black.withValues(alpha: 0.2)),
             ),
             Positioned(
-              left: 12.w,
-              top: 12.h,
-              right: 12.w,
+              left: isTablet ? 12.0 : 12.w,
+              top: isTablet ? 12.0 : 12.h,
+              right: isTablet ? 12.0 : 12.w,
               child: Row(
                 children: [
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
+                      horizontal: isTablet ? 10.0 : 10.w,
+                      vertical: isTablet ? 4.0 : 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: isOngoing
@@ -494,16 +513,22 @@ class _EventStatusCard extends StatelessWidget {
                           : (started
                                 ? const Color(0xFF19B44C)
                                 : Colors.black.withValues(alpha: 0.35)),
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(
+                        isTablet ? 16.0 : 16.r,
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(dateIcon, size: 11.sp, color: Colors.white),
-                        SizedBox(width: 4.w),
+                        Icon(
+                          dateIcon,
+                          size: isTablet ? 12.0 : 11.sp,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: isTablet ? 4.0 : 4.w),
                         Text(
                           dateLabel,
                           style: GoogleFonts.poppins(
-                            fontSize: 10.sp,
+                            fontSize: isTablet ? 10.0 : 10.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -514,25 +539,27 @@ class _EventStatusCard extends StatelessWidget {
                   const Spacer(),
                   Container(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
+                      horizontal: isTablet ? 10.0 : 10.w,
+                      vertical: isTablet ? 4.0 : 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.35),
-                      borderRadius: BorderRadius.circular(16.r),
+                      borderRadius: BorderRadius.circular(
+                        isTablet ? 16.0 : 16.r,
+                      ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.group_outlined,
-                          size: 12.sp,
+                          size: isTablet ? 13.0 : 12.sp,
                           color: Colors.white,
                         ),
-                        SizedBox(width: 4.w),
+                        SizedBox(width: isTablet ? 4.0 : 4.w),
                         Text(
                           participantsText,
                           style: GoogleFonts.poppins(
-                            fontSize: 10.sp,
+                            fontSize: isTablet ? 10.0 : 10.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
@@ -544,24 +571,24 @@ class _EventStatusCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              left: 16.w,
-              bottom: 16.h,
-              right: 16.w,
+              left: isTablet ? 16.0 : 16.w,
+              bottom: isTablet ? 16.0 : 16.h,
+              right: isTablet ? 16.0 : 16.w,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     eventName,
                     style: GoogleFonts.antonSc(
-                      fontSize: 22.sp,
+                      fontSize: isTablet ? 20.0 : 22.sp,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  SizedBox(height: isTablet ? 4.0 : 4.h),
                   Text(
                     'Your Upcoming Fundraiser Campaign',
                     style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
+                      fontSize: isTablet ? 12.0 : 12.sp,
                       color: Colors.white,
                     ),
                   ),
@@ -590,19 +617,22 @@ class _EventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24.r),
+          borderRadius: BorderRadius.circular(isTablet ? 24.0 : 24.r),
           image: DecorationImage(
             image: AssetImage(assetPath),
             fit: BoxFit.cover,
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.all(isTablet ? 16.0 : 16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -610,21 +640,21 @@ class _EventCard extends StatelessWidget {
               Text(
                 title,
                 style: GoogleFonts.antonSc(
-                  fontSize: 28.sp,
+                  fontSize: isTablet ? 24.0 : 28.sp,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                   letterSpacing: 0.4,
                 ),
               ),
-              SizedBox(height: 6.h),
+              SizedBox(height: isTablet ? 6.0 : 6.h),
               Text(
                 subtitle,
                 style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
+                  fontSize: isTablet ? 13.0 : 14.sp,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 18.h),
+              SizedBox(height: isTablet ? 18.0 : 18.h),
               _ArrowButton(
                 backgroundColor: Colors.white,
                 iconColor: AppColors.primary,
@@ -645,13 +675,16 @@ class _PinkActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 160.h,
+        height: isTablet ? 160.0 : 160.h,
         decoration: BoxDecoration(
           color: const Color(0xFFF6DDE8),
-          borderRadius: BorderRadius.circular(26.r),
+          borderRadius: BorderRadius.circular(isTablet ? 26.0 : 26.r),
         ),
         child: Stack(
           children: [
@@ -663,14 +696,17 @@ class _PinkActionCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+              padding: EdgeInsets.symmetric(
+                horizontal: isTablet ? 20.0 : 20.w,
+                vertical: isTablet ? 18.0 : 18.h,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     style: GoogleFonts.antonSc(
-                      fontSize: 28.sp,
+                      fontSize: isTablet ? 24.0 : 28.sp,
                       fontWeight: FontWeight.normal,
                       color: const Color(0xFF1A1A2E),
                     ),
@@ -705,10 +741,13 @@ class _MiniVideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22.r),
+      borderRadius: BorderRadius.circular(isTablet ? 22.0 : 22.r),
       child: SizedBox(
-        width: 210.w,
+        width: isTablet ? 210.0 : 210.w,
         child: Stack(
           children: [
             Positioned.fill(child: Image.asset(assetPath, fit: BoxFit.cover)),
@@ -717,7 +756,7 @@ class _MiniVideoCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.black.withOpacity(0.65),
+                      Colors.black.withValues(alpha: 0.65),
                       Colors.transparent,
                     ],
                     begin: Alignment.bottomCenter,
@@ -727,56 +766,59 @@ class _MiniVideoCard extends StatelessWidget {
               ),
             ),
             Positioned(
-              left: 12.w,
-              top: 12.h,
+              left: isTablet ? 12.0 : 12.w,
+              top: isTablet ? 12.0 : 12.h,
               child: Container(
-                width: 34.w,
-                height: 34.w,
+                width: isTablet ? 34.0 : 34.w,
+                height: isTablet ? 34.0 : 34.w,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.play_arrow_rounded),
               ),
             ),
             Positioned(
-              right: 12.w,
-              top: 12.h,
+              right: isTablet ? 12.0 : 12.w,
+              top: isTablet ? 12.0 : 12.h,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 8.0 : 8.w,
+                  vertical: isTablet ? 4.0 : 4.h,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(isTablet ? 12.0 : 12.r),
                 ),
                 child: Text(
                   duration,
                   style: GoogleFonts.poppins(
-                    fontSize: 11.sp,
+                    fontSize: isTablet ? 11.0 : 11.sp,
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
             Positioned(
-              left: 12.w,
-              right: 12.w,
-              bottom: 14.h,
+              left: isTablet ? 12.0 : 12.w,
+              right: isTablet ? 12.0 : 12.w,
+              bottom: isTablet ? 14.0 : 14.h,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 14.sp,
+                      fontSize: isTablet ? 13.0 : 14.sp,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 6.h),
+                  SizedBox(height: isTablet ? 6.0 : 6.h),
                   Text(
                     subtitle,
                     style: GoogleFonts.poppins(
-                      fontSize: 11.sp,
+                      fontSize: isTablet ? 10.0 : 11.sp,
                       color: Colors.white70,
                     ),
                   ),
@@ -805,13 +847,15 @@ class _FundraisingGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
     final double factor = goal > 0 ? (achieved / goal).clamp(0.0, 1.0) : 0.0;
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFFF6DDE8),
-        borderRadius: BorderRadius.circular(26.r),
+        borderRadius: BorderRadius.circular(isTablet ? 26.0 : 26.r),
       ),
       child: Stack(
         children: [
@@ -820,43 +864,43 @@ class _FundraisingGoalCard extends StatelessWidget {
             right: 0,
             child: ClipRRect(
               borderRadius: BorderRadius.only(
-                topRight: Radius.circular(26.r),
-                bottomRight: Radius.circular(26.r),
+                topRight: Radius.circular(isTablet ? 26.0 : 26.r),
+                bottomRight: Radius.circular(isTablet ? 26.0 : 26.r),
               ),
               child: Image.asset(
                 'assets/images/eventpink.png',
-                width: 110.w,
+                width: isTablet ? 110.0 : 110.w,
                 fit: BoxFit.cover,
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.all(20.w),
+            padding: EdgeInsets.all(isTablet ? 20.0 : 20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: 12.w,
-                    vertical: 8.h,
+                    horizontal: isTablet ? 12.0 : 12.w,
+                    vertical: isTablet ? 8.0 : 8.h,
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8CBE1),
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
                         Icons.access_time_rounded,
-                        size: 14.sp,
+                        size: isTablet ? 14.0 : 14.sp,
                         color: const Color(0xFF1A1A2E),
                       ),
-                      SizedBox(width: 6.w),
+                      SizedBox(width: isTablet ? 6.0 : 6.w),
                       Text(
                         remainingTime,
                         style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
+                          fontSize: isTablet ? 12.0 : 12.sp,
                           fontWeight: FontWeight.w500,
                           color: const Color(0xFF1A1A2E),
                         ),
@@ -864,64 +908,68 @@ class _FundraisingGoalCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: isTablet ? 24.0 : 24.h),
                 Row(
                   children: [
                     Icon(
                       Icons.storefront_outlined,
-                      size: 28.sp,
+                      size: isTablet ? 26.0 : 28.sp,
                       color: const Color(0xFF1A1A2E),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: isTablet ? 8.0 : 8.w),
                     Text(
                       displayName.toUpperCase(),
                       style: GoogleFonts.antonSc(
-                        fontSize: 24.sp,
+                        fontSize: isTablet ? 22.0 : 24.sp,
                         color: const Color(0xFF1A1A2E),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 24.h),
+                SizedBox(height: isTablet ? 24.0 : 24.h),
                 Text(
                   'Your Fundraising Goal',
                   style: GoogleFonts.poppins(
-                    fontSize: 16.sp,
+                    fontSize: isTablet ? 15.0 : 16.sp,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF262626).withOpacity(0.7),
+                    color: const Color(0xFF262626).withValues(alpha: 0.7),
                   ),
                 ),
-                SizedBox(height: 10.h),
+                SizedBox(height: isTablet ? 10.0 : 10.h),
                 Stack(
                   children: [
                     Container(
-                      height: 8.h,
+                      height: isTablet ? 8.0 : 8.h,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(8.r),
+                        borderRadius: BorderRadius.circular(
+                          isTablet ? 8.0 : 8.r,
+                        ),
                       ),
                     ),
                     FractionallySizedBox(
                       widthFactor: factor,
                       child: Container(
-                        height: 8.h,
+                        height: isTablet ? 8.0 : 8.h,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(8.r),
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 8.0 : 8.r,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 10.h),
+                SizedBox(height: isTablet ? 10.0 : 10.h),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '\$${achieved.toStringAsFixed(0)}',
                       style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
+                        fontSize: isTablet ? 17.0 : 18.sp,
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
                       ),
@@ -929,9 +977,9 @@ class _FundraisingGoalCard extends StatelessWidget {
                     Text(
                       '\$${goal.toStringAsFixed(0)}',
                       style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
+                        fontSize: isTablet ? 17.0 : 18.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1A1A2E).withOpacity(0.6),
+                        color: const Color(0xFF1A1A2E).withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -953,12 +1001,19 @@ class _ArrowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return Container(
-      width: 40.w,
-      height: 40.w,
+      width: isTablet ? 40.0 : 40.w,
+      height: isTablet ? 40.0 : 40.w,
       decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
       child: Center(
-        child: Icon(Icons.arrow_outward_rounded, color: iconColor, size: 24.sp),
+        child: Icon(
+          Icons.arrow_outward_rounded,
+          color: iconColor,
+          size: isTablet ? 24.0 : 24.sp,
+        ),
       ),
     );
   }

@@ -25,6 +25,9 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -32,7 +35,7 @@ class CustomTextField extends StatelessWidget {
       onChanged: onChanged,
       cursorColor: AppColors.primary,
       style: GoogleFonts.poppins(
-        fontSize: 16.sp,
+        fontSize: isTablet ? 16.0 : 16.sp,
         color: AppColors.textPrimary,
         fontWeight: FontWeight.w500,
       ),
@@ -40,21 +43,21 @@ class CustomTextField extends StatelessWidget {
         hintText: hintText,
         suffixIcon: suffixIcon,
         hintStyle: GoogleFonts.poppins(
-          fontSize: 15.sp,
+          fontSize: isTablet ? 15.0 : 15.sp,
           color: AppColors.textHint,
           fontWeight: FontWeight.w400,
         ),
-        contentPadding: EdgeInsets.symmetric(vertical: 12.h),
+        contentPadding: EdgeInsets.symmetric(vertical: isTablet ? 12.0 : 12.h),
         enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
             color: const Color(0xFFE0E0E0),
-            width: 1.5.w,
+            width: isTablet ? 1.5 : 1.5.w,
           ),
         ),
         focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
             color: AppColors.primary,
-            width: 2.0.w,
+            width: isTablet ? 2.0 : 2.0.w,
           ),
         ),
       ),

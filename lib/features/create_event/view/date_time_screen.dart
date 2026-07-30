@@ -72,184 +72,219 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
   @override
   Widget build(BuildContext context) {
     final timeLabel = _formatTime(_selectedDateTime);
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.arrow_back),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 500.0 : double.infinity,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                    vertical: isTablet ? 10.0 : 10.h,
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'Date and time',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back),
                       ),
-                    ),
-                  ),
-                  SizedBox(width: 40.w),
-                ],
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text(
-                '${widget.durationDays}-day fundraising\nwindow',
-                style: GoogleFonts.antonSc(
-                  fontSize: 36.sp,
-                  fontWeight: FontWeight.normal,
-                  height: 1.1,
-                  color: const Color(0xFF1A1A2E),
-                ),
-              ),
-            ),
-            SizedBox(height: 10.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Text(
-                'Choose Your Start Date',
-                style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black38,
-                ),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Container(
-                padding: EdgeInsets.all(12.w),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.r),
-                  border: Border.all(color: const Color(0xFFE7E7EC)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _formatMonthYear(_visibleMonth),
-                          style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A1A2E),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'Date and time',
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 18.0 : 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
                           ),
                         ),
+                      ),
+                      SizedBox(width: isTablet ? 40.0 : 40.w),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                  ),
+                  child: Text(
+                    '${widget.durationDays}-day fundraising\nwindow',
+                    style: GoogleFonts.antonSc(
+                      fontSize: isTablet ? 36.0 : 36.sp,
+                      fontWeight: FontWeight.normal,
+                      height: 1.1,
+                      color: const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                ),
+                SizedBox(height: isTablet ? 10.0 : 10.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                  ),
+                  child: Text(
+                    'Choose Your Start Date',
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 14.0 : 14.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black38,
+                    ),
+                  ),
+                ),
+                SizedBox(height: isTablet ? 16.0 : 16.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                  ),
+                  child: Container(
+                    padding: EdgeInsets.all(isTablet ? 12.0 : 12.w),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(
+                        isTablet ? 18.0 : 18.r,
+                      ),
+                      border: Border.all(color: const Color(0xFFE7E7EC)),
+                    ),
+                    child: Column(
+                      children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            IconButton(
-                              onPressed: _isPrevMonthDisabled()
-                                  ? null
-                                  : () => _changeMonth(-1),
-                              icon: const Icon(Icons.chevron_left),
-                              color: _isPrevMonthDisabled()
-                                  ? Colors.black26
-                                  : const Color(0xFF1A1A2E),
-                              iconSize: 20.sp,
+                            Text(
+                              _formatMonthYear(_visibleMonth),
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 14.0 : 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
                             ),
-                            IconButton(
-                              onPressed: () => _changeMonth(1),
-                              icon: const Icon(Icons.chevron_right),
-                              color: const Color(0xFF1A1A2E),
-                              iconSize: 20.sp,
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: _isPrevMonthDisabled()
+                                      ? null
+                                      : () => _changeMonth(-1),
+                                  icon: const Icon(Icons.chevron_left),
+                                  color: _isPrevMonthDisabled()
+                                      ? Colors.black26
+                                      : const Color(0xFF1A1A2E),
+                                  iconSize: isTablet ? 20.0 : 20.sp,
+                                ),
+                                IconButton(
+                                  onPressed: () => _changeMonth(1),
+                                  icon: const Icon(Icons.chevron_right),
+                                  color: const Color(0xFF1A1A2E),
+                                  iconSize: isTablet ? 20.0 : 20.sp,
+                                ),
+                              ],
                             ),
                           ],
                         ),
+                        SizedBox(height: isTablet ? 6.0 : 6.h),
+                        _buildCalendarGrid(isTablet),
                       ],
                     ),
-                    SizedBox(height: 6.h),
-                    _buildCalendarGrid(),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(height: 18.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30.r),
-                  border: Border.all(color: const Color(0xFFE7E7EC)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Start time',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.sp,
-                        color: Colors.black38,
-                      ),
+                SizedBox(height: isTablet ? 18.0 : 18.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                  ),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 16.0 : 16.w,
+                      vertical: isTablet ? 12.0 : 12.h,
                     ),
-                    GestureDetector(
-                      onTap: _pickTime,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 8.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF3F3F7),
-                          borderRadius: BorderRadius.circular(20.r),
-                        ),
-                        child: Text(
-                          timeLabel,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(
+                        isTablet ? 30.0 : 30.r,
+                      ),
+                      border: Border.all(color: const Color(0xFFE7E7EC)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Start time',
                           style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A1A2E),
+                            fontSize: isTablet ? 14.0 : 14.sp,
+                            color: Colors.black38,
                           ),
                         ),
+                        GestureDetector(
+                          onTap: _pickTime,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isTablet ? 16.0 : 16.w,
+                              vertical: isTablet ? 8.0 : 8.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F3F7),
+                              borderRadius: BorderRadius.circular(
+                                isTablet ? 20.0 : 20.r,
+                              ),
+                            ),
+                            child: Text(
+                              timeLabel,
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 14.0 : 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 20.0 : 20.w,
+                    vertical: isTablet ? 18.0 : 18.h,
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: isTablet ? 56.0 : 56.h,
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          Navigator.of(context).pop(_selectedDateTime),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 30.0 : 30.r,
+                          ),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Save',
+                        style: GoogleFonts.poppins(
+                          fontSize: isTablet ? 16.0 : 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56.h,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(_selectedDateTime),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Save',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -262,7 +297,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
     return '$hour:$minute $period';
   }
 
-  Widget _buildCalendarGrid() {
+  Widget _buildCalendarGrid(bool isTablet) {
     final days = _daysForMonth(_visibleMonth);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -272,7 +307,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
       shrinkWrap: true,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
-        mainAxisSpacing: 6.h,
+        mainAxisSpacing: isTablet ? 6.0 : 6.h,
         crossAxisSpacing: 0,
         childAspectRatio: 1.2,
       ),
@@ -294,8 +329,8 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
         BorderRadius? rangeRadius;
         if (isRangeStart || isRangeEnd) {
           rangeRadius = BorderRadius.horizontal(
-            left: Radius.circular(isRangeStart ? 14.r : 0),
-            right: Radius.circular(isRangeEnd ? 14.r : 0),
+            left: Radius.circular(isRangeStart ? (isTablet ? 14.0 : 14.r) : 0),
+            right: Radius.circular(isRangeEnd ? (isTablet ? 14.0 : 14.r) : 0),
           );
         }
 
@@ -311,7 +346,7 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
               if (isInRange)
                 Container(
                   width: double.infinity,
-                  height: 28.h,
+                  height: isTablet ? 28.0 : 28.h,
                   decoration: BoxDecoration(
                     color: rangeColor,
                     borderRadius: rangeRadius,
@@ -319,8 +354,8 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
                 ),
               if (isSelected)
                 Container(
-                  width: 30.w,
-                  height: 30.w,
+                  width: isTablet ? 30.0 : 30.w,
+                  height: isTablet ? 30.0 : 30.w,
                   decoration: BoxDecoration(
                     color: selectedColor,
                     shape: BoxShape.circle,
@@ -329,15 +364,15 @@ class _DateTimeScreenState extends State<DateTimeScreen> {
               Text(
                 '${day.day}',
                 style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
+                  fontSize: isTablet ? 14.0 : 14.sp,
                   fontWeight: FontWeight.w600,
                   color: isSelected
                       ? Colors.white
                       : isPast
-                          ? Colors.black12
-                          : isCurrentMonth
-                              ? const Color(0xFF1A1A2E)
-                              : Colors.black26,
+                      ? Colors.black12
+                      : isCurrentMonth
+                      ? const Color(0xFF1A1A2E)
+                      : Colors.black26,
                 ),
               ),
             ],

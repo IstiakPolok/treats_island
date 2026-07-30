@@ -14,8 +14,10 @@ class OtpCodeScreen extends StatefulWidget {
 }
 
 class _OtpCodeScreenState extends State<OtpCodeScreen> {
-  final List<TextEditingController> _controllers =
-      List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _controllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   @override
@@ -136,11 +138,9 @@ class _OtpCodeScreenState extends State<OtpCodeScreen> {
                   onPressed: () {
                     final controller =
                         Get.isRegistered<ScheduleEventController>()
-                            ? Get.find<ScheduleEventController>()
-                            : Get.put(ScheduleEventController());
-                    Get.off(
-                      () => EventOverviewScreen(controller: controller),
-                    );
+                        ? Get.find<ScheduleEventController>()
+                        : Get.put(ScheduleEventController());
+                    Get.off(() => EventOverviewScreen(controller: controller));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: buttonColor,

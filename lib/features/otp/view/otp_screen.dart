@@ -14,206 +14,229 @@ class OTPScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(OTPController());
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+    final logoSize = isTablet ? 200.0 : 160.r;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 28.0.w),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: IntrinsicHeight(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 20.h),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 420.0 : double.infinity,
+            ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isTablet ? 24.0 : 28.0.w,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
 
-                      // ── Centered Logo ──────────────────────────────────────────
-                      Image.asset(
-                        AppAssets.splashLogo,
-                        width: 200.w,
-                        height: 200.h,
-                        fit: BoxFit.contain,
-                      ),
-
-                      SizedBox(height: 20.h),
-
-                      // ── Header Text ──────────────────────────────────────────
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          'OTP CODE\nVERIFICATION',
-                          style: GoogleFonts.antonSc(
-                            fontSize: 48.sp,
-                            fontWeight: FontWeight.normal,
-                            color: const Color(0xFF1A1A2E),
-                            height: 1.1,
+                          // ── Centered Logo ──────────────────────────────────────────
+                          Image.asset(
+                            AppAssets.splashLogo,
+                            width: logoSize,
+                            height: logoSize,
+                            fit: BoxFit.contain,
                           ),
-                        ),
-                      ),
 
-                      SizedBox(height: 16.h),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
 
-                      // ── Subtitle ─────────────────────────────────────────────
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Text(
-                          'Code Has Been Sent To ${controller.phone}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(
-                              0xFF1A1A2E,
-                            ).withValues(alpha: 0.8),
+                          // ── Header Text ──────────────────────────────────────────
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              'OTP CODE\nVERIFICATION',
+                              style: GoogleFonts.antonSc(
+                                fontSize: isTablet ? 38.0 : 48.sp,
+                                fontWeight: FontWeight.normal,
+                                color: const Color(0xFF1A1A2E),
+                                height: 1.1,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
 
-                      SizedBox(height: 32.h),
+                          SizedBox(height: isTablet ? 16.0 : 16.h),
 
-                      // ── OTP Input Fields ──────────────────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(
-                          6,
-                          (index) => _buildOTPField(context, index, controller),
-                        ),
-                      ),
+                          // ── Subtitle ─────────────────────────────────────────────
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              'Code Has Been Sent To ${controller.phone}',
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 14.0 : 14.sp,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(
+                                  0xFF1A1A2E,
+                                ).withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ),
 
-                      SizedBox(height: 16.h),
+                          SizedBox(height: isTablet ? 32.0 : 32.h),
 
-                      // ── Resend / Timer ────────────────────────────────────────
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Obx(() {
-                          if (controller.canResend.value) {
-                            return GestureDetector(
-                              onTap: controller.resendCode,
-                              child: RichText(
-                                text: TextSpan(
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14.sp,
-                                    color: const Color(
-                                      0xFF1A1A2E,
-                                    ).withValues(alpha: 0.6),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  children: [
-                                    const TextSpan(
-                                      text: 'Didn’t receive the code? ',
+                          // ── OTP Input Fields ──────────────────────────────────────
+                          AutofillGroup(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: List.generate(
+                                6,
+                                (index) =>
+                                    _buildOTPField(context, index, controller),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: isTablet ? 16.0 : 16.h),
+
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Obx(() {
+                              if (controller.canResend.value) {
+                                return GestureDetector(
+                                  onTap: controller.resendCode,
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 14.0 : 14.sp,
+                                        color: const Color(
+                                          0xFF1A1A2E,
+                                        ).withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      children: [
+                                        const TextSpan(
+                                          text: 'Didn’t receive the code? ',
+                                        ),
+                                        TextSpan(
+                                          text: 'Resend',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: isTablet ? 14.0 : 14.sp,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    TextSpan(
-                                      text: 'Resend',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w700,
+                                  ),
+                                );
+                              } else {
+                                return RichText(
+                                  text: TextSpan(
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isTablet ? 14.0 : 14.sp,
+                                      color: const Color(
+                                        0xFF1A1A2E,
+                                      ).withValues(alpha: 0.6),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    children: [
+                                      const TextSpan(text: 'Resend code in '),
+                                      TextSpan(
+                                        text:
+                                            '${controller.secondsRemaining.value}s',
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: isTablet ? 14.0 : 14.sp,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            }),
+                          ),
+
+                          SizedBox(height: isTablet ? 30.0 : 30.h),
+
+                          // ── Error Message ────────────────────────────────────────
+                          Obx(() {
+                            if (controller.hasError.value) {
+                              return Container(
+                                padding: EdgeInsets.all(isTablet ? 12.0 : 12.r),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFEBEE),
+                                  border: Border.all(
+                                    color: const Color(0xFFEF9A9A),
+                                  ),
+                                  borderRadius: BorderRadius.circular(
+                                    isTablet ? 20.0 : 20.r,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.red,
+                                      size: isTablet ? 20.0 : 20.sp,
+                                    ),
+                                    SizedBox(width: isTablet ? 8.0 : 8.w),
+                                    Expanded(
+                                      child: Text(
+                                        'Oh no! The code you entered is incorrect.',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isTablet ? 13.0 : 13.sp,
+                                          color: Colors.red.shade800,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
                                   ],
                                 ),
-                              ),
-                            );
-                          } else {
-                            return RichText(
-                              text: TextSpan(
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14.sp,
-                                  color: const Color(
-                                    0xFF1A1A2E,
-                                  ).withValues(alpha: 0.6),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                children: [
-                                  const TextSpan(text: 'Resend code in '),
-                                  TextSpan(
-                                    text:
-                                        '${controller.secondsRemaining.value}s',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 14.sp,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                        }),
-                      ),
-
-                      SizedBox(height: 30.h),
-
-                      // ── Error Message ────────────────────────────────────────
-                      Obx(() {
-                        if (controller.hasError.value) {
-                          return Container(
-                            padding: EdgeInsets.all(12.r),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFEBEE),
-                              border: Border.all(
-                                color: const Color(0xFFEF9A9A),
-                              ),
-                              borderRadius: BorderRadius.circular(20.r),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  color: Colors.red,
-                                  size: 20.sp,
-                                ),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    'Oh no! The code you entered is incorrect.',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13.sp,
-                                      color: Colors.red.shade800,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      }),
-
-                      const Spacer(),
-
-                      // ── Verification Button ──────────────────────────────────
-                      Obx(() {
-                        return controller.isLoading.value
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppColors.primary,
-                                  ),
-                                ),
-                              )
-                            : PrimaryButton(
-                                text: controller.hasError.value
-                                    ? 'Try again?'
-                                    : 'Send verification code',
-                                backgroundColor: controller.hasError.value
-                                    ? Colors.red
-                                    : AppColors.primary,
-                                onPressed: controller.verifyOTP,
                               );
-                      }),
+                            }
+                            return const SizedBox.shrink();
+                          }),
 
-                      SizedBox(height: 20.h),
-                    ],
+                          const Spacer(),
+
+                          // ── Custom Numeric Keypad ────────────────────────────────
+                          _buildCustomKeypad(context, controller),
+
+                          SizedBox(height: isTablet ? 16.0 : 16.h),
+
+                          // ── Verification Button ──────────────────────────────────
+                          Obx(() {
+                            return controller.isLoading.value
+                                ? Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        AppColors.primary,
+                                      ),
+                                    ),
+                                  )
+                                : PrimaryButton(
+                                    text: controller.hasError.value
+                                        ? 'Try again?'
+                                        : 'Submit',
+                                    backgroundColor: controller.hasError.value
+                                        ? Colors.red
+                                        : AppColors.primary,
+                                    onPressed: controller.verifyOTP,
+                                  );
+                          }),
+
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -224,41 +247,154 @@ class OTPScreen extends StatelessWidget {
     int index,
     OTPController controller,
   ) {
-    return Container(
-      width: 48.w,
-      height: 48.h,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.pink.withValues(alpha: 0.05),
-        border: Border.all(
-          color: Colors.pink.withValues(alpha: 0.3),
-          width: 1.w,
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
+    return Obx(() {
+      final isActive = controller.activeIndex.value == index;
+      return Container(
+        width: isTablet ? 56.0 : 48.r,
+        height: isTablet ? 56.0 : 48.r,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.pink.withValues(alpha: 0.05),
+          border: Border.all(
+            color: isActive
+                ? AppColors.primary
+                : Colors.pink.withValues(alpha: 0.3),
+            width: isActive ? (isTablet ? 2.0 : 2.w) : (isTablet ? 1.0 : 1.w),
+          ),
         ),
+        child: Center(
+          child: TextField(
+            controller: controller.otpControllers[index],
+            focusNode: controller.focusNodes[index],
+            readOnly: true,
+            showCursor: false,
+            textAlign: TextAlign.center,
+            textAlignVertical: TextAlignVertical.center,
+            keyboardType: TextInputType.none,
+            style: GoogleFonts.poppins(
+              fontSize: isTablet ? 18.0 : 18.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            decoration: const InputDecoration(
+              counterText: '',
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+            ),
+            onTap: () {
+              controller.activeIndex.value = index;
+            },
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildCustomKeypad(BuildContext context, OTPController controller) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
+    Widget buildKey(String label, {VoidCallback? onTap, Widget? icon}) {
+      return Expanded(
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(30.r),
+          child: Container(
+            height: isTablet ? 56.0 : 50.h,
+            alignment: Alignment.center,
+            child:
+                icon ??
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: isTablet ? 24.0 : 24.sp,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+          ),
+        ),
+      );
+    }
+
+    void onNumberPressed(String digit) {
+      controller.hasError.value = false;
+      final index = controller.activeIndex.value;
+      if (index >= 0 && index < 6) {
+        controller.otpControllers[index].text = digit;
+        if (index < 5) {
+          controller.activeIndex.value = index + 1;
+        }
+      }
+      if (controller.otpControllers.every((c) => c.text.isNotEmpty)) {
+        controller.verifyOTP();
+      }
+    }
+
+    void onBackspacePressed() {
+      controller.hasError.value = false;
+      final index = controller.activeIndex.value;
+      if (index >= 0 && index < 6) {
+        if (controller.otpControllers[index].text.isNotEmpty) {
+          controller.otpControllers[index].text = '';
+        } else if (index > 0) {
+          controller.activeIndex.value = index - 1;
+          controller.otpControllers[index - 1].text = '';
+        }
+      }
+    }
+
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 12.0 : 12.w,
+        vertical: isTablet ? 8.0 : 8.h,
       ),
-      child: Center(
-        child: TextField(
-          controller: controller.otpControllers[index],
-          focusNode: controller.focusNodes[index],
-          textAlign: TextAlign.center,
-          keyboardType: TextInputType.number,
-          maxLength: 1,
-          style: GoogleFonts.poppins(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              buildKey('1', onTap: () => onNumberPressed('1')),
+              buildKey('2', onTap: () => onNumberPressed('2')),
+              buildKey('3', onTap: () => onNumberPressed('3')),
+            ],
           ),
-          decoration: const InputDecoration(
-            counterText: '',
-            border: InputBorder.none,
+          SizedBox(height: isTablet ? 10.0 : 10.h),
+          Row(
+            children: [
+              buildKey('4', onTap: () => onNumberPressed('4')),
+              buildKey('5', onTap: () => onNumberPressed('5')),
+              buildKey('6', onTap: () => onNumberPressed('6')),
+            ],
           ),
-          onChanged: (value) {
-            if (value.length == 1 && index < 5) {
-              controller.focusNodes[index + 1].requestFocus();
-            } else if (value.isEmpty && index > 0) {
-              controller.focusNodes[index - 1].requestFocus();
-            }
-          },
-        ),
+          SizedBox(height: isTablet ? 10.0 : 10.h),
+          Row(
+            children: [
+              buildKey('7', onTap: () => onNumberPressed('7')),
+              buildKey('8', onTap: () => onNumberPressed('8')),
+              buildKey('9', onTap: () => onNumberPressed('9')),
+            ],
+          ),
+          SizedBox(height: isTablet ? 10.0 : 10.h),
+          Row(
+            children: [
+              const Expanded(child: SizedBox.shrink()),
+              buildKey('0', onTap: () => onNumberPressed('0')),
+              buildKey(
+                '',
+                onTap: onBackspacePressed,
+                icon: Icon(
+                  Icons.backspace_outlined,
+                  color: const Color(0xFF1A1A2E),
+                  size: isTablet ? 22.0 : 22.sp,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -135,93 +135,112 @@ class _DisplayNameScreenState extends State<DisplayNameScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 650.0 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: isTablet
+                  ? const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0)
+                  : EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: const Icon(Icons.arrow_back),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(Icons.arrow_back),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(Icons.info_outline),
+                      ),
+                    ],
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(Icons.info_outline),
+                  SizedBox(height: isTablet ? 24.0 : 24.h),
+                  RichText(
+                    text: TextSpan(
+                      style: GoogleFonts.antonSc(
+                        fontSize: isTablet ? 28.0 : 28.sp,
+                        color: const Color(0xFF1A1A2E),
+                      ),
+                      children: const [
+                        TextSpan(text: 'enter '),
+                        TextSpan(
+                          text: 'the name of\nyour pop-up store? ',
+                          style: TextStyle(color: Color(0xFFFF6FB6)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 16.0 : 16.h),
+                  TextField(
+                    controller: _nameController,
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 14.0 : 14.sp,
+                      color: const Color(0xFF1A1A2E),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Full name',
+                      hintStyle: GoogleFonts.poppins(
+                        fontSize: isTablet ? 12.0 : 12.sp,
+                        color: Colors.black38,
+                      ),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFEDEDF2)),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFFF6FB6)),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: isTablet ? 24.0 : 20.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: isTablet ? 50.0 : 50.h,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _saveName,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF6FB6),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 30.0 : 30.r,
+                          ),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Save',
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 14.0 : 14.sp,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 24.h),
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.antonSc(
-                    fontSize: 28.sp,
-                    color: const Color(0xFF1A1A2E),
-                  ),
-                  children: const [
-                    TextSpan(text: 'enter '),
-                    TextSpan(
-                      text: 'the name of\nyour pop-up store? ',
-                      style: TextStyle(color: Color(0xFFFF6FB6)),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: 'Full name',
-                  hintStyle: GoogleFonts.poppins(
-                    fontSize: 12.sp,
-                    color: Colors.black38,
-                  ),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFEDEDF2)),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFF6FB6)),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20.h),
-              SizedBox(
-                width: double.infinity,
-                height: 50.h,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveName,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF6FB6),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          'Save',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

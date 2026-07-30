@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -68,6 +69,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   Widget _buildShopHeroCard() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return GestureDetector(
       onTap: () => Get.to(() => const CreatePopUpStoreScreen()),
       child: ClipRRect(
@@ -97,7 +99,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           Text(
                             'CREATE YOUR POP-UP STORE',
                             style: GoogleFonts.antonSc(
-                              fontSize: 22.sp,
+                              fontSize: isTablet ? 22.0 : 22.sp,
                               color: const Color(0xFF1A1A2E),
                             ),
                           ),
@@ -105,7 +107,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           Text(
                             'Your Virtual Pop-Up Store',
                             style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
+                              fontSize: isTablet ? 12.0 : 12.sp,
                               color: Colors.black54,
                             ),
                           ),
@@ -140,6 +142,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     BuildContext context,
     Map<String, dynamic> fundraiser,
   ) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     try {
       final String shareLink = fundraiser['share_link']?.toString() ?? '';
       final String shopName = fundraiser['name']?.toString() ?? 'My Shop';
@@ -168,184 +171,213 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               top: 24.h,
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 30.h,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12.r),
-                  child: shopImageUrl.isNotEmpty
-                      ? Image.network(
-                          shopImageUrl,
-                          width: 400.w,
-                          height: 400.w,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.asset(
-                                'assets/placeholder/link.png',
-                                width: 400.w,
-                                height: 400.w,
-                                fit: BoxFit.cover,
-                              ),
-                        )
-                      : Image.asset(
-                          'assets/placeholder/link.png',
-                          width: 400.w,
-                          height: 400.w,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-                // Pull bar
-                Container(
-                  width: 40.w,
-                  height: 4.h,
-                  decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(2.r),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: shopImageUrl.isNotEmpty
+                        ? Image.network(
+                            shopImageUrl,
+                            width: isTablet ? 280.0 : 300.w,
+                            height: isTablet ? 280.0 : 300.w,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.asset(
+                                  'assets/icons/icon2.png',
+                                  width: isTablet ? 280.0 : 300.w,
+                                  height: isTablet ? 280.0 : 300.w,
+                                  fit: BoxFit.cover,
+                                ),
+                          )
+                        : Image.asset(
+                            'assets/icons/icon2.png',
+                            width: isTablet ? 280.0 : 300.w,
+                            height: isTablet ? 280.0 : 300.w,
+                            fit: BoxFit.cover,
+                          ),
                   ),
-                ),
+                  // Pull bar
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.black12,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
 
-                Container(
-                  padding: EdgeInsets.all(16.w),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8F8FB),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(color: const Color(0xFFEAEAEE)),
+                  Container(
+                    padding: EdgeInsets.all(16.w),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8F8FB),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(color: const Color(0xFFEAEAEE)),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 16.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                ' $shopName Pop-Up Store',
+
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 15.0 : 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1A1A2E),
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'Support my fundraising campaign!',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 12.0 : 12.sp,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
+                  SizedBox(height: 24.h),
+                  // Link display and copy button
+                  Row(
                     children: [
-                      SizedBox(width: 16.w),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              ' $shopName Pop-Up Store',
-
-                              style: GoogleFonts.poppins(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1A1A2E),
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              'Support my fundraising campaign!',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12.sp,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 24.h),
-                // Link display and copy button
-                Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: shareLink.isNotEmpty
-                            ? () async {
-                                final Uri url = Uri.parse(shareLink);
-                                try {
-                                  if (!await launchUrl(
-                                    url,
-                                    mode: LaunchMode.externalApplication,
-                                  )) {
+                        child: GestureDetector(
+                          onTap: shareLink.isNotEmpty
+                              ? () async {
+                                  final Uri url = Uri.parse(shareLink);
+                                  try {
+                                    if (!await launchUrl(
+                                      url,
+                                      mode: LaunchMode.externalApplication,
+                                    )) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'Could not launch $shareLink',
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        backgroundColor: Colors.red.withAlpha(
+                                          26,
+                                        ),
+                                        colorText: Colors.black,
+                                      );
+                                    }
+                                  } catch (e) {
                                     Get.snackbar(
                                       'Error',
-                                      'Could not launch $shareLink',
+                                      'Invalid link format',
                                       snackPosition: SnackPosition.BOTTOM,
                                       backgroundColor: Colors.red.withAlpha(26),
                                       colorText: Colors.black,
                                     );
                                   }
-                                } catch (e) {
-                                  Get.snackbar(
-                                    'Error',
-                                    'Invalid link format',
-                                    snackPosition: SnackPosition.BOTTOM,
-                                    backgroundColor: Colors.red.withAlpha(26),
-                                    colorText: Colors.black,
-                                  );
                                 }
-                              }
-                            : null,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 12.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF3F3F7),
-                            borderRadius: BorderRadius.circular(14.r),
-                          ),
-                          child: Text(
-                            shareLink.isNotEmpty
-                                ? shareLink
-                                : 'No link available',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13.sp,
-                              color: Colors.black87,
-                              decoration: shareLink.isNotEmpty
-                                  ? TextDecoration.underline
-                                  : null,
+                              : null,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16.w,
+                              vertical: 12.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF3F3F7),
+                              borderRadius: BorderRadius.circular(14.r),
+                            ),
+                            child: Text(
+                              shareLink.isNotEmpty
+                                  ? shareLink
+                                  : 'No link available',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 13.0 : 13.sp,
+                                color: Colors.black87,
+                                decoration: shareLink.isNotEmpty
+                                    ? TextDecoration.underline
+                                    : null,
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        Clipboard.setData(ClipboardData(text: shareLink));
-                        Get.snackbar(
-                          'Copied',
-                          'Link copied to clipboard!',
-                          snackPosition: SnackPosition.BOTTOM,
-                          backgroundColor: Colors.black.withAlpha(26),
-                          colorText: Colors.black,
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(12.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1A1A2E),
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                        child: Icon(
-                          Icons.copy,
-                          color: Colors.white,
-                          size: 20.sp,
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    GestureDetector(
-                      onTap: () {
-                        SharePlus.instance.share(ShareParams(text: shareLink));
-                      },
-                      child: Container(
-                        padding: EdgeInsets.all(12.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF6FB6),
-                          borderRadius: BorderRadius.circular(14.r),
-                        ),
-                        child: Icon(
-                          Icons.share,
-                          color: Colors.white,
-                          size: 20.sp,
+                      SizedBox(width: 5.w),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: shareLink));
+                          Get.snackbar(
+                            'Copied',
+                            'Link copied to clipboard!',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: Colors.black.withAlpha(26),
+                            colorText: Colors.black,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(12.w),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1A1A2E),
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                          child: Icon(
+                            Icons.copy,
+                            color: Colors.white,
+                            size: 10.sp,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 24.h),
-              ],
+                      SizedBox(width: 5.w),
+                      Builder(
+                        builder: (btnContext) {
+                          return GestureDetector(
+                            onTap: () {
+                              final String shareText = shareLink.isNotEmpty
+                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n$shareLink'
+                                  : shopName.isNotEmpty
+                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!'
+                                  : 'Check out our fundraising Pop-Up Store!';
+
+                              final box =
+                                  btnContext.findRenderObject() as RenderBox?;
+                              final Rect? origin =
+                                  (box != null &&
+                                      box.hasSize &&
+                                      box.size.width > 0 &&
+                                      box.size.height > 0)
+                                  ? (box.localToGlobal(Offset.zero) & box.size)
+                                  : null;
+
+                              Share.share(
+                                shareText,
+                                subject: '$shopName Pop-Up Store',
+                                sharePositionOrigin: origin,
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(12.w),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF6FB6),
+                                borderRadius: BorderRadius.circular(14.r),
+                              ),
+                              child: Icon(
+                                Icons.share,
+                                color: Colors.white,
+                                size: 10.sp,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24.h),
+                ],
+              ),
             ),
           );
         },
@@ -364,6 +396,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   Widget _buildShopActionRow(Map<String, dynamic>? fundraiser) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final goalVal = fundraiser?['goal'];
     final double? parsedGoal = goalVal != null
         ? double.tryParse(goalVal.toString())
@@ -449,7 +482,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         Text(
                           'Total Fundraise',
                           style: GoogleFonts.poppins(
-                            fontSize: 13.sp,
+                            fontSize: isTablet ? 13.0 : 13.sp,
                             fontWeight: FontWeight.w500,
                             color: Colors.black45,
                           ),
@@ -458,7 +491,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         Text(
                           achievedText,
                           style: GoogleFonts.poppins(
-                            fontSize: 28.sp,
+                            fontSize: isTablet ? 28.0 : 28.sp,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFFF6FB6),
                           ),
@@ -466,16 +499,36 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       ],
                     ),
                     GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        final eventData =
+                            widget.controller.createdEvent['event']
+                                as Map<String, dynamic>?;
+                        final int? eventId =
+                            eventData?['id'] as int? ??
+                            widget.controller.createdEvent['id'] as int?;
                         debugPrint(
-                          '=== SHARE LINK TAP: fundraiser = $fundraiser ===',
+                          '🚀 [SHARE LINK TAP] Tapped Share Link Button',
                         );
-                        if (fundraiser != null) {
-                          _showShareBottomSheet(context, fundraiser);
+                        debugPrint(
+                          '🔗 API URL: https://api.treatsislandgo.com/event/$eventId/my-fundraiser/',
+                        );
+
+                        Map<String, dynamic>? data =
+                            fundraiser ??
+                            widget.controller.fundraiserDetails.value;
+                        if (data == null || data.isEmpty) {
+                          data = await _getFundraiserDetails();
+                        }
+
+                        debugPrint('📦 Response Body (Fundraiser Data): $data');
+                        debugPrint('👉 Share Link: ${data?["share_link"]}');
+
+                        if (data != null && context.mounted) {
+                          _showShareBottomSheet(context, data);
                         } else {
                           Get.snackbar(
-                            'Loading',
-                            'Pop-up store details are loading. Please try again.',
+                            'Error',
+                            'Could not load Pop-up store details. Please try again.',
                             snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: Colors.black.withAlpha(26),
                             colorText: Colors.black,
@@ -497,7 +550,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         child: Text(
                           'Share Link',
                           style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
+                            fontSize: isTablet ? 14.0 : 14.sp,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -534,7 +587,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         Text(
                           timeToGo,
                           style: GoogleFonts.poppins(
-                            fontSize: 13.sp,
+                            fontSize: isTablet ? 13.0 : 13.sp,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -547,7 +600,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           TextSpan(
                             text: 'Goal ',
                             style: GoogleFonts.poppins(
-                              fontSize: 13.sp,
+                              fontSize: isTablet ? 13.0 : 13.sp,
                               fontWeight: FontWeight.w500,
                               color: Colors.black45,
                             ),
@@ -555,7 +608,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           TextSpan(
                             text: goalText,
                             style: GoogleFonts.poppins(
-                              fontSize: 15.sp,
+                              fontSize: isTablet ? 15.0 : 15.sp,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -597,7 +650,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     Text(
                       'Fundraising Goal',
                       style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
+                        fontSize: isTablet ? 12.0 : 12.sp,
                         color: Colors.black54,
                       ),
                     ),
@@ -607,7 +660,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         child: Text(
                           'Achieved',
                           style: GoogleFonts.poppins(
-                            fontSize: 12.sp,
+                            fontSize: isTablet ? 12.0 : 12.sp,
                             color: Colors.black54,
                           ),
                         ),
@@ -621,7 +674,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     Text(
                       goalText,
                       style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
+                        fontSize: isTablet ? 18.0 : 18.sp,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1A1A2E),
                       ),
@@ -632,7 +685,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         child: Text(
                           achievedText,
                           style: GoogleFonts.poppins(
-                            fontSize: 18.sp,
+                            fontSize: isTablet ? 18.0 : 18.sp,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFFFF6FB6),
                           ),
@@ -644,16 +697,35 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
             ),
           ),
           GestureDetector(
-            onTap: () {
+            onTap: () async {
+              final eventData =
+                  widget.controller.createdEvent['event']
+                      as Map<String, dynamic>?;
+              final int? eventId =
+                  eventData?['id'] as int? ??
+                  widget.controller.createdEvent['id'] as int?;
               debugPrint(
-                '=== SHARE LINK TAP (not ongoing): fundraiser = $fundraiser ===',
+                '🚀 [SHARE LINK TAP (not ongoing)] Tapped Share Link Button',
               );
-              if (fundraiser != null) {
-                _showShareBottomSheet(context, fundraiser);
+              debugPrint(
+                '🔗 API URL: https://api.treatsislandgo.com/event/$eventId/my-fundraiser/',
+              );
+
+              Map<String, dynamic>? data =
+                  fundraiser ?? widget.controller.fundraiserDetails.value;
+              if (data == null || data.isEmpty) {
+                data = await _getFundraiserDetails();
+              }
+
+              debugPrint('📦 Response Body (Fundraiser Data): $data');
+              debugPrint('👉 Share Link: ${data?["share_link"]}');
+
+              if (data != null && context.mounted) {
+                _showShareBottomSheet(context, data);
               } else {
                 Get.snackbar(
-                  'Loading',
-                  'Pop-up store details are loading. Please try again.',
+                  'Error',
+                  'Could not load Pop-up store details. Please try again.',
                   snackPosition: SnackPosition.BOTTOM,
                   backgroundColor: Colors.black.withAlpha(26),
                   colorText: Colors.black,
@@ -669,7 +741,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               child: Text(
                 'Share Link',
                 style: GoogleFonts.poppins(
-                  fontSize: 11.sp,
+                  fontSize: isTablet ? 11.0 : 11.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
@@ -686,6 +758,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     required String subtitle,
     VoidCallback? onTap,
   }) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -710,7 +783,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
+                      fontSize: isTablet ? 12.0 : 12.sp,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A2E),
                     ),
@@ -719,7 +792,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   Text(
                     subtitle,
                     style: GoogleFonts.poppins(
-                      fontSize: 11.sp,
+                      fontSize: isTablet ? 11.0 : 11.sp,
                       color: Colors.black54,
                     ),
                   ),
@@ -784,12 +857,14 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     alignment: Alignment.bottomRight,
                     child: Padding(
                       padding: EdgeInsets.all(8.r),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.black54,
-                        radius: 20.r,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(50.r),
+                        ),
                         child: Icon(
                           Icons.play_arrow,
-                          size: 32.sp,
+                          size: 26.sp,
                           color: const Color(0xFFFF6FB6),
                         ),
                       ),
@@ -838,6 +913,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     required String title,
     required String subtitle,
   }) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       decoration: BoxDecoration(
@@ -863,7 +939,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   title,
                   style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
+                    fontSize: isTablet ? 12.0 : 12.sp,
                     fontWeight: FontWeight.w600,
                     color: const Color(0xFF1A1A2E),
                   ),
@@ -872,7 +948,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   subtitle,
                   style: GoogleFonts.poppins(
-                    fontSize: 11.sp,
+                    fontSize: isTablet ? 11.0 : 11.sp,
                     color: Colors.black54,
                     height: 1.3,
                   ),
@@ -907,6 +983,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   Widget _buildFundraiseSummaryCard() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
     final double totalSale =
@@ -957,7 +1034,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     Text(
                       'Fundraise Summary',
                       style: GoogleFonts.poppins(
-                        fontSize: 15.sp,
+                        fontSize: isTablet ? 15.0 : 15.sp,
                         fontWeight: FontWeight.w500,
                         color: Colors.black87,
                       ),
@@ -970,7 +1047,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         Text(
                           '\$${totalSale.toStringAsFixed(0)}',
                           style: GoogleFonts.poppins(
-                            fontSize: 28.sp,
+                            fontSize: isTablet ? 28.0 : 28.sp,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -979,7 +1056,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         Text(
                           'Total sale',
                           style: GoogleFonts.poppins(
-                            fontSize: 12.sp,
+                            fontSize: isTablet ? 12.0 : 12.sp,
                             color: Colors.black45,
                           ),
                         ),
@@ -1007,7 +1084,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       Text(
                         '$storeCount',
                         style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
+                          fontSize: isTablet ? 12.0 : 12.sp,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFFFF6FB6),
                         ),
@@ -1025,7 +1102,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               Text(
                 'Leaderboard',
                 style: GoogleFonts.poppins(
-                  fontSize: 15.sp,
+                  fontSize: isTablet ? 15.0 : 15.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -1039,7 +1116,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 child: Text(
                   'See more',
                   style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
+                    fontSize: isTablet ? 12.0 : 12.sp,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFFFF6FB6),
                   ),
@@ -1048,14 +1125,14 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
             ],
           ),
           SizedBox(height: 12.h),
-          if (sortedParticipants.isEmpty)
+          if (sortedParticipants.length <= 1)
             Padding(
               padding: EdgeInsets.symmetric(vertical: 16.h),
               child: Center(
                 child: Text(
                   'No participants yet',
                   style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
+                    fontSize: isTablet ? 12.0 : 12.sp,
                     color: Colors.black45,
                   ),
                 ),
@@ -1117,6 +1194,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     String avatarUrl, {
     double? goal,
   }) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return GestureDetector(
       onTap: () {
         showModalBottomSheet<void>(
@@ -1173,7 +1251,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     name,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
+                      fontSize: isTablet ? 16.0 : 16.sp,
                       fontWeight: FontWeight.w700,
                       color: const Color(0xFF1A1A2E),
                     ),
@@ -1201,7 +1279,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                             TextSpan(
                               text: '\$${amount.toStringAsFixed(0)} ',
                               style: GoogleFonts.poppins(
-                                fontSize: 13.sp,
+                                fontSize: isTablet ? 13.0 : 13.sp,
                                 fontWeight: FontWeight.w700,
                                 color: const Color(0xFFFF6FB6),
                               ),
@@ -1209,7 +1287,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                             TextSpan(
                               text: 'of ${finalGoal.toStringAsFixed(0)} goal',
                               style: GoogleFonts.poppins(
-                                fontSize: 13.sp,
+                                fontSize: isTablet ? 13.0 : 13.sp,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.black54,
                               ),
@@ -1220,7 +1298,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       Text(
                         '$supporters supporters',
                         style: GoogleFonts.poppins(
-                          fontSize: 13.sp,
+                          fontSize: isTablet ? 13.0 : 13.sp,
                           fontWeight: FontWeight.w500,
                           color: Colors.black54,
                         ),
@@ -1243,7 +1321,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       child: Text(
                         'Visit pop-up store',
                         style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
+                          fontSize: isTablet ? 16.0 : 16.sp,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF1A1A2E),
                         ),
@@ -1266,7 +1344,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               child: Text(
                 '$index',
                 style: GoogleFonts.poppins(
-                  fontSize: 13.sp,
+                  fontSize: isTablet ? 13.0 : 13.sp,
                   fontWeight: FontWeight.w500,
                   color: Colors.black87,
                 ),
@@ -1321,7 +1399,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   Text(
                     name,
                     style: GoogleFonts.poppins(
-                      fontSize: 13.sp,
+                      fontSize: isTablet ? 13.0 : 13.sp,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A2E),
                     ),
@@ -1330,7 +1408,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   Text(
                     '$supporters supporters',
                     style: GoogleFonts.poppins(
-                      fontSize: 11.sp,
+                      fontSize: isTablet ? 11.0 : 11.sp,
                       color: Colors.black45,
                     ),
                   ),
@@ -1340,7 +1418,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
             Text(
               '\$${amount.toStringAsFixed(0)}',
               style: GoogleFonts.poppins(
-                fontSize: 13.sp,
+                fontSize: isTablet ? 13.0 : 13.sp,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1A1A2E),
               ),
@@ -1356,6 +1434,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   List<Widget> _buildEventChildren(bool showFundraiseCard) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return [
       Obx(() {
         final Map<String, dynamic>? eventData =
@@ -1419,7 +1498,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     child: Text(
                       'Invite Seller',
                       style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
+                        fontSize: isTablet ? 12.0 : 12.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -1461,7 +1540,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         child: Text(
                           '${index + 1}',
                           style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
+                            fontSize: isTablet ? 14.0 : 14.sp,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -1504,7 +1583,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                         child: Text(
                           name,
                           style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
+                            fontSize: isTablet ? 14.0 : 14.sp,
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -1532,7 +1611,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     child: Text(
                       'Invite Seller',
                       style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
+                        fontSize: isTablet ? 12.0 : 12.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -1545,57 +1624,111 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         );
       }),
       SizedBox(height: 16.h),
-      _Card(
-        title: 'Payout Manger',
-        badge: 'Secure & Simple',
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Verify yourself and select how to receive\n'
-              'the event earnings.',
-              style: GoogleFonts.poppins(
-                fontSize: 12.sp,
-                color: Colors.black45,
-                height: 1.4,
-              ),
-            ),
-            SizedBox(height: 12.h),
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: () {
-                  Get.to(() => const VerificationRequiredScreen());
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.zero,
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+      Obx(() {
+        final Map<String, dynamic> rawMap = widget.controller.createdEvent;
+        final Map<String, dynamic>? eventData = rawMap['event'] is Map
+            ? rawMap['event'] as Map<String, dynamic>
+            : null;
+        final String? payoutNumber =
+            eventData?['payout_manager']?.toString() ??
+            rawMap['payout_manager']?.toString();
+        final bool hasPayoutNumber =
+            payoutNumber != null &&
+            payoutNumber.trim().isNotEmpty &&
+            payoutNumber != 'null';
+
+        return _Card(
+          title: 'Payout Manager',
+          badge: 'Secure & Simple',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (hasPayoutNumber) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Get started',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF1A1A2E),
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Payout Manager Number',
+                          style: GoogleFonts.poppins(
+                            fontSize: isTablet ? 11.0 : 11.sp,
+                            color: Colors.black45,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 2.h),
+                        Text(
+                          payoutNumber,
+                          style: GoogleFonts.poppins(
+                            fontSize: isTablet ? 15.0 : 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 4.w),
-                    Icon(
-                      Icons.arrow_forward,
-                      size: 14.sp,
-                      color: const Color(0xFF1A1A2E),
+                    IconButton(
+                      onPressed: () {
+                        Get.to(() => const VerificationRequiredScreen());
+                      },
+                      icon: Icon(
+                        Icons.edit,
+                        color: const Color(0xFFFE53A1),
+                        size: isTablet ? 18.0 : 18.sp,
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
+              ] else ...[
+                Text(
+                  'Verify yourself and select how to receive\n'
+                  'the event earnings.',
+                  style: GoogleFonts.poppins(
+                    fontSize: isTablet ? 12.0 : 12.sp,
+                    color: Colors.black45,
+                    height: 1.4,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Align(
+                  alignment: Alignment.center,
+                  child: TextButton(
+                    onPressed: () {
+                      Get.to(() => const VerificationRequiredScreen());
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Get started',
+                          style: GoogleFonts.poppins(
+                            fontSize: isTablet ? 12.0 : 12.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
+                        ),
+                        SizedBox(width: 4.w),
+                        Icon(
+                          Icons.arrow_forward,
+                          size: 14.sp,
+                          color: const Color(0xFF1A1A2E),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      }),
       SizedBox(height: 16.h),
       _Card(
         title: 'Event Details',
@@ -1728,7 +1861,13 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           'Confirm the Event Code $code.   Download the APP.\n\n'
                           'Create your personalized Pop-Up Store';
 
-                      SharePlus.instance.share(ShareParams(text: shareText));
+                      final box = context.findRenderObject() as RenderBox?;
+                      Share.share(
+                        shareText,
+                        sharePositionOrigin: box != null
+                            ? (box.localToGlobal(Offset.zero) & box.size)
+                            : null,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -1740,7 +1879,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     child: Text(
                       'Share Event',
                       style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
+                        fontSize: isTablet ? 12.0 : 12.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -1802,6 +1941,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   // Edit Event Sheet
   // ─────────────────────────────────────────────────────────────────────────
   void _showEditEventSheet() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
     final int eventId = eventData?['id'] as int? ?? 0;
@@ -1888,7 +2028,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     Text(
                       'Edit Event',
                       style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
+                        fontSize: isTablet ? 18.0 : 18.sp,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1A1A2E),
                       ),
@@ -1901,7 +2041,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   'Event Name',
                   style: GoogleFonts.poppins(
-                    fontSize: 13.sp,
+                    fontSize: isTablet ? 13.0 : 13.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.black54,
                   ),
@@ -1910,13 +2050,13 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 TextField(
                   controller: nameCtrl,
                   style: GoogleFonts.poppins(
-                    fontSize: 14.sp,
+                    fontSize: isTablet ? 14.0 : 14.sp,
                     color: const Color(0xFF1A1A2E),
                   ),
                   decoration: InputDecoration(
                     hintText: 'Enter event name',
                     hintStyle: GoogleFonts.poppins(
-                      fontSize: 14.sp,
+                      fontSize: isTablet ? 14.0 : 14.sp,
                       color: Colors.black38,
                     ),
                     filled: true,
@@ -1937,7 +2077,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   'Organization Type',
                   style: GoogleFonts.poppins(
-                    fontSize: 13.sp,
+                    fontSize: isTablet ? 13.0 : 13.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.black54,
                   ),
@@ -1969,7 +2109,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           child: Text(
                             cat,
                             style: GoogleFonts.poppins(
-                              fontSize: 13.sp,
+                              fontSize: isTablet ? 13.0 : 13.sp,
                               fontWeight: FontWeight.w500,
                               color: isSelected
                                   ? Colors.white
@@ -1987,7 +2127,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   'Start Date',
                   style: GoogleFonts.poppins(
-                    fontSize: 13.sp,
+                    fontSize: isTablet ? 13.0 : 13.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.black54,
                   ),
@@ -2033,7 +2173,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                               'MMM dd, yyyy',
                             ).format(selectedDate.value),
                             style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
+                              fontSize: isTablet ? 14.0 : 14.sp,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -2054,7 +2194,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   'Estimated Participants',
                   style: GoogleFonts.poppins(
-                    fontSize: 13.sp,
+                    fontSize: isTablet ? 13.0 : 13.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.black54,
                   ),
@@ -2094,7 +2234,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           child: Text(
                             label,
                             style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
+                              fontSize: isTablet ? 14.0 : 14.sp,
                               fontWeight: FontWeight.w600,
                               color: isSelected
                                   ? Colors.white
@@ -2184,7 +2324,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           : Text(
                               'Save Changes',
                               style: GoogleFonts.poppins(
-                                fontSize: 15.sp,
+                                fontSize: isTablet ? 15.0 : 15.sp,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -2200,6 +2340,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   void _showCongratsSheet() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
 
@@ -2267,7 +2408,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               Text(
                 'Congratulations, $_organizerName!\nYour Event Is Scheduled',
                 style: GoogleFonts.poppins(
-                  fontSize: 20.sp,
+                  fontSize: isTablet ? 20.0 : 20.sp,
                   fontWeight: FontWeight.w700,
                   color: const Color(0xFF1A1A2E),
                   height: 1.3,
@@ -2278,7 +2419,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 'Share the event details with your team and complete\n'
                 'the checklist before your fund raise.',
                 style: GoogleFonts.poppins(
-                  fontSize: 11.sp,
+                  fontSize: isTablet ? 11.0 : 11.sp,
                   color: const Color(0xff525252),
                   height: 1.4,
                 ),
@@ -2355,7 +2496,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       Text(
                         'View checklist',
                         style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
+                          fontSize: isTablet ? 16.0 : 16.sp,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -2372,10 +2513,19 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   void _showChecklistSheet() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
     final List participants = eventData?['participants'] as List? ?? [];
     final bool isTeamInvited = participants.length > 1;
+
+    final String? payoutNumber =
+        eventData?['payout_manager']?.toString() ??
+        widget.controller.createdEvent['payout_manager']?.toString();
+    final bool hasPayoutNumber =
+        payoutNumber != null &&
+        payoutNumber.trim().isNotEmpty &&
+        payoutNumber != 'null';
 
     final String? shopName = widget.controller.fundraiserDetails['name']
         ?.toString();
@@ -2415,7 +2565,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               Text(
                 'Hi, $_organizerName',
                 style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
+                  fontSize: isTablet ? 16.0 : 16.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF1A1A2E),
                 ),
@@ -2424,7 +2574,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               Text(
                 'Lets get your event set up for success.',
                 style: GoogleFonts.poppins(
-                  fontSize: 12.sp,
+                  fontSize: isTablet ? 12.0 : 12.sp,
                   color: Colors.black45,
                 ),
               ),
@@ -2443,7 +2593,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
               SizedBox(height: 12.h),
               _ChecklistRow(
                 text: 'Add your payment  method',
-                checked: false,
+                checked: hasPayoutNumber,
                 showArrow: true,
                 onTap: () {
                   Navigator.pop(context);
@@ -2469,8 +2619,12 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   void _showInviteTeamSheet() {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final Map<String, dynamic>? eventData =
         widget.controller.createdEvent['event'] as Map<String, dynamic>?;
+
+    final code =
+        eventData?['code'] ?? widget.controller.createdEvent['code'] ?? '';
 
     DateTime? startDateTime;
     DateTime? endDateTime;
@@ -2485,14 +2639,27 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       )?.toLocal();
     }
 
-    final String dynamicTeamName =
-        eventData?['name']?.toString() ?? 'Treats Island';
-    final String startLabel = startDateTime != null
-        ? DateFormat('MMM d').format(startDateTime)
-        : 'May 8';
-    final String endLabel = endDateTime != null
-        ? DateFormat('MMM d').format(endDateTime)
-        : 'May 12';
+    final String startD = startDateTime != null
+        ? DateFormat('MM/dd/yy').format(startDateTime)
+        : '___/___/26';
+    final String startT = startDateTime != null
+        ? DateFormat('h:mm a').format(startDateTime).toLowerCase()
+        : '9:00 am';
+    final String endD = endDateTime != null
+        ? DateFormat('MM/dd/yy').format(endDateTime)
+        : '___/___/26';
+    final String endT = endDateTime != null
+        ? DateFormat('h:mm a').format(endDateTime).toLowerCase()
+        : '9:00 am';
+
+    final String inviteLink =
+        'https://treatsislandcandy.store/join-event?je=$code';
+
+    final String shareText =
+        'Hello Team - I set up a virtual fundraiser with Treats Island Candy! It is 100% contactless. We get to keep 50% of total profit and Treat Island Candy will ship the product directly to our buyers. Each of us will create a Pop-Up Store selling this specialized candy! The prices range from \$15 to \$25 per container and you won\'t find these premium products in general stores. Our fundraising window begins on $startD at $startT and goes until $endD, at $endT. Before the fundraiser begins:\n\n'
+        'Click on the link $inviteLink to JOIN THE EVENT\n\n'
+        'Confirm the Event Code $code.   Download the APP.\n\n'
+        'Create your personalized Pop-Up Store';
 
     showModalBottomSheet<void>(
       context: context,
@@ -2502,17 +2669,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
       ),
       builder: (context) {
-        return SizedBox(
-          height: 400.h,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 24.w,
-              right: 24.w,
-              top: 16.h,
-              bottom: 24.h,
-            ),
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24.w,
+            right: 24.w,
+            top: 16.h,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 24.h,
+          ),
+          child: SingleChildScrollView(
             child: Column(
-              mainAxisSize: MainAxisSize.max,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -2525,7 +2691,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     Text(
                       'Invite your team',
                       style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
+                        fontSize: isTablet ? 16.0 : 16.sp,
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF1A1A2E),
                       ),
@@ -2537,39 +2703,44 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Text(
                   'INSTRUCTION FOR YOUR TEAM',
                   style: GoogleFonts.antonSc(
-                    fontSize: 18.sp,
+                    fontSize: isTablet ? 18.0 : 18.sp,
                     color: const Color(0xFF1A1A2E),
                   ),
                 ),
-                SizedBox(height: 8.h),
-                Text(
-                  'Hi Team! Our $dynamicTeamName Fundraiser Starts $startLabel '
-                  'And Ends $endLabel. We\'re Selling Delicious '
-                  'Candy And Earning 50% Of Each Sale.\n\n'
-                  'Visit Our Fundraising Page To Learn More How To '
-                  'Get Started',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
-                    color: Colors.black54,
-                    height: 1.4,
+                SizedBox(height: 12.h),
+                Container(
+                  constraints: BoxConstraints(maxHeight: 220.h),
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F8FB),
+                    borderRadius: BorderRadius.circular(20.r),
+                    border: Border.all(color: const Color(0xFFEAEAEE)),
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      shareText,
+                      style: GoogleFonts.poppins(
+                        fontSize: isTablet ? 12.0 : 12.sp,
+                        color: Colors.black87,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(height: 10.h),
-                Text(
-                  'https://www.Treats Island Fundraise.com/Design/',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A2E),
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-                SizedBox(height: 16.h),
+                SizedBox(height: 20.h),
                 SizedBox(
                   width: double.infinity,
-                  height: 36.h,
+                  height: 40.h,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      final box = context.findRenderObject() as RenderBox?;
+                      Share.share(
+                        shareText,
+                        sharePositionOrigin: box != null
+                            ? (box.localToGlobal(Offset.zero) & box.size)
+                            : null,
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       elevation: 0,
@@ -2580,7 +2751,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     child: Text(
                       'Invite your team',
                       style: GoogleFonts.poppins(
-                        fontSize: 14.sp,
+                        fontSize: isTablet ? 14.0 : 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
@@ -2591,25 +2762,69 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Image.asset(
-                      'assets/icons/logos_facebook.png',
-                      width: 26.sp,
-                      height: 26.sp,
+                    GestureDetector(
+                      onTap: () {
+                        final box = context.findRenderObject() as RenderBox?;
+                        Share.share(
+                          shareText,
+                          sharePositionOrigin: box != null
+                              ? (box.localToGlobal(Offset.zero) & box.size)
+                              : null,
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/logos_facebook.png',
+                        width: 26.sp,
+                        height: 26.sp,
+                      ),
                     ),
-                    Image.asset(
-                      'assets/icons/logos_messenger.png',
-                      width: 26.sp,
-                      height: 26.sp,
+                    GestureDetector(
+                      onTap: () {
+                        final box = context.findRenderObject() as RenderBox?;
+                        Share.share(
+                          shareText,
+                          sharePositionOrigin: box != null
+                              ? (box.localToGlobal(Offset.zero) & box.size)
+                              : null,
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/logos_messenger.png',
+                        width: 26.sp,
+                        height: 26.sp,
+                      ),
                     ),
-                    Image.asset(
-                      'assets/icons/logos_whatsapp-icon.png',
-                      width: 26.sp,
-                      height: 26.sp,
+                    GestureDetector(
+                      onTap: () {
+                        final box = context.findRenderObject() as RenderBox?;
+                        Share.share(
+                          shareText,
+                          sharePositionOrigin: box != null
+                              ? (box.localToGlobal(Offset.zero) & box.size)
+                              : null,
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/logos_whatsapp-icon.png',
+                        width: 26.sp,
+                        height: 26.sp,
+                      ),
                     ),
-                    Image.asset(
-                      'assets/icons/boxicons_message-detail-filled.png',
-                      width: 26.sp,
-                      height: 26.sp,
+                    GestureDetector(
+                      onTap: () {
+                        final box = context.findRenderObject() as RenderBox?;
+                        Share.share(
+                          shareText,
+                          sharePositionOrigin: box != null
+                              ? (box.localToGlobal(Offset.zero) & box.size)
+                              : null,
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/boxicons_message-detail-filled.png',
+                        width: 26.sp,
+                        height: 26.sp,
+                      ),
                     ),
                   ],
                 ),
@@ -2652,6 +2867,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
     debugPrint('=== GET FUNDRAISER API REQUEST ===');
     debugPrint('Event ID: $eventId');
+    debugPrint(
+      'URL: https://api.treatsislandgo.com/event/$eventId/my-fundraiser/',
+    );
     try {
       final apiService = Get.isRegistered<ApiService>()
           ? Get.find<ApiService>()
@@ -2660,6 +2878,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
       debugPrint('=== GET FUNDRAISER API RESPONSE ===');
       debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Request URL: ${response.request?.url}');
       debugPrint('Response Body: ${response.body}');
 
       if (response.status.isOk &&
@@ -2680,17 +2899,21 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FB),
       body: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: EdgeInsets.fromLTRB(20.w, 50.h, 20.w, 18.h),
+            padding: isTablet
+                ? const EdgeInsets.fromLTRB(32.0, 56.0, 32.0, 18.0)
+                : EdgeInsets.fromLTRB(20.w, 50.h, 20.w, 18.h),
             decoration: BoxDecoration(
               color: const Color(0xFFE8E2FF),
               borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(26.r),
+                bottom: Radius.circular(isTablet ? 26.0 : 26.r),
               ),
             ),
             child: Column(
@@ -2714,74 +2937,29 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                               status.toLowerCase() == 'ongoing';
 
                           if (isOngoing) {
-                            // Calculate detailed countdown timer
-                            int days = 0;
-                            int hours = 0;
-                            int minutes = 0;
-                            int seconds = 0;
-                            if (eventData?['start_date'] != null &&
-                                eventData?['duration'] != null) {
-                              final parsedStart = DateTime.tryParse(
-                                eventData!['start_date'].toString(),
-                              );
-                              final durationDays =
-                                  int.tryParse(
-                                    eventData['duration'].toString(),
-                                  ) ??
-                                  5;
-                              if (parsedStart != null) {
-                                final end = parsedStart.add(
-                                  Duration(days: durationDays),
-                                );
-                                final now = DateTime.now();
-                                final diff = end.difference(now);
-                                if (!diff.isNegative) {
-                                  days = diff.inDays;
-                                  hours = diff.inHours % 24;
-                                  minutes = diff.inMinutes % 60;
-                                  seconds = diff.inSeconds % 60;
-                                }
-                              }
-                            }
-
-                            return Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 8.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF00C566), // Vibrant green
-                                borderRadius: BorderRadius.circular(30.r),
-                              ),
-                              child: FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.access_time,
-                                      size: 16.sp,
-                                      color: Colors.white,
-                                    ),
-                                    SizedBox(width: 6.w),
-                                    Text(
-                                      'Live Event ${days}D ${hours}h ${minutes}m ${seconds}s',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                            final parsedStart = eventData?['start_date'] != null
+                                ? DateTime.tryParse(
+                                    eventData!['start_date'].toString(),
+                                  )
+                                : null;
+                            final durationDays = eventData?['duration'] != null
+                                ? (int.tryParse(
+                                        eventData!['duration'].toString(),
+                                      ) ??
+                                      5)
+                                : 5;
+                            return _EventCountdownWidget(
+                              startDate: parsedStart ?? DateTime.now(),
+                              durationDays: parsedStart != null
+                                  ? durationDays
+                                  : 0,
                             );
                           }
 
                           return Text(
                             _isShopSelected ? 'Shop' : 'Event',
                             style: GoogleFonts.poppins(
-                              fontSize: 18.sp,
+                              fontSize: isTablet ? 18.0 : 18.sp,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -2878,7 +3056,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         child: Text(
                                           'Edit Event',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 14.sp,
+                                            fontSize: isTablet ? 14.0 : 14.sp,
                                             fontWeight: FontWeight.w500,
                                             color: isOngoing
                                                 ? Colors.grey
@@ -2906,7 +3084,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         child: Text(
                                           'Start Event Now',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 14.sp,
+                                            fontSize: isTablet ? 14.0 : 14.sp,
                                             fontWeight: FontWeight.w500,
                                             color: isOngoing
                                                 ? Colors.grey
@@ -2934,7 +3112,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                         child: Text(
                                           'Extend 3 Days More',
                                           style: GoogleFonts.poppins(
-                                            fontSize: 14.sp,
+                                            fontSize: isTablet ? 14.0 : 14.sp,
                                             fontWeight: FontWeight.w500,
                                             color: isUpcoming
                                                 ? Colors.grey
@@ -2994,28 +3172,28 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                   ? '$creatorName  '
                                   : 'Organizer',
                               style: GoogleFonts.poppins(
-                                fontSize: 12.sp,
+                                fontSize: isTablet ? 12.0 : 12.sp,
                                 color: Colors.black45,
                               ),
                             ),
-                            SizedBox(height: 2.h),
+                            SizedBox(height: isTablet ? 2.0 : 2.h),
                             Row(
                               children: [
                                 Text(
                                   dynamicTeamName,
                                   style: GoogleFonts.poppins(
-                                    fontSize: 16.sp,
+                                    fontSize: isTablet ? 16.0 : 16.sp,
                                     fontWeight: FontWeight.w600,
                                     color: const Color(0xFF1A1A2E),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 2.h),
+                            SizedBox(height: isTablet ? 2.0 : 2.h),
                             Text(
                               dateRangeStr,
                               style: GoogleFonts.poppins(
-                                fontSize: 12.sp,
+                                fontSize: isTablet ? 12.0 : 12.sp,
                                 color: Colors.black45,
                               ),
                             ),
@@ -3025,9 +3203,11 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     ),
                     InkWell(
                       onTap: _showChecklistSheet,
-                      borderRadius: BorderRadius.circular(18.r),
+                      borderRadius: BorderRadius.circular(
+                        isTablet ? 18.0 : 18.r,
+                      ),
                       child: CircleAvatar(
-                        radius: 18.r,
+                        radius: isTablet ? 18.0 : 18.r,
                         backgroundColor: Colors.black,
                         child: Stack(
                           children: [
@@ -3036,16 +3216,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                 image: const AssetImage(
                                   'assets/icons/checklist.png',
                                 ),
-                                width: 20.w,
-                                height: 20.w,
+                                width: isTablet ? 20.0 : 20.w,
+                                height: isTablet ? 20.0 : 20.w,
                               ),
                             ),
                             Positioned(
                               right: 0,
                               top: 0,
                               child: Container(
-                                width: 10.w,
-                                height: 10.w,
+                                width: isTablet ? 10.0 : 10.w,
+                                height: isTablet ? 10.0 : 10.w,
                                 decoration: const BoxDecoration(
                                   color: Colors.red,
                                   shape: BoxShape.circle,
@@ -3058,7 +3238,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     ),
                   ],
                 ),
-                SizedBox(height: 16.h),
+                SizedBox(height: isTablet ? 16.0 : 16.h),
                 Container(
                   padding: EdgeInsets.all(10.w),
 
@@ -3082,7 +3262,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                               color: _isShopSelected
                                   ? Colors.white
                                   : AppColors.primary,
-                              borderRadius: BorderRadius.circular(24.r),
+                              borderRadius: BorderRadius.circular(
+                                isTablet ? 24.0 : 24.r,
+                              ),
                               border: Border.all(
                                 color: _isShopSelected
                                     ? Colors.black12
@@ -3096,16 +3278,16 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                 children: [
                                   Icon(
                                     Icons.calendar_today_rounded,
-                                    size: 14.sp,
+                                    size: isTablet ? 14.0 : 14.sp,
                                     color: _isShopSelected
                                         ? Colors.black45
                                         : Colors.white,
                                   ),
-                                  SizedBox(width: 6.w),
+                                  SizedBox(width: isTablet ? 6.0 : 6.w),
                                   Text(
                                     'Event',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 13.sp,
+                                      fontSize: isTablet ? 13.0 : 13.sp,
                                       fontWeight: FontWeight.w600,
                                       color: _isShopSelected
                                           ? Colors.black45
@@ -3118,7 +3300,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 8.w),
+                      SizedBox(width: isTablet ? 8.0 : 8.w),
                       Expanded(
                         child: InkWell(
                           onTap: () {
@@ -3126,14 +3308,20 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                               _isShopSelected = true;
                             });
                           },
-                          borderRadius: BorderRadius.circular(24.r),
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 24.0 : 24.r,
+                          ),
                           child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
+                            padding: EdgeInsets.symmetric(
+                              vertical: isTablet ? 12.0 : 12.h,
+                            ),
                             decoration: BoxDecoration(
                               color: _isShopSelected
                                   ? AppColors.primary
                                   : Colors.white,
-                              borderRadius: BorderRadius.circular(24.r),
+                              borderRadius: BorderRadius.circular(
+                                isTablet ? 24.0 : 24.r,
+                              ),
                               border: Border.all(
                                 color: _isShopSelected
                                     ? Colors.transparent
@@ -3147,12 +3335,12 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                 children: [
                                   Icon(
                                     Icons.storefront_outlined,
-                                    size: 14.sp,
+                                    size: isTablet ? 14.0 : 14.sp,
                                     color: _isShopSelected
                                         ? Colors.white
                                         : Colors.black45,
                                   ),
-                                  SizedBox(width: 6.w),
+                                  SizedBox(width: isTablet ? 6.0 : 6.w),
                                   Obx(() {
                                     final String? shopName = widget
                                         .controller
@@ -3167,7 +3355,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                           ? 'Pop-UP Store'
                                           : 'Create Pop-UP Store',
                                       style: GoogleFonts.poppins(
-                                        fontSize: 13.sp,
+                                        fontSize: isTablet ? 13.0 : 13.sp,
                                         fontWeight: FontWeight.w600,
                                         color: _isShopSelected
                                             ? Colors.white
@@ -3189,29 +3377,39 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.all(20.w),
-              child: FutureBuilder<Map<String, dynamic>?>(
-                future: _getFundraiserDetails(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              padding: isTablet
+                  ? const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0)
+                  : EdgeInsets.all(20.w),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 650.0),
+                  child: FutureBuilder<Map<String, dynamic>?>(
+                    future: _getFundraiserDetails(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                  final fundraiser = snapshot.data;
-                  final String? name = fundraiser?['name']?.toString();
-                  final bool hasName =
-                      name != null && name.trim().isNotEmpty && name != 'null';
+                      final fundraiser = snapshot.data;
+                      final String? name = fundraiser?['name']?.toString();
+                      final bool hasName =
+                          name != null &&
+                          name.trim().isNotEmpty &&
+                          name != 'null';
 
-                  if (_isShopSelected) {
-                    return Column(
-                      children: hasName
-                          ? _buildShopCreatedChildren(fundraiser)
-                          : _buildShopChildren(),
-                    );
-                  } else {
-                    return Column(children: _buildEventChildren(hasName));
-                  }
-                },
+                      if (_isShopSelected) {
+                        return Column(
+                          children: hasName
+                              ? _buildShopCreatedChildren(fundraiser)
+                              : _buildShopChildren(),
+                        );
+                      } else {
+                        return Column(children: _buildEventChildren(hasName));
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
           ),
@@ -3238,16 +3436,18 @@ class _Card extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isTablet = width >= 600;
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.all(isTablet ? 16.0 : 16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10.r,
-            offset: Offset(0, 4.h),
+            blurRadius: isTablet ? 10.0 : 10.r,
+            offset: Offset(0, isTablet ? 4.0 : 4.h),
           ),
         ],
       ),
@@ -3263,17 +3463,17 @@ class _Card extends StatelessWidget {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 15.sp,
+                      fontSize: isTablet ? 15.0 : 15.sp,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A2E),
                     ),
                   ),
                   if (subtitle != null) ...[
-                    SizedBox(height: 4.h),
+                    SizedBox(height: isTablet ? 4.0 : 4.h),
                     Text(
                       subtitle!,
                       style: GoogleFonts.poppins(
-                        fontSize: 12.sp,
+                        fontSize: isTablet ? 12.0 : 12.sp,
                         color: Colors.black45,
                       ),
                     ),
@@ -3286,7 +3486,7 @@ class _Card extends StatelessWidget {
                 trailing!,
             ],
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: isTablet ? 12.0 : 12.h),
           child,
         ],
       ),
@@ -3301,16 +3501,20 @@ class _SmallPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTablet ? 10.0 : 10.w,
+        vertical: isTablet ? 4.0 : 4.h,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFFF1F1F5),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
       ),
       child: Text(
         text,
         style: GoogleFonts.poppins(
-          fontSize: 10.sp,
+          fontSize: isTablet ? 10.0 : 10.sp,
           fontWeight: FontWeight.w600,
           color: Colors.black54,
         ),
@@ -3327,22 +3531,23 @@ class _InfoMini extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: GoogleFonts.poppins(
-            fontSize: 10.sp,
+            fontSize: isTablet ? 10.0 : 10.sp,
             fontWeight: FontWeight.w600,
             color: Colors.black38,
           ),
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: isTablet ? 4.0 : 4.h),
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 12.sp,
+            fontSize: isTablet ? 12.0 : 12.sp,
             color: const Color(0xFF1A1A2E),
           ),
         ),
@@ -3359,22 +3564,23 @@ class _InfoMinidate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
           title,
           style: GoogleFonts.poppins(
-            fontSize: 10.sp,
+            fontSize: isTablet ? 10.0 : 10.sp,
             fontWeight: FontWeight.w600,
             color: Colors.black38,
           ),
         ),
-        SizedBox(height: 4.h),
+        SizedBox(height: isTablet ? 4.0 : 4.h),
         Text(
           value,
           style: GoogleFonts.poppins(
-            fontSize: 12.sp,
+            fontSize: isTablet ? 12.0 : 12.sp,
             color: const Color(0xFF1A1A2E),
           ),
         ),
@@ -3392,29 +3598,30 @@ class _DetailsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 10.sp,
+            fontSize: isTablet ? 10.0 : 10.sp,
             fontWeight: FontWeight.w600,
             color: Colors.black38,
           ),
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: isTablet ? 6.0 : 6.h),
         Row(
           children: [
             Text(
               value,
               style: GoogleFonts.poppins(
-                fontSize: 14.sp,
+                fontSize: isTablet ? 14.0 : 14.sp,
                 fontWeight: FontWeight.w600,
                 color: const Color(0xFF1A1A2E),
               ),
             ),
-            SizedBox(width: 6.w),
+            SizedBox(width: isTablet ? 6.0 : 6.w),
             if (trailing != null) trailing!,
           ],
         ),
@@ -3438,14 +3645,15 @@ class _ChecklistRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return GestureDetector(
       onTap: checked ? null : onTap,
       behavior: HitTestBehavior.opaque,
       child: Row(
         children: [
           Container(
-            width: 18.sp,
-            height: 18.sp,
+            width: isTablet ? 18.0 : 18.sp,
+            height: isTablet ? 18.0 : 18.sp,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
@@ -3455,15 +3663,19 @@ class _ChecklistRow extends StatelessWidget {
               color: checked ? const Color(0xFFE9FBF2) : Colors.transparent,
             ),
             child: checked
-                ? Icon(Icons.check, size: 12.sp, color: const Color(0xFF17C16F))
+                ? Icon(
+                    Icons.check,
+                    size: isTablet ? 12.0 : 12.sp,
+                    color: const Color(0xFF17C16F),
+                  )
                 : null,
           ),
-          SizedBox(width: 10.w),
+          SizedBox(width: isTablet ? 10.0 : 10.w),
           Expanded(
             child: Text(
               text,
               style: GoogleFonts.poppins(
-                fontSize: 12.sp,
+                fontSize: isTablet ? 12.0 : 12.sp,
                 color: Colors.black54,
               ),
             ),
@@ -3471,7 +3683,7 @@ class _ChecklistRow extends StatelessWidget {
           if (showArrow && !checked)
             Icon(
               Icons.arrow_forward_ios_rounded,
-              size: 14.sp,
+              size: isTablet ? 14.0 : 14.sp,
               color: Colors.black26,
             ),
         ],
@@ -3608,6 +3820,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -3623,7 +3836,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                         'Buffering video...',
                         style: GoogleFonts.poppins(
                           color: Colors.white70,
-                          fontSize: 14.sp,
+                          fontSize: isTablet ? 14.0 : 14.sp,
                         ),
                       ),
                     ],
@@ -3636,7 +3849,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         color: Colors.redAccent,
-                        fontSize: 14.sp,
+                        fontSize: isTablet ? 14.0 : 14.sp,
                       ),
                     ),
                   )
@@ -3682,6 +3895,104 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _EventCountdownWidget extends StatefulWidget {
+  final DateTime startDate;
+  final int durationDays;
+
+  const _EventCountdownWidget({
+    required this.startDate,
+    required this.durationDays,
+  });
+
+  @override
+  State<_EventCountdownWidget> createState() => _EventCountdownWidgetState();
+}
+
+class _EventCountdownWidgetState extends State<_EventCountdownWidget> {
+  Timer? _timer;
+  late DateTime _endDate;
+  int _days = 0;
+  int _hours = 0;
+  int _minutes = 0;
+  int _seconds = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _endDate = widget.startDate.add(Duration(days: widget.durationDays));
+    _updateCountdown();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _updateCountdown();
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _EventCountdownWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startDate != widget.startDate ||
+        oldWidget.durationDays != widget.durationDays) {
+      _endDate = widget.startDate.add(Duration(days: widget.durationDays));
+      _updateCountdown();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateCountdown() {
+    final now = DateTime.now();
+    final diff = _endDate.difference(now);
+    if (mounted) {
+      setState(() {
+        if (diff.isNegative) {
+          _days = 0;
+          _hours = 0;
+          _minutes = 0;
+          _seconds = 0;
+        } else {
+          _days = diff.inDays;
+          _hours = diff.inHours % 24;
+          _minutes = diff.inMinutes % 60;
+          _seconds = diff.inSeconds % 60;
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bool isTablet = MediaQuery.of(context).size.width >= 600;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFF00C566), // Vibrant green
+        borderRadius: BorderRadius.circular(30.r),
+      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.access_time, size: 16.sp, color: Colors.white),
+            SizedBox(width: 6.w),
+            Text(
+              'Live Event ${_days}D ${_hours}h ${_minutes}m ${_seconds}s',
+              style: GoogleFonts.poppins(
+                fontSize: isTablet ? 13.0 : 13.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

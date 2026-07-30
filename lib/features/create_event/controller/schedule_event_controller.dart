@@ -122,7 +122,7 @@ class ScheduleEventController extends GetxController {
   // Default start date: current date/time
   final Rx<DateTime> startDate = DateTime.now().obs;
 
-  final RxString organization = "THE ARTS GRAND STRAND".obs;
+  final RxString organization = "Select an Organization Type".obs;
   final RxString teamName = "".obs;
   final RxString teamLocation = "".obs;
   final RxInt sellerCount = 10.obs;
@@ -317,6 +317,7 @@ class ScheduleEventController extends GetxController {
     double? minEstimatedEarning,
     double? maxEstimatedEarning,
     String? name,
+    String? payoutManager,
   }) async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) {
@@ -338,6 +339,7 @@ class ScheduleEventController extends GetxController {
       debugPrint('Min Estimated Earning: $minEstimatedEarning');
       debugPrint('Max Estimated Earning: $maxEstimatedEarning');
       debugPrint('Name: $name');
+      debugPrint('Payout Manager: $payoutManager');
       debugPrint('================================');
 
       final response = await _apiService.updateEvent(
@@ -349,6 +351,7 @@ class ScheduleEventController extends GetxController {
         minEstimatedEarning: minEstimatedEarning,
         maxEstimatedEarning: maxEstimatedEarning,
         name: name,
+        payoutManager: payoutManager,
       );
       isUpdating.value = false;
 
@@ -367,6 +370,7 @@ class ScheduleEventController extends GetxController {
           createdEvent.value = {
             'event': Map<String, dynamic>.from(body['event']),
           };
+          createdEvent.refresh();
           // Also sync local state
           final eventData = createdEvent['event'] as Map<String, dynamic>;
           teamName.value = eventData['name']?.toString() ?? teamName.value;

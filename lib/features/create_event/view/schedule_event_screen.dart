@@ -9,7 +9,6 @@ import 'date_time_screen.dart';
 import 'event_overview_screen.dart';
 import 'team_name_screen.dart';
 import '../../profile/view/terms_conditions_screen.dart';
-import '../../../core/services/api_service.dart';
 
 class ScheduleEventScreen extends StatelessWidget {
   const ScheduleEventScreen({super.key});
@@ -17,555 +16,599 @@ class ScheduleEventScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(ScheduleEventController());
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     return Scaffold(
       backgroundColor: const Color(
         0xFFF6F6F9,
       ), // Match grey background in screenshot
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Back Button ──────────────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                child: GestureDetector(
-                  onTap: () => Get.back(),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.arrow_back,
-                        size: 24.sp,
-                        color: const Color(0xFF1A1A2E),
-                      ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'Back',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 20.h),
-
-              // ── Title & Subtitle ─────────────────────────────────────
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'SCHEDULE A\nFUNDRAISING EVENT',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.antonSc(
-                        fontSize: 34.sp,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF1A1A2E),
-                        height: 1.2,
-                      ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 550.0 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Back Button ──────────────────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                      vertical: isTablet ? 12.0 : 12.h,
                     ),
-                    SizedBox(height: 12.h),
-                    Text(
-                      'FUNDRAISING WINDOW',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF525252),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 24.h),
-
-              // ── Fundraising Window Card ──────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Container(
-                  padding: EdgeInsets.all(20.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 10.r,
-                        offset: Offset(0, 4.h),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Duration Row
-                      GestureDetector(
-                        onTap: () {},
-                        behavior: HitTestBehavior.opaque,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Duration',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black38,
-                              ),
+                    child: GestureDetector(
+                      onTap: () => Get.back(),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.arrow_back,
+                            size: isTablet ? 24.0 : 24.sp,
+                            color: const Color(0xFF1A1A2E),
+                          ),
+                          SizedBox(width: isTablet ? 8.0 : 8.w),
+                          Text(
+                            'Back',
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 16.0 : 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
                             ),
-                            Row(
-                              children: [
-                                // Radio button outline
-                                Container(
-                                  width: 22.sp,
-                                  height: 22.sp,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF1D1D2C),
-                                      width: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 20.0 : 20.h),
+
+                  // ── Title & Subtitle ─────────────────────────────────────
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          'SCHEDULE A\nFUNDRAISING EVENT',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.antonSc(
+                            fontSize: isTablet ? 34.0 : 34.sp,
+                            fontWeight: FontWeight.normal,
+                            color: const Color(0xFF1A1A2E),
+                            height: 1.2,
+                          ),
+                        ),
+                        SizedBox(height: isTablet ? 12.0 : 12.h),
+                        Text(
+                          'FUNDRAISING WINDOW',
+                          style: GoogleFonts.poppins(
+                            fontSize: isTablet ? 16.0 : 16.sp,
+                            fontWeight: FontWeight.normal,
+                            color: const Color(0xFF525252),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 24.0 : 24.h),
+
+                  // ── Fundraising Window Card ──────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.all(isTablet ? 20.0 : 20.w),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          isTablet ? 16.0 : 16.r,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: isTablet ? 10.0 : 10.r,
+                            offset: Offset(0, isTablet ? 4.0 : 4.h),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Duration Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Duration',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black38,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  // Radio button outline
+                                  Container(
+                                    width: isTablet ? 22.0 : 22.sp,
+                                    height: isTablet ? 22.0 : 22.sp,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF1D1D2C),
+                                        width: 2,
+                                      ),
                                     ),
-                                  ),
-                                  child: Center(
-                                    child: Container(
-                                      width: 12.sp,
-                                      height: 12.sp,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xFF1D1D2C),
+                                    child: Center(
+                                      child: Container(
+                                        width: isTablet ? 12.0 : 12.sp,
+                                        height: isTablet ? 12.0 : 12.sp,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: Color(0xFF1D1D2C),
+                                        ),
                                       ),
                                     ),
                                   ),
+                                  SizedBox(width: isTablet ? 8.0 : 8.w),
+                                  Obx(
+                                    () => Text(
+                                      '${controller.durationDays.value} days',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 14.0 : 14.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF1D1D2C),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: isTablet ? 16.0 : 16.h,
+                            ),
+                            child: const Divider(
+                              color: Color(0xFFEEEEF2),
+                              height: 1,
+                            ),
+                          ),
+
+                          // Starts Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Starts',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black38,
                                 ),
-                                SizedBox(width: 8.w),
+                              ),
+                              Row(
+                                children: [
+                                  // Date Pill
+                                  GestureDetector(
+                                    onTap: () => _openDateTimeSelector(
+                                      context,
+                                      controller,
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: isTablet ? 14.0 : 14.w,
+                                        vertical: isTablet ? 6.0 : 6.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F1F5),
+                                        borderRadius: BorderRadius.circular(
+                                          isTablet ? 20.0 : 20.r,
+                                        ),
+                                      ),
+                                      child: Obx(
+                                        () => Text(
+                                          controller.formattedStartDate,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: isTablet ? 13.0 : 13.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF1D1D2C),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: isTablet ? 8.0 : 8.w),
+                                  // Time Pill
+                                  GestureDetector(
+                                    onTap: () => _openDateTimeSelector(
+                                      context,
+                                      controller,
+                                    ),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: isTablet ? 14.0 : 14.w,
+                                        vertical: isTablet ? 6.0 : 6.h,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F1F5),
+                                        borderRadius: BorderRadius.circular(
+                                          isTablet ? 20.0 : 20.r,
+                                        ),
+                                      ),
+                                      child: Obx(
+                                        () => Text(
+                                          controller.formattedStartTime,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: isTablet ? 13.0 : 13.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF1D1D2C),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              vertical: isTablet ? 16.0 : 16.h,
+                            ),
+                            child: const Divider(
+                              color: Color(0xFFEEEEF2),
+                              height: 1,
+                            ),
+                          ),
+
+                          // Ends Row
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Ends',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.black38,
+                                ),
+                              ),
+                              Obx(
+                                () => Row(
+                                  children: [
+                                    Text(
+                                      controller.formattedEndDate,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 13.0 : 13.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black38,
+                                      ),
+                                    ),
+                                    SizedBox(width: isTablet ? 14.0 : 14.w),
+                                    Text(
+                                      controller.formattedEndTime,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 13.0 : 13.sp,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black38,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 16.0 : 16.h),
+
+                  // ── Organizer Name Button ────────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20.0 : 20.w,
+                        vertical: isTablet ? 16.0 : 16.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(
+                          isTablet ? 14.0 : 14.r,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: isTablet ? 10.0 : 10.r,
+                            offset: Offset(0, isTablet ? 4.0 : 4.h),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Organizer Name',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: isTablet ? 15.0 : 15.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1D1D2C),
+                                  ),
+                                ),
+                                SizedBox(height: isTablet ? 4.0 : 4.h),
                                 Obx(
                                   () => Text(
-                                    '${controller.durationDays.value} days',
+                                    controller.organizerName.value.isEmpty
+                                        ? 'Name of Organizer'
+                                        : controller.organizerName.value,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 14.sp,
+                                      fontSize: isTablet ? 13.0 : 13.sp,
+                                      color: Colors.black38,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 12.0 : 12.h),
+
+                  // ── Team Details Button ──────────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _editTeamDetails(context, controller),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 20.0 : 20.w,
+                          vertical: isTablet ? 16.0 : 16.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 14.0 : 14.r,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: isTablet ? 10.0 : 10.r,
+                              offset: Offset(0, isTablet ? 4.0 : 4.h),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Organization Name',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isTablet ? 15.0 : 15.sp,
                                       fontWeight: FontWeight.w600,
                                       color: const Color(0xFF1D1D2C),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  SizedBox(height: isTablet ? 4.0 : 4.h),
+                                  Obx(
+                                    () => Text(
+                                      controller.teamName.value.isEmpty
+                                          ? 'Enter your team name and location'
+                                          : '${controller.teamName.value} - ${controller.teamLocation.value}',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 13.0 : 13.sp,
+                                        color: Colors.black38,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: isTablet ? 16.0 : 16.sp,
+                              color: Colors.black38,
                             ),
                           ],
                         ),
                       ),
+                    ),
+                  ),
 
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: const Divider(
-                          color: Color(0xFFEEEEF2),
-                          height: 1,
+                  SizedBox(height: isTablet ? 12.0 : 12.h),
+
+                  // ── Organization Button ──────────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                    ),
+                    child: GestureDetector(
+                      onTap: () => _editOrganization(context, controller),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 20.0 : 20.w,
+                          vertical: isTablet ? 16.0 : 16.h,
                         ),
-                      ),
-
-                      // Starts Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Starts',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black38,
-                            ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 14.0 : 14.r,
                           ),
-                          Row(
-                            children: [
-                              // Date Pill
-                              GestureDetector(
-                                onTap: () =>
-                                    _openDateTimeSelector(context, controller),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 14.w,
-                                    vertical: 6.h,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.02),
+                              blurRadius: isTablet ? 10.0 : 10.r,
+                              offset: Offset(0, isTablet ? 4.0 : 4.h),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Organizer Type',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isTablet ? 15.0 : 15.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1D1D2C),
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F1F5),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: Obx(
+                                  SizedBox(height: isTablet ? 4.0 : 4.h),
+                                  Obx(
                                     () => Text(
-                                      controller.formattedStartDate,
+                                      controller.organization.value.isEmpty
+                                          ? 'Type of Organization'
+                                          : controller.organization.value,
                                       style: GoogleFonts.poppins(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF1D1D2C),
+                                        fontSize: isTablet ? 13.0 : 13.sp,
+                                        color: Colors.black38,
                                       ),
                                     ),
                                   ),
-                                ),
+                                ],
                               ),
-                              SizedBox(width: 8.w),
-                              // Time Pill
-                              GestureDetector(
-                                onTap: () =>
-                                    _openDateTimeSelector(context, controller),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 14.w,
-                                    vertical: 6.h,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF1F1F5),
-                                    borderRadius: BorderRadius.circular(20.r),
-                                  ),
-                                  child: Obx(
-                                    () => Text(
-                                      controller.formattedStartTime,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF1D1D2C),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        child: const Divider(
-                          color: Color(0xFFEEEEF2),
-                          height: 1,
-                        ),
-                      ),
-
-                      // Ends Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Ends',
-                            style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w500,
+                            ),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: isTablet ? 16.0 : 16.sp,
                               color: Colors.black38,
                             ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(height: isTablet ? 12.0 : 12.h),
+
+                  // ── Terms and Conditions ─────────────────────────────────
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: controller.toggleTerms,
+                          child: Obx(
+                            () => Container(
+                              width: isTablet ? 22.0 : 22.sp,
+                              height: isTablet ? 22.0 : 22.sp,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: controller.agreeToTerms.value
+                                      ? AppColors.primary
+                                      : Colors.black38,
+                                  width: 1.5,
+                                ),
+                                color: controller.agreeToTerms.value
+                                    ? AppColors.primary
+                                    : Colors.transparent,
+                              ),
+                              child: controller.agreeToTerms.value
+                                  ? Icon(
+                                      Icons.check,
+                                      size: isTablet ? 14.0 : 14.sp,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
                           ),
-                          Obx(
-                            () => Row(
+                        ),
+                        SizedBox(width: isTablet ? 12.0 : 12.w),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                Get.to(() => const TermsConditionsScreen()),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  controller.formattedEndDate,
+                                  'Terms and Conditions *',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black38,
+                                    fontSize: isTablet ? 14.0 : 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1D1D2C),
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
-                                SizedBox(width: 14.w),
+                                SizedBox(height: isTablet ? 4.0 : 4.h),
                                 Text(
-                                  controller.formattedEndTime,
+                                  'By signing up, you agree to our Terms and Conditions and Privacy Policy.',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black38,
+                                    fontSize: isTablet ? 12.0 : 12.sp,
+                                    color: Colors.black45,
+                                    height: 1.4,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 16.h),
-
-              // ── Organization Button ──────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 16.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.02),
-                        blurRadius: 10.r,
-                        offset: Offset(0, 4.h),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Text(
-                              'Organizer Name',
-                              style: GoogleFonts.poppins(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1D1D2C),
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Obx(
-                              () => Text(
-                                controller.organizerName.value.isEmpty
-                                    ? 'Name of Organizer'
-                                    : controller.organizerName.value,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13.sp,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ),
 
-              SizedBox(height: 12.h),
+                  SizedBox(height: isTablet ? 40.0 : 40.h),
 
-              // ── Team Details Button ──────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: GestureDetector(
-                  onTap: () => _editTeamDetails(context, controller),
-                  child: Container(
+                  // ── Schedule Event Button ────────────────────────────────
+                  Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 16.h,
+                      horizontal: isTablet ? 20.0 : 20.w,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10.r,
-                          offset: Offset(0, 4.h),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Organization Name',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1D1D2C),
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Obx(
-                                () => Text(
-                                  controller.teamName.value.isEmpty
-                                      ? 'Enter your team name and location'
-                                      : '${controller.teamName.value} - ${controller.teamLocation.value}',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13.sp,
-                                    color: Colors.black38,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 16.sp,
-                          color: Colors.black38,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 12.h),
-              // ── Organization Button ──────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: GestureDetector(
-                  onTap: () => _editOrganization(context, controller),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 20.w,
-                      vertical: 16.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Organizer Type',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1D1D2C),
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'Type of Organization',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13.sp,
-                                  color: Colors.black38,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(
-                          Icons.arrow_forward_ios_rounded,
-                          size: 16.sp,
-                          color: Colors.black38,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 12.h),
-
-              // ── Terms and Conditions ─────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: controller.toggleTerms,
-                      child: Obx(
-                        () => Container(
-                          width: 22.sp,
-                          height: 22.sp,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: controller.agreeToTerms.value
-                                  ? AppColors.primary
-                                  : Colors.black38,
-                              width: 1.5,
-                            ),
-                            color: controller.agreeToTerms.value
-                                ? AppColors.primary
-                                : Colors.transparent,
-                          ),
-                          child: controller.agreeToTerms.value
-                              ? Icon(
-                                  Icons.check,
-                                  size: 14.sp,
-                                  color: Colors.white,
-                                )
-                              : null,
-                        ),
+                    child: Obx(
+                      () => PrimaryButton(
+                        text: controller.isLoading.value
+                            ? 'Scheduling...'
+                            : 'Schedule Event',
+                        onPressed: controller.isLoading.value
+                            ? null
+                            : () {
+                                if (!controller.agreeToTerms.value) {
+                                  Get.snackbar(
+                                    'Required',
+                                    'Please agree to the Terms and Conditions to schedule the event.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                  return;
+                                }
+                                _showConfirmationDialog(context, controller);
+                              },
                       ),
                     ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () =>
-                            Get.to(() => const TermsConditionsScreen()),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Terms and Conditions *',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1D1D2C),
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                            SizedBox(height: 4.h),
-                            Text(
-                              'By signing up, you agree to our Terms and Conditions and Privacy Policy.',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12.sp,
-                                color: Colors.black45,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 40.h),
-
-              // ── Schedule Event Button ────────────────────────────────
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: Obx(
-                  () => PrimaryButton(
-                    text: controller.isLoading.value
-                        ? 'Scheduling...'
-                        : 'Schedule Event',
-                    onPressed: controller.isLoading.value
-                        ? null
-                        : () {
-                            if (!controller.agreeToTerms.value) {
-                              Get.snackbar(
-                                'Required',
-                                'Please agree to the Terms and Conditions to schedule the event.',
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                              return;
-                            }
-                            _showConfirmationDialog(context, controller);
-                          },
                   ),
-                ),
-              ),
 
-              SizedBox(height: 30.h),
-            ],
+                  SizedBox(height: isTablet ? 30.0 : 30.h),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -595,16 +638,22 @@ class ScheduleEventScreen extends StatelessWidget {
     ScheduleEventController controller,
   ) {
     final List<String> categories = controller.categories.toList();
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     Get.dialog(
       Dialog(
         backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 40.0 : 16.w,
+          vertical: isTablet ? 40.0 : 24.h,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
         ),
         child: Container(
-          padding: EdgeInsets.all(24.w),
+          width: isTablet ? 450.0 : double.infinity,
+          padding: EdgeInsets.all(isTablet ? 24.0 : 24.w),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,31 +665,33 @@ class ScheduleEventScreen extends StatelessWidget {
                     onTap: () => Get.back(),
                     child: Icon(
                       Icons.close,
-                      size: 24.sp,
+                      size: isTablet ? 24.0 : 24.sp,
                       color: const Color(0xFF1D1D2C),
                     ),
                   ),
-                  SizedBox(width: 16.w),
+                  SizedBox(width: isTablet ? 16.0 : 16.w),
                   Text(
                     'Organization Type',
                     style: GoogleFonts.poppins(
-                      fontSize: 20.sp,
+                      fontSize: isTablet ? 20.0 : 20.sp,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1D1D2C),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 28.h),
+              SizedBox(height: isTablet ? 28.0 : 28.h),
 
               categories.isEmpty
                   ? Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.h),
+                      padding: EdgeInsets.symmetric(
+                        vertical: isTablet ? 24.0 : 24.h,
+                      ),
                       child: Center(
                         child: Text(
                           'No categories found',
                           style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
+                            fontSize: isTablet ? 14.0 : 14.sp,
                             color: Colors.black54,
                             fontWeight: FontWeight.w500,
                           ),
@@ -649,8 +700,8 @@ class ScheduleEventScreen extends StatelessWidget {
                     )
                   : Obx(
                       () => Wrap(
-                        spacing: 10.w,
-                        runSpacing: 12.h,
+                        spacing: isTablet ? 10.0 : 10.w,
+                        runSpacing: isTablet ? 12.0 : 12.h,
                         children: categories.map((category) {
                           final isSelected =
                               controller.organization.value == category;
@@ -661,14 +712,16 @@ class ScheduleEventScreen extends StatelessWidget {
                             },
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
-                                vertical: 10.h,
+                                horizontal: isTablet ? 16.0 : 16.w,
+                                vertical: isTablet ? 10.0 : 10.h,
                               ),
                               decoration: BoxDecoration(
                                 color: isSelected
                                     ? Colors.white
                                     : const Color(0xFFF1F1F5),
-                                borderRadius: BorderRadius.circular(25.r),
+                                borderRadius: BorderRadius.circular(
+                                  isTablet ? 25.0 : 25.r,
+                                ),
                                 border: isSelected
                                     ? Border.all(
                                         color: AppColors.primary,
@@ -679,7 +732,7 @@ class ScheduleEventScreen extends StatelessWidget {
                               child: Text(
                                 category,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 14.sp,
+                                  fontSize: isTablet ? 14.0 : 14.sp,
                                   fontWeight: FontWeight.w500,
                                   color: isSelected
                                       ? const Color(0xFF1D1D2C)
@@ -691,7 +744,7 @@ class ScheduleEventScreen extends StatelessWidget {
                         }).toList(),
                       ),
                     ),
-              SizedBox(height: 12.h),
+              SizedBox(height: isTablet ? 12.0 : 12.h),
             ],
           ),
         ),
@@ -710,25 +763,22 @@ class ScheduleEventScreen extends StatelessWidget {
     BuildContext context,
     ScheduleEventController controller,
   ) {
-    debugPrint("DEBUG Confirmation Dialog Opened:");
-    debugPrint("  - Organizer Name: ${controller.organizerName.value}");
-    debugPrint("  - Organization Type: ${controller.organization.value}");
-    debugPrint("  - Organization Name: ${controller.teamName.value}");
-    debugPrint("  - Location: ${controller.teamLocation.value}");
-    debugPrint("  - Duration: ${controller.durationDays.value} Days");
-    debugPrint("  - Starts: ${controller.formattedStartDate} at ${controller.formattedStartTime}");
-    debugPrint("  - Ends: ${controller.formattedEndDate} at ${controller.formattedEndTime}");
-    debugPrint("  - Target URL: ${ApiService.defaultBaseUrl}/event/create/");
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     Get.dialog(
       Dialog(
         backgroundColor: Colors.white,
-        insetPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+        insetPadding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 40.0 : 16.w,
+          vertical: isTablet ? 24.0 : 24.h,
+        ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
         ),
         child: Container(
-          padding: EdgeInsets.all(24.w),
+          width: isTablet ? 450.0 : double.infinity,
+          padding: EdgeInsets.all(isTablet ? 24.0 : 24.w),
           child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -741,7 +791,7 @@ class ScheduleEventScreen extends StatelessWidget {
                     Text(
                       'Confirm Event Details',
                       style: GoogleFonts.poppins(
-                        fontSize: 20.sp,
+                        fontSize: isTablet ? 20.0 : 20.sp,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1D1D2C),
                       ),
@@ -750,61 +800,68 @@ class ScheduleEventScreen extends StatelessWidget {
                       onTap: () => Get.back(),
                       child: Icon(
                         Icons.close,
-                        size: 24.sp,
+                        size: isTablet ? 24.0 : 24.sp,
                         color: const Color(0xFF1D1D2C),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: isTablet ? 8.0 : 8.h),
                 Text(
                   'Please review your event settings before scheduling.',
                   style: GoogleFonts.poppins(
-                    fontSize: 13.sp,
+                    fontSize: isTablet ? 13.0 : 13.sp,
                     color: Colors.black45,
                   ),
                 ),
-                SizedBox(height: 20.h),
+                SizedBox(height: isTablet ? 20.0 : 20.h),
                 const Divider(color: Color(0xFFEEEEF2), height: 1),
-                SizedBox(height: 16.h),
+                SizedBox(height: isTablet ? 16.0 : 16.h),
 
                 // Details List
                 _buildInfoRow(
+                  context,
                   'Organizer Name',
                   controller.organizerName.value.isEmpty
                       ? 'Not specified'
                       : controller.organizerName.value,
                 ),
                 _buildInfoRow(
+                  context,
                   'Organization Type',
                   controller.organization.value,
                 ),
                 _buildInfoRow(
+                  context,
                   'Organization Name',
                   controller.teamName.value.isEmpty
                       ? 'My Team'
                       : controller.teamName.value,
                 ),
                 _buildInfoRow(
+                  context,
                   'Location',
                   controller.teamLocation.value.isEmpty
                       ? 'Not specified'
                       : controller.teamLocation.value,
                 ),
                 _buildInfoRow(
+                  context,
                   'Duration',
                   '${controller.durationDays.value} Days',
                 ),
                 _buildInfoRow(
+                  context,
                   'Starts',
                   '${controller.formattedStartDate} at ${controller.formattedStartTime}',
                 ),
                 _buildInfoRow(
+                  context,
                   'Ends',
                   '${controller.formattedEndDate} at ${controller.formattedEndTime}',
                 ),
 
-                SizedBox(height: 12.h),
+                SizedBox(height: isTablet ? 12.0 : 12.h),
 
                 // Action Buttons
                 Obx(
@@ -828,18 +885,20 @@ class ScheduleEventScreen extends StatelessWidget {
                           },
                   ),
                 ),
-                SizedBox(height: 8.h),
+                SizedBox(height: isTablet ? 8.0 : 8.h),
                 SizedBox(
                   width: double.infinity,
                   child: TextButton(
                     onPressed: () => Get.back(),
                     style: TextButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                      padding: EdgeInsets.symmetric(
+                        vertical: isTablet ? 12.0 : 12.h,
+                      ),
                     ),
                     child: Text(
                       'Cancel & Edit',
                       style: GoogleFonts.poppins(
-                        fontSize: 14.sp,
+                        fontSize: isTablet ? 14.0 : 14.sp,
                         fontWeight: FontWeight.w600,
                         color: Colors.black54,
                       ),
@@ -855,9 +914,12 @@ class ScheduleEventScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return Padding(
-      padding: EdgeInsets.only(bottom: 14.h),
+      padding: EdgeInsets.only(bottom: isTablet ? 14.0 : 14.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

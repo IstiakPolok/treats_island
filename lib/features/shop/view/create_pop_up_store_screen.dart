@@ -207,262 +207,281 @@ class CreatePopUpStoreScreen extends StatelessWidget {
         ? Get.find<ScheduleEventController>()
         : Get.put(ScheduleEventController());
 
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 650.0 : double.infinity,
+            ),
+            child: SingleChildScrollView(
+              padding: isTablet
+                  ? const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0)
+                  : EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: const Icon(Icons.arrow_back),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Obx(() {
-                        final String name =
-                            controller.fundraiserDetails['name']?.toString() ??
-                            '';
-                        return Text(
-                          name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A1A2E),
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.info_outline,
-                      color: Colors.transparent,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.h),
-              Obx(() {
-                String? imageVal = controller.fundraiserDetails['image']
-                    ?.toString();
-                if (imageVal != null && imageVal.startsWith('/')) {
-                  imageVal = ApiService.defaultBaseUrl + imageVal;
-                }
-
-                String? videoVal = controller.fundraiserDetails['video']
-                    ?.toString();
-                if (videoVal != null && videoVal.startsWith('/')) {
-                  videoVal = ApiService.defaultBaseUrl + videoVal;
-                }
-
-                return Row(
-                  children: [
-                    Expanded(
-                      child: _UploadCard(
-                        title: 'Your Store Photo',
-                        subtitle:
-                            'Upload your skills or pitch\n'
-                            'to your supporters.',
-                        buttonText: 'Add Photo',
-                        mediaUrl: imageVal,
-                        isVideo: false,
-                        onTap: () =>
-                            _pickAndUploadMedia(context, isVideo: false),
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(Icons.arrow_back),
                       ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Expanded(
-                      child: _UploadCard(
-                        title: 'Your Store Video',
-                        subtitle:
-                            'Upload your skills or pitch\n'
-                            'to your supporters.',
-                        buttonText: 'Add video',
-                        mediaUrl: videoVal,
-                        isVideo: true,
-                        onTap: () =>
-                            _pickAndUploadMedia(context, isVideo: true),
-                      ),
-                    ),
-                  ],
-                );
-              }),
-              SizedBox(height: 18.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Obx(() {
-                      final String name =
-                          controller.fundraiserDetails['name']?.toString() ??
-                          '';
-                      return _InfoRow(
-                        title: 'Display Name',
-                        value: name,
-                        onTap: () => Get.to(() => const DisplayNameScreen()),
-                      );
-                    }),
-                    Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
-                    Obx(() {
-                      final String desc =
-                          controller.fundraiserDetails['description']
-                              ?.toString() ??
-                          '';
-                      return _InfoRow(
-                        title: 'Fundraiser description',
-                        value: desc,
-                        onTap: () => Get.to(() => const StoreNoteScreen()),
-                      );
-                    }),
-                    Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
-                    Obx(() {
-                      final goalVal = controller.fundraiserDetails['goal'];
-                      final double? parsedGoal = goalVal != null
-                          ? double.tryParse(goalVal.toString())
-                          : null;
-                      final String goalText = parsedGoal != null
-                          ? '\$${parsedGoal.toInt()}'
-                          : '';
-                      return _InfoRow(
-                        title: 'Fundraising Goal',
-                        value: goalText,
-                        onTap: () =>
-                            Get.to(() => const FundraisingGoalScreen()),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-              SizedBox(height: 18.h),
-              GestureDetector(
-                onTap: () {
-                  controller.isTermsAccepted.value =
-                      !controller.isTermsAccepted.value;
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Obx(
-                      () => Container(
-                        width: 20.w,
-                        height: 20.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: controller.isTermsAccepted.value
-                              ? const Color(0xFFFF6FB6)
-                              : Colors.transparent,
-                          border: Border.all(
-                            color: controller.isTermsAccepted.value
-                                ? const Color(0xFFFF6FB6)
-                                : Colors.black54,
-                            width: 1.5,
-                          ),
+                      Expanded(
+                        child: Center(
+                          child: Obx(() {
+                            final String name =
+                                controller.fundraiserDetails['name']
+                                    ?.toString() ??
+                                '';
+                            return Text(
+                              name,
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 16.0 : 16.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            );
+                          }),
                         ),
-                        child: controller.isTermsAccepted.value
-                            ? Icon(
-                                Icons.check_rounded,
-                                size: 13.sp,
-                                color: Colors.white,
-                              )
-                            : null,
                       ),
-                    ),
-                    SizedBox(width: 10.w),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Terms and Conditions',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                          SizedBox(height: 4.h),
-                          Text(
-                            'By signing up, you agree to our\n'
-                            'Terms and Conditions and Privacy Policy.',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.sp,
-                              color: Colors.black54,
-                              height: 1.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 26.h),
-              SizedBox(
-                width: double.infinity,
-                height: 52.h,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (!controller.isTermsAccepted.value) {
-                      Get.snackbar(
-                        'Agreement Required',
-                        'Please agree to the Terms and Conditions to proceed.',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFFFFEAF4),
-                        colorText: const Color(0xFFFF6FB6),
-                        margin: EdgeInsets.all(16.w),
-                        borderRadius: 16.r,
+                      IconButton(
+                        onPressed: () {},
                         icon: const Icon(
                           Icons.info_outline,
-                          color: Color(0xFFFF6FB6),
+                          color: Colors.transparent,
                         ),
-                      );
-                      return;
-                    }
-                    controller.isTermsAccepted.value = false;
-                    Get.off(
-                      () => EventOverviewScreen(
-                        controller: controller,
-                        showShopTab: true,
                       ),
+                    ],
+                  ),
+                  SizedBox(height: 10.h),
+                  Obx(() {
+                    String? imageVal = controller.fundraiserDetails['image']
+                        ?.toString();
+                    if (imageVal != null && imageVal.startsWith('/')) {
+                      imageVal = ApiService.defaultBaseUrl + imageVal;
+                    }
+
+                    String? videoVal = controller.fundraiserDetails['video']
+                        ?.toString();
+                    if (videoVal != null && videoVal.startsWith('/')) {
+                      videoVal = ApiService.defaultBaseUrl + videoVal;
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _UploadCard(
+                            title: 'Your Store Photo',
+                            subtitle:
+                                'Upload your skills or pitch\n'
+                                'to your supporters.',
+                            buttonText: 'Add Photo',
+                            mediaUrl: imageVal,
+                            isVideo: false,
+                            onTap: () =>
+                                _pickAndUploadMedia(context, isVideo: false),
+                          ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: _UploadCard(
+                            title: 'Your Store Video',
+                            subtitle:
+                                'Upload your skills or pitch\n'
+                                'to your supporters.',
+                            buttonText: 'Add video',
+                            mediaUrl: videoVal,
+                            isVideo: true,
+                            onTap: () =>
+                                _pickAndUploadMedia(context, isVideo: true),
+                          ),
+                        ),
+                      ],
                     );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF6FB6),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
+                  }),
+                  SizedBox(height: 18.h),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.w,
+                      vertical: 10.h,
                     ),
-                  ),
-                  child: Text(
-                    'Create My Pop-Up Store',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w600,
+                    decoration: BoxDecoration(
                       color: Colors.white,
+                      borderRadius: BorderRadius.circular(18.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Obx(() {
+                          final String name =
+                              controller.fundraiserDetails['name']
+                                  ?.toString() ??
+                              '';
+                          return _InfoRow(
+                            title: 'Display Name',
+                            value: name,
+                            onTap: () =>
+                                Get.to(() => const DisplayNameScreen()),
+                          );
+                        }),
+                        Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
+                        Obx(() {
+                          final String desc =
+                              controller.fundraiserDetails['description']
+                                  ?.toString() ??
+                              '';
+                          return _InfoRow(
+                            title: 'Fundraiser description',
+                            value: desc,
+                            onTap: () => Get.to(() => const StoreNoteScreen()),
+                          );
+                        }),
+                        Divider(height: 20.h, color: const Color(0xFFEDEDF2)),
+                        Obx(() {
+                          final goalVal = controller.fundraiserDetails['goal'];
+                          final double? parsedGoal = goalVal != null
+                              ? double.tryParse(goalVal.toString())
+                              : null;
+                          final String goalText = parsedGoal != null
+                              ? '\$${parsedGoal.toInt()}'
+                              : '';
+                          return _InfoRow(
+                            title: 'Fundraising Goal',
+                            value: goalText,
+                            onTap: () =>
+                                Get.to(() => const FundraisingGoalScreen()),
+                          );
+                        }),
+                      ],
                     ),
                   ),
-                ),
+                  SizedBox(height: 18.h),
+                  GestureDetector(
+                    onTap: () {
+                      controller.isTermsAccepted.value =
+                          !controller.isTermsAccepted.value;
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Obx(
+                          () => Container(
+                            width: 20.w,
+                            height: 20.w,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: controller.isTermsAccepted.value
+                                  ? const Color(0xFFFF6FB6)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: controller.isTermsAccepted.value
+                                    ? const Color(0xFFFF6FB6)
+                                    : Colors.black54,
+                                width: 1.5,
+                              ),
+                            ),
+                            child: controller.isTermsAccepted.value
+                                ? Icon(
+                                    Icons.check_rounded,
+                                    size: 13.sp,
+                                    color: Colors.white,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        SizedBox(width: 10.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Terms and Conditions',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 12.0 : 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1A1A2E),
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                'By signing up, you agree to our\n'
+                                'Terms and Conditions and Privacy Policy.',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 11.0 : 11.sp,
+                                  color: Colors.black54,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 26.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52.h,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        if (!controller.isTermsAccepted.value) {
+                          Get.snackbar(
+                            'Agreement Required',
+                            'Please agree to the Terms and Conditions to proceed.',
+                            snackPosition: SnackPosition.BOTTOM,
+                            backgroundColor: const Color(0xFFFFEAF4),
+                            colorText: const Color(0xFFFF6FB6),
+                            margin: EdgeInsets.all(16.w),
+                            borderRadius: 16.r,
+                            icon: const Icon(
+                              Icons.info_outline,
+                              color: Color(0xFFFF6FB6),
+                            ),
+                          );
+                          return;
+                        }
+                        controller.isTermsAccepted.value = false;
+                        Get.off(
+                          () => EventOverviewScreen(
+                            controller: controller,
+                            showShopTab: true,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF6FB6),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                        ),
+                      ),
+                      child: Text(
+                        'Create My Pop-Up Store',
+                        style: GoogleFonts.poppins(
+                          fontSize: isTablet ? 15.0 : 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 20.h),
+                ],
               ),
-              SizedBox(height: 20.h),
-            ],
+            ),
           ),
         ),
       ),
@@ -489,6 +508,9 @@ class _UploadCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -550,7 +572,7 @@ class _UploadCard extends StatelessWidget {
                           Text(
                             isVideo ? 'Your Video' : 'Your Photo',
                             style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
+                              fontSize: isTablet ? 12.0 : 12.sp,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                             ),
@@ -559,7 +581,7 @@ class _UploadCard extends StatelessWidget {
                           Text(
                             'Tap to change',
                             style: GoogleFonts.poppins(
-                              fontSize: 9.5.sp,
+                              fontSize: isTablet ? 9.5 : 9.5.sp,
                               color: Colors.white70,
                             ),
                           ),
@@ -590,7 +612,7 @@ class _UploadCard extends StatelessWidget {
                           title,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontSize: 12.sp,
+                            fontSize: isTablet ? 12.0 : 12.sp,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
@@ -600,7 +622,7 @@ class _UploadCard extends StatelessWidget {
                           subtitle,
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
-                            fontSize: 9.sp,
+                            fontSize: isTablet ? 9.0 : 9.sp,
                             color: Colors.black45,
                             height: 1.3,
                           ),
@@ -619,7 +641,7 @@ class _UploadCard extends StatelessWidget {
                           child: Text(
                             buttonText,
                             style: GoogleFonts.poppins(
-                              fontSize: 10.sp,
+                              fontSize: isTablet ? 10.0 : 10.sp,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF1A1A2E),
                             ),
@@ -644,6 +666,9 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12.r),
@@ -658,7 +683,7 @@ class _InfoRow extends StatelessWidget {
                   Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 12.sp,
+                      fontSize: isTablet ? 12.0 : 12.sp,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A2E),
                     ),
@@ -668,7 +693,7 @@ class _InfoRow extends StatelessWidget {
                     Text(
                       value,
                       style: GoogleFonts.poppins(
-                        fontSize: 11.sp,
+                        fontSize: isTablet ? 11.0 : 11.sp,
                         color: Colors.black54,
                       ),
                     ),

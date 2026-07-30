@@ -9,7 +9,8 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 
 class AccountSettingScreen extends StatefulWidget {
-  const AccountSettingScreen({super.key});
+  final bool isEmbedded;
+  const AccountSettingScreen({super.key, this.isEmbedded = false});
 
   @override
   State<AccountSettingScreen> createState() => _AccountSettingScreenState();
@@ -168,7 +169,9 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
           backgroundColor: Colors.black.withAlpha(26),
           colorText: Colors.black,
         );
-        Get.back(); // Go back to profile screen
+        if (!widget.isEmbedded) {
+          Get.back(); // Go back to profile screen
+        }
       } else {
         final errorMessage = response.body != null && response.body is Map
             ? (response.body['detail'] ??
@@ -201,17 +204,20 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
   }
 
   void _showDeleteDialog(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     showDialog<void>(
       context: context,
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(isTablet ? 16.0 : 16.r),
           ),
           content: Text(
             'Are you sure to delete account',
             style: GoogleFonts.poppins(
-              fontSize: 12.sp,
+              fontSize: isTablet ? 12.0 : 12.sp,
               fontWeight: FontWeight.w600,
               color: const Color(0xFF1A1A2E),
             ),
@@ -222,7 +228,7 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
               child: Text(
                 'Cancel',
                 style: GoogleFonts.poppins(
-                  fontSize: 12.sp,
+                  fontSize: isTablet ? 12.0 : 12.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFFFF6FB6),
                 ),
@@ -233,7 +239,7 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
               child: Text(
                 'Delete account',
                 style: GoogleFonts.poppins(
-                  fontSize: 12.sp,
+                  fontSize: isTablet ? 12.0 : 12.sp,
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFFFF5C5C),
                 ),
@@ -250,117 +256,134 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
     final avatarChar = _nameController.text.isNotEmpty
         ? _nameController.text[0].toUpperCase()
         : 'J';
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                child: Column(
-                  children: [
-                    Row(
+            : Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isTablet ? 420.0 : double.infinity,
+                  ),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                      vertical: isTablet ? 12.0 : 12.h,
+                    ),
+                    child: Column(
                       children: [
-                        IconButton(
-                          onPressed: () => Get.back(),
-                          icon: const Icon(Icons.close),
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              'Account setting',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1A1A2E),
+                        Row(
+                          children: [
+                            if (!widget.isEmbedded)
+                              IconButton(
+                                onPressed: () => Get.back(),
+                                icon: const Icon(Icons.close),
+                              ),
+                            Expanded(
+                              child: Align(
+                                alignment: widget.isEmbedded
+                                    ? Alignment.centerLeft
+                                    : Alignment.center,
+                                child: Text(
+                                  'Account setting',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: isTablet ? 14.0 : 14.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF1A1A2E),
+                                  ),
+                                ),
                               ),
                             ),
+                            TextButton(
+                              onPressed: _saveProfile,
+                              child: Text(
+                                'Save',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 12.0 : 12.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFFFF6FB6),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: isTablet ? 16.0 : 16.h),
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: isTablet ? 36.0 : 36.r,
+                                backgroundColor: const Color(0xFFD9D9D9),
+                                backgroundImage: _selectedImagePath != null
+                                    ? FileImage(File(_selectedImagePath!))
+                                    : (_userImageUrl.isNotEmpty
+                                          ? NetworkImage(_userImageUrl)
+                                          : null),
+                                child:
+                                    _selectedImagePath == null &&
+                                        _userImageUrl.isEmpty
+                                    ? Text(
+                                        avatarChar,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isTablet ? 20.0 : 20.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color(0xFF1A1A2E),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              SizedBox(height: isTablet ? 6.0 : 6.h),
+                              Text(
+                                'Edit',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 11.0 : 11.sp,
+                                  color: const Color(0xFF1A1A2E),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        TextButton(
-                          onPressed: _saveProfile,
+                        SizedBox(height: isTablet ? 18.0 : 18.h),
+                        _InputField(
+                          label: 'Name',
+                          controller: _nameController,
+                          hintText: 'John',
+                        ),
+                        SizedBox(height: isTablet ? 12.0 : 12.h),
+                        _InputField(
+                          label: 'Email',
+                          controller: _emailController,
+                          hintText: 'xyz@gmail.com',
+                          enabled: false, // email usually read-only
+                        ),
+                        SizedBox(height: isTablet ? 12.0 : 12.h),
+                        _InputField(
+                          label: 'Phone Number',
+                          controller: _phoneController,
+                          hintText: 'No phone number provided',
+                        ),
+                        SizedBox(height: isTablet ? 24.0 : 24.h),
+                        GestureDetector(
+                          onTap: () => _showDeleteDialog(context),
                           child: Text(
-                            'Save',
+                            'Delete my account',
                             style: GoogleFonts.poppins(
-                              fontSize: 12.sp,
+                              fontSize: isTablet ? 12.0 : 12.sp,
+                              color: const Color(0xFFFF5C5C),
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFFFF6FB6),
                             ),
                           ),
                         ),
+                        SizedBox(height: isTablet ? 20.0 : 20.h),
                       ],
                     ),
-                    SizedBox(height: 16.h),
-                    GestureDetector(
-                      onTap: _pickImage,
-                      child: Column(
-                        children: [
-                          CircleAvatar(
-                            radius: 36.r,
-                            backgroundColor: const Color(0xFFD9D9D9),
-                            backgroundImage: _selectedImagePath != null
-                                ? FileImage(File(_selectedImagePath!))
-                                : (_userImageUrl.isNotEmpty
-                                      ? NetworkImage(_userImageUrl)
-                                      : null),
-                            child:
-                                _selectedImagePath == null &&
-                                    _userImageUrl.isEmpty
-                                ? Text(
-                                    avatarChar,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 20.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFF1A1A2E),
-                                    ),
-                                  )
-                                : null,
-                          ),
-                          SizedBox(height: 6.h),
-                          Text(
-                            'Edit',
-                            style: GoogleFonts.poppins(
-                              fontSize: 11.sp,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 18.h),
-                    _InputField(
-                      label: 'Name',
-                      controller: _nameController,
-                      hintText: 'John',
-                    ),
-                    SizedBox(height: 12.h),
-                    _InputField(
-                      label: 'Email',
-                      controller: _emailController,
-                      hintText: 'xyz@gmail.com',
-                      enabled: false, // email usually read-only
-                    ),
-                    SizedBox(height: 12.h),
-                    _InputField(
-                      label: 'Phone Number',
-                      controller: _phoneController,
-                      hintText: 'No phone number provided',
-                    ),
-                    SizedBox(height: 24.h),
-                    GestureDetector(
-                      onTap: () => _showDeleteDialog(context),
-                      child: Text(
-                        'Delete my account',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12.sp,
-                          color: const Color(0xFFFF5C5C),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-                  ],
+                  ),
                 ),
               ),
       ),
@@ -383,31 +406,39 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: GoogleFonts.poppins(
-            fontSize: 11.sp,
+            fontSize: isTablet ? 11.0 : 11.sp,
             fontWeight: FontWeight.w500,
             color: Colors.black54,
           ),
         ),
-        SizedBox(height: 6.h),
+        SizedBox(height: isTablet ? 6.0 : 6.h),
         TextField(
           controller: controller,
           enabled: enabled,
+          style: GoogleFonts.poppins(fontSize: isTablet ? 13.0 : 13.sp),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: GoogleFonts.poppins(
-              fontSize: 12.sp,
+              fontSize: isTablet ? 12.0 : 12.sp,
               color: Colors.black38,
             ),
             filled: true,
             fillColor: const Color(0xFFF7F7FB),
+            contentPadding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 16.0 : 16.w,
+              vertical: isTablet ? 14.0 : 14.h,
+            ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(isTablet ? 14.0 : 14.r),
               borderSide: BorderSide.none,
             ),
           ),

@@ -34,7 +34,12 @@ class SplashController extends GetxController {
     // Check if token exists in SharedPreferences
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token != null && token.isNotEmpty) {
-      Get.offNamed(AppStrings.navbarRoute);
+      final email = await SharedPreferencesHelper.getEmail();
+      if (email.isEmpty || email == 'me' || email == 'null') {
+        Get.offNamed(AppStrings.nameSetRoute);
+      } else {
+        Get.offNamed(AppStrings.navbarRoute);
+      }
     } else {
       Get.offNamed(AppStrings.onboardingRoute);
     }

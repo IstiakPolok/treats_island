@@ -47,6 +47,7 @@ dependencies:
   share_plus: ^13.1.0
   firebase_core: ^4.10.0
   firebase_messaging: ^16.3.0
+  sms_autofill: ^2.5.0
 
 dev_dependencies:
   flutter_test:
@@ -63,7 +64,11 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/logo/logo.png"
+  image_path: "assets/logo/logo_white_bg.png"
+  remove_alpha_ios: true
+  background_color_ios: "#ffffff"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logo/logo_white_bg.png"
 
 
 # For information on the generic Dart part of this file, see the

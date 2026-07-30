@@ -26,9 +26,14 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
     return SizedBox(
-      width: width == double.infinity ? double.infinity : width.w,
-      height: height.h,
+      width: width == double.infinity
+          ? double.infinity
+          : (isTablet ? width : width.w),
+      height: isTablet ? height : height.h,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
@@ -36,15 +41,15 @@ class PrimaryButton extends StatelessWidget {
           foregroundColor: textColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius.r),
+            borderRadius: BorderRadius.circular(isTablet ? borderRadius : borderRadius.r),
           ),
-          padding: EdgeInsets.symmetric(horizontal: 24.w),
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 24.w),
         ),
         child: Text(
           text,
           style: GoogleFonts.poppins(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w900,
+            fontSize: isTablet ? 16 : 16.sp,
+            fontWeight: FontWeight.w600,
             letterSpacing: 1.2,
           ),
         ),

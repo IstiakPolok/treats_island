@@ -84,213 +84,259 @@ class _SupportersScreenState extends State<SupportersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Custom Header Row
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Get.back(),
-                    icon: Icon(
-                      Icons.arrow_back,
-                      size: 24.sp,
-                      color: const Color(0xFF1A1A2E),
-                    ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'Supporters',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isTablet ? 650.0 : double.infinity,
+            ),
+            child: Column(
+              children: [
+                // Custom Header Row
+                Padding(
+                  padding: isTablet
+                      ? const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 12.0,
+                        )
+                      : EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: Icon(
+                          Icons.arrow_back,
+                          size: isTablet ? 24.0 : 24.sp,
                           color: const Color(0xFF1A1A2E),
                         ),
                       ),
-                    ),
-                  ),
-                  SizedBox(width: 48.w), // To balance the back button width
-                ],
-              ),
-            ),
-            // Supporters List or Loader/Error
-            Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFF6FB6),
-                      ),
-                    )
-                  : _error != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            _error!,
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'Supporters',
                             style: GoogleFonts.poppins(
-                              fontSize: 14.sp,
-                              color: Colors.black54,
+                              fontSize: isTablet ? 18.0 : 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
                             ),
                           ),
-                          SizedBox(height: 12.h),
-                          ElevatedButton(
-                            onPressed: _fetchSupporters,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFF6FB6),
-                            ),
-                            child: Text(
-                              'Retry',
-                              style: GoogleFonts.poppins(color: Colors.white),
-                            ),
+                        ),
+                      ),
+                      SizedBox(width: isTablet ? 48.0 : 48.w),
+                    ],
+                  ),
+                ),
+                // Supporters List or Loader/Error
+                Expanded(
+                  child: _isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFFF6FB6),
                           ),
-                        ],
-                      ),
-                    )
-                  : _supportersList.isEmpty
-                  ? Center(
-                      child: Text(
-                        'No supporters yet.',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14.sp,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _fetchSupporters,
-                      color: const Color(0xFFFF6FB6),
-                      child: ListView.separated(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 24.w,
-                          vertical: 12.h,
-                        ),
-                        itemCount: _supportersList.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 24.h,
-                          thickness: 1.h,
-                          color: Colors.grey.shade100,
-                        ),
-                        itemBuilder: (context, index) {
-                          final supporter =
-                              _supportersList[index] as Map<String, dynamic>;
-                          final name =
-                              supporter['name']?.toString() ?? 'Anonymous';
-                          final email = supporter['email']?.toString() ?? '';
-                          final rawImg = supporter['image']?.toString();
-                          final String avatarUrl = ApiService.formatImageUrl(rawImg);
-                          final amountVal = supporter['total_purchased_amount'];
-                          final double amount = amountVal != null
-                              ? double.tryParse(amountVal.toString()) ?? 0.0
-                              : 0.0;
-
-                          return Row(
+                        )
+                      : _error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Avatar with fallback and loading state
-                              ClipOval(
-                                child: avatarUrl.isNotEmpty
-                                    ? Image.network(
-                                        avatarUrl,
-                                        width: 48.w,
-                                        height: 48.w,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Container(
-                                                width: 48.w,
-                                                height: 48.w,
-                                                color: const Color(0xFFF1F1F5),
-                                                child: Icon(
-                                                  Icons.person,
-                                                  color: Colors.black26,
-                                                  size: 24.sp,
-                                                ),
-                                              );
-                                            },
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
-                                              return Container(
-                                                width: 48.w,
-                                                height: 48.w,
-                                                color: const Color(0xFFF1F1F5),
-                                                child: Center(
-                                                  child: SizedBox(
-                                                    width: 18.w,
-                                                    height: 18.w,
-                                                    child: const CircularProgressIndicator(
-                                                      strokeWidth: 1.5,
-                                                      valueColor:
-                                                          AlwaysStoppedAnimation<
-                                                            Color
-                                                          >(Colors.black26),
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                      )
-                                    : Container(
-                                        width: 48.w,
-                                        height: 48.w,
-                                        color: const Color(0xFFF1F1F5),
-                                        child: Icon(
-                                          Icons.person,
-                                          color: Colors.black26,
-                                          size: 24.sp,
-                                        ),
-                                      ),
-                              ),
-                              SizedBox(width: 16.w),
-                              // Name and Email
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 14.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF1A1A2E),
-                                      ),
-                                    ),
-                                    if (email.isNotEmpty) ...[
-                                      SizedBox(height: 2.h),
-                                      Text(
-                                        email,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 11.sp,
-                                          color: Colors.black45,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
+                              Text(
+                                _error!,
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  color: Colors.black54,
                                 ),
                               ),
-                              // Amount Raised
-                              Text(
-                                '\$${amount.toStringAsFixed(0)}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1A1A2E),
+                              SizedBox(height: isTablet ? 12.0 : 12.h),
+                              ElevatedButton(
+                                onPressed: _fetchSupporters,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF6FB6),
+                                ),
+                                child: Text(
+                                  'Retry',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ],
-                          );
-                        },
-                      ),
-                    ),
+                          ),
+                        )
+                      : _supportersList.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No supporters yet.',
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 14.0 : 14.sp,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _fetchSupporters,
+                          color: const Color(0xFFFF6FB6),
+                          child: ListView.separated(
+                            padding: isTablet
+                                ? const EdgeInsets.symmetric(
+                                    horizontal: 24.0,
+                                    vertical: 12.0,
+                                  )
+                                : EdgeInsets.symmetric(
+                                    horizontal: 24.w,
+                                    vertical: 12.h,
+                                  ),
+                            itemCount: _supportersList.length,
+                            separatorBuilder: (context, index) => Divider(
+                              height: isTablet ? 24.0 : 24.h,
+                              thickness: 1,
+                              color: Colors.grey.shade100,
+                            ),
+                            itemBuilder: (context, index) {
+                              final supporter =
+                                  _supportersList[index]
+                                      as Map<String, dynamic>;
+                              final name =
+                                  supporter['name']?.toString() ?? 'Anonymous';
+                              final email =
+                                  supporter['email']?.toString() ?? '';
+                              final rawImg = supporter['image']?.toString();
+                              final String avatarUrl =
+                                  ApiService.formatImageUrl(rawImg);
+                              final amountVal =
+                                  supporter['total_purchased_amount'];
+                              final double amount = amountVal != null
+                                  ? double.tryParse(amountVal.toString()) ?? 0.0
+                                  : 0.0;
+
+                              final double avatarSize = isTablet ? 48.0 : 48.w;
+
+                              return Row(
+                                children: [
+                                  // Avatar with fallback and loading state
+                                  ClipOval(
+                                    child: avatarUrl.isNotEmpty
+                                        ? Image.network(
+                                            avatarUrl,
+                                            width: avatarSize,
+                                            height: avatarSize,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Container(
+                                                    width: avatarSize,
+                                                    height: avatarSize,
+                                                    color: const Color(
+                                                      0xFFF1F1F5,
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.person,
+                                                      color: Colors.black26,
+                                                      size: isTablet
+                                                          ? 24.0
+                                                          : 24.sp,
+                                                    ),
+                                                  );
+                                                },
+                                            loadingBuilder:
+                                                (
+                                                  context,
+                                                  child,
+                                                  loadingProgress,
+                                                ) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return Container(
+                                                    width: avatarSize,
+                                                    height: avatarSize,
+                                                    color: const Color(
+                                                      0xFFF1F1F5,
+                                                    ),
+                                                    child: Center(
+                                                      child: SizedBox(
+                                                        width: isTablet
+                                                            ? 18.0
+                                                            : 18.w,
+                                                        height: isTablet
+                                                            ? 18.0
+                                                            : 18.w,
+                                                        child: const CircularProgressIndicator(
+                                                          strokeWidth: 1.5,
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                Color
+                                                              >(Colors.black26),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                          )
+                                        : Container(
+                                            width: avatarSize,
+                                            height: avatarSize,
+                                            color: const Color(0xFFF1F1F5),
+                                            child: Icon(
+                                              Icons.person,
+                                              color: Colors.black26,
+                                              size: isTablet ? 24.0 : 24.sp,
+                                            ),
+                                          ),
+                                  ),
+                                  SizedBox(width: isTablet ? 16.0 : 16.w),
+                                  // Name and Email
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          name,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: isTablet ? 14.0 : 14.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF1A1A2E),
+                                          ),
+                                        ),
+                                        if (email.isNotEmpty) ...[
+                                          SizedBox(
+                                            height: isTablet ? 2.0 : 2.h,
+                                          ),
+                                          Text(
+                                            email,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isTablet ? 11.0 : 11.sp,
+                                              color: Colors.black45,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  // Amount Raised
+                                  Text(
+                                    '\$${amount.toStringAsFixed(0)}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isTablet ? 13.0 : 13.sp,
+                                      fontWeight: FontWeight.w600,
+                                      color: const Color(0xFF1A1A2E),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
