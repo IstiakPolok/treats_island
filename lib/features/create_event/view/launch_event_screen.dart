@@ -26,9 +26,43 @@ class LaunchEventScreen extends StatelessWidget {
               SizedBox(
                 height: isTablet ? 250.0 : 220.h,
                 width: double.infinity,
-                child: Image.asset(
-                  'assets/placeholder/myevent.png',
-                  fit: BoxFit.cover,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: Image.asset(
+                        'assets/placeholder/myevent.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top:
+                          MediaQuery.of(context).padding.top +
+                          (isTablet ? 12.0 : 8.h),
+                      left: isTablet ? 16.0 : 16.w,
+                      child: GestureDetector(
+                        onTap: () => Get.back(),
+                        child: Container(
+                          padding: EdgeInsets.all(isTablet ? 8.0 : 8.r),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            Icons.arrow_back,
+                            color: AppColors.textPrimary,
+                            size: isTablet ? 22.0 : 22.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 

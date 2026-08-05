@@ -599,6 +599,18 @@ class ScheduleEventScreen extends StatelessWidget {
                                   );
                                   return;
                                 }
+                                if (controller.organization.value.isEmpty ||
+                                    controller.organization.value ==
+                                        "Select an Organization Type") {
+                                  Get.snackbar(
+                                    'Required',
+                                    'Please select an Organization Type to schedule the event.',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                    backgroundColor: Colors.red.withAlpha(26),
+                                    colorText: Colors.red,
+                                  );
+                                  return;
+                                }
                                 _showConfirmationDialog(context, controller);
                               },
                       ),

@@ -224,6 +224,18 @@ class ScheduleEventController extends GetxController {
       return false;
     }
 
+    if (organization.value.isEmpty ||
+        organization.value == "Select an Organization Type") {
+      Get.snackbar(
+        'Required',
+        'Please select an Organization Type to schedule the event.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.red,
+      );
+      return false;
+    }
+
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) {
       Get.snackbar(

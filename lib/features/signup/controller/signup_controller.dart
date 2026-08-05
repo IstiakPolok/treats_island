@@ -109,6 +109,6 @@ class SignUpController extends GetxController {
   }
 
   void navigateToLogin() {
-    Get.offAllNamed(AppStrings.loginRoute);
+    Get.offNamed(AppStrings.loginRoute);
   }
 }

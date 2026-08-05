@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
@@ -41,6 +42,29 @@ class EventOverviewScreen extends StatefulWidget {
 class _EventOverviewScreenState extends State<EventOverviewScreen> {
   late bool _isShopSelected;
   String _organizerName = 'No Name added';
+
+  Future<void> _shareTextAndImage(String shareText, Rect? origin) async {
+    try {
+      final byteData = await rootBundle.load('assets/logo/logo.png');
+      final tempDir = await getTemporaryDirectory();
+      final file = await File('${tempDir.path}/logo.png').create();
+      await file.writeAsBytes(
+        byteData.buffer.asUint8List(
+          byteData.offsetInBytes,
+          byteData.lengthInBytes,
+        ),
+      );
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: shareText,
+        sharePositionOrigin: origin,
+      );
+    } catch (e) {
+      debugPrint('Error preparing image share: $e');
+      Share.share(shareText, sharePositionOrigin: origin);
+    }
+  }
 
   @override
   void initState() {
@@ -155,6 +179,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
           fundraiser['image'].toString(),
         );
       }
+      final String shopDescription =
+          fundraiser['description']?.toString() ??
+          'Support my fundraising campaign!';
 
       showModalBottomSheet<void>(
         context: context,
@@ -164,40 +191,20 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
           borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
         ),
         builder: (sheetContext) {
+          final double coverHeight = isTablet ? 140.0 : 140.h;
+          final double avatarSize = isTablet ? 100.0 : 100.w;
+
           return Padding(
             padding: EdgeInsets.only(
               left: 24.w,
               right: 24.w,
-              top: 24.h,
-              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 30.h,
+              top: 16.h,
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 24.h,
             ),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12.r),
-                    child: shopImageUrl.isNotEmpty
-                        ? Image.network(
-                            shopImageUrl,
-                            width: isTablet ? 280.0 : 300.w,
-                            height: isTablet ? 280.0 : 300.w,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Image.asset(
-                                  'assets/icons/icon2.png',
-                                  width: isTablet ? 280.0 : 300.w,
-                                  height: isTablet ? 280.0 : 300.w,
-                                  fit: BoxFit.cover,
-                                ),
-                          )
-                        : Image.asset(
-                            'assets/icons/icon2.png',
-                            width: isTablet ? 280.0 : 300.w,
-                            height: isTablet ? 280.0 : 300.w,
-                            fit: BoxFit.cover,
-                          ),
-                  ),
                   // Pull bar
                   Container(
                     width: 40.w,
@@ -207,45 +214,123 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                       borderRadius: BorderRadius.circular(2.r),
                     ),
                   ),
-
-                  Container(
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF8F8FB),
-                      borderRadius: BorderRadius.circular(20.r),
-                      border: Border.all(color: const Color(0xFFEAEAEE)),
-                    ),
-                    child: Row(
+                  SizedBox(height: 16.h),
+                  // Cover Image with overlapping circular avatar
+                  SizedBox(
+                    height: coverHeight + (avatarSize / 2),
+                    width: double.infinity,
+                    child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        SizedBox(width: 16.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                ' $shopName Pop-Up Store',
-
-                                style: GoogleFonts.poppins(
-                                  fontSize: isTablet ? 15.0 : 15.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1A1A2E),
-                                ),
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: coverHeight,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              isTablet ? 18.0 : 18.r,
+                            ),
+                            child: Image.asset(
+                              'assets/images/popupstorebg.PNG',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        // ── Overlapping Circular Profile Image ───────────────────
+                        Positioned(
+                          left: isTablet ? 20.0 : 20.w,
+                          top: coverHeight - (avatarSize / 2),
+                          child: Container(
+                            width: avatarSize,
+                            height: avatarSize,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: isTablet ? 3.5 : 3.5.w,
                               ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'Support my fundraising campaign!',
-                                style: GoogleFonts.poppins(
-                                  fontSize: isTablet ? 12.0 : 12.sp,
-                                  color: Colors.black54,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: shopImageUrl.isNotEmpty
+                                  ? Image.network(
+                                      shopImageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                                color: const Color(0xFFFFEAF4),
+                                                child: Icon(
+                                                  Icons.person,
+                                                  color: const Color(
+                                                    0xFFFF6FB6,
+                                                  ),
+                                                  size: isTablet ? 48.0 : 48.sp,
+                                                ),
+                                              ),
+                                    )
+                                  : Container(
+                                      color: const Color(0xFFFFEAF4),
+                                      child: Icon(
+                                        Icons.person,
+                                        color: const Color(0xFFFF6FB6),
+                                        size: isTablet ? 48.0 : 48.sp,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                        // ── Store Name Right of Avatar Below Cover ────────
+                        Positioned(
+                          left:
+                              (isTablet ? 20.0 : 20.w) +
+                              avatarSize +
+                              (isTablet ? 12.0 : 12.w),
+                          top: coverHeight + (isTablet ? 6.0 : 6.h),
+                          right: isTablet ? 16.0 : 16.w,
+                          child: Text(
+                            '$shopName Pop-Up Store',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 15.0 : 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 24.h),
+                  SizedBox(height: (avatarSize / 2) + 12.h),
+                  if (shopDescription.isNotEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(16.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F8FB),
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(color: const Color(0xFFEAEAEE)),
+                      ),
+                      child: Text(
+                        shopDescription,
+                        style: GoogleFonts.poppins(
+                          fontSize: isTablet ? 12.0 : 12.sp,
+                          color: Colors.black54,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20.h),
+                  ],
                   // Link display and copy button
                   Row(
                     children: [
@@ -337,25 +422,19 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           return GestureDetector(
                             onTap: () {
                               final String shareText = shareLink.isNotEmpty
-                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n$shareLink'
+                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n${shopDescription}\n\n$shareLink'
                                   : shopName.isNotEmpty
-                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!'
-                                  : 'Check out our fundraising Pop-Up Store!';
+                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n${shopDescription}'
+                                  : 'Check out our fundraising Pop-Up Store!\n\n${shopDescription}';
 
                               final box =
                                   btnContext.findRenderObject() as RenderBox?;
-                              final Rect? origin =
-                                  (box != null &&
-                                      box.hasSize &&
-                                      box.size.width > 0 &&
-                                      box.size.height > 0)
-                                  ? (box.localToGlobal(Offset.zero) & box.size)
-                                  : null;
-
-                              Share.share(
+                              _shareTextAndImage(
                                 shareText,
-                                subject: '$shopName Pop-Up Store',
-                                sharePositionOrigin: origin,
+                                box != null
+                                    ? (box.localToGlobal(Offset.zero) &
+                                          box.size)
+                                    : null,
                               );
                             },
                             child: Container(
@@ -807,6 +886,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   }
 
   List<Widget> _buildShopCreatedChildren(Map<String, dynamic>? fundraiser) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
     final String? imgPath = fundraiser?['image']?.toString();
     final String? vidPath = fundraiser?['video']?.toString();
 
@@ -820,60 +902,142 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         ? ApiService.formatImageUrl(vidPath)
         : null;
 
+    final double coverHeight = isTablet ? 140.0 : 140.h;
+    final double avatarSize = isTablet ? 100.0 : 120.w;
+
     return [
-      GestureDetector(
-        onTap: () {
-          debugPrint('=== TAP VIDEO CARD: videoUrl = $videoUrl ===');
-          if (videoUrl != null) {
-            Get.to(() => VideoPlayerScreen(videoUrl: videoUrl));
-          }
-        },
-        child: Container(
-          height: 140.h,
-          width: double.infinity,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(18.r)),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18.r),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.network(
-                  imageUrl,
-                  fit: BoxFit.fitHeight,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: const Color(0xFFF1F1F5),
-                      child: Icon(
-                        Icons.broken_image,
-                        color: Colors.black26,
-                        size: 40.sp,
+      SizedBox(
+        height: coverHeight + (avatarSize / 2),
+        width: double.infinity,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // ── Cover Image ──────────────────────────────────────────
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: coverHeight,
+              child: GestureDetector(
+                onTap: () {
+                  if (videoUrl != null) {
+                    Get.to(() => VideoPlayerScreen(videoUrl: videoUrl));
+                  }
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(isTablet ? 18.0 : 18.r),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(
+                        'assets/images/popupstorebg.PNG',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/popupstorebg.PNG',
+                            fit: BoxFit.cover,
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-                if (videoUrl != null) ...[
-                  Container(color: Colors.black26),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Padding(
-                      padding: EdgeInsets.all(8.r),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black26,
-                          borderRadius: BorderRadius.circular(50.r),
+                      if (videoUrl != null) ...[
+                        Container(color: Colors.black12),
+                        Align(
+                          alignment: Alignment.bottomRight,
+                          child: Padding(
+                            padding: EdgeInsets.all(isTablet ? 8.0 : 8.r),
+                            child: Container(
+                              padding: EdgeInsets.all(isTablet ? 6.0 : 6.r),
+                              decoration: BoxDecoration(
+                                color: Colors.black45,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2.0,
+                                ),
+                              ),
+                              child: Icon(
+                                Icons.play_arrow,
+                                size: isTablet ? 26.0 : 26.sp,
+                                color: const Color(0xFFFF6FB6),
+                              ),
+                            ),
+                          ),
                         ),
-                        child: Icon(
-                          Icons.play_arrow,
-                          size: 26.sp,
-                          color: const Color(0xFFFF6FB6),
-                        ),
-                      ),
-                    ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
+                ),
+              ),
             ),
-          ),
+            // ── Overlapping Circular Profile Image ───────────────────
+            Positioned(
+              left: isTablet ? 20.0 : 20.w,
+              top: coverHeight - (avatarSize / 2),
+              child: Container(
+                width: avatarSize,
+                height: avatarSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(
+                    color: const Color(0xFFFF6FB6),
+                    width: isTablet ? 3.5 : 3.5.w,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: imageUrl.isNotEmpty
+                      ? Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: const Color(0xFFFFEAF4),
+                              child: Icon(
+                                Icons.person,
+                                color: const Color(0xFFFF6FB6),
+                                size: isTablet ? 50.0 : 50.sp,
+                              ),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: const Color(0xFFFFEAF4),
+                          child: Icon(
+                            Icons.person,
+                            color: const Color(0xFFFF6FB6),
+                            size: isTablet ? 50.0 : 50.sp,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+            // ── Store Name Right of Avatar Below Cover ────────
+            Positioned(
+              left:
+                  (isTablet ? 20.0 : 20.w) +
+                  avatarSize +
+                  (isTablet ? 12.0 : 12.w),
+              top: coverHeight + (isTablet ? 6.0 : 6.h),
+              right: isTablet ? 16.0 : 16.w,
+              child: Text(
+                '${fundraiser?['name']?.toString() ?? 'My Shop'} ',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.poppins(
+                  fontSize: isTablet ? 15.0 : 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1A1A2E),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       SizedBox(height: 16.h),
@@ -1639,7 +1803,24 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
         return _Card(
           title: 'Payout Manager',
-          badge: 'Secure & Simple',
+          trailing: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: isTablet ? 10.0 : 10.w,
+              vertical: isTablet ? 4.0 : 4.h,
+            ),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F1F5),
+              borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
+            ),
+            child: Text(
+              'Secure & Simple',
+              style: GoogleFonts.poppins(
+                fontSize: isTablet ? 10.0 : 10.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black54,
+              ),
+            ),
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1732,7 +1913,6 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       SizedBox(height: 16.h),
       _Card(
         title: 'Event Details',
-        trailing: _SmallPill(text: 'Edit'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1862,9 +2042,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                           'Create your personalized Pop-Up Store';
 
                       final box = context.findRenderObject() as RenderBox?;
-                      Share.share(
+                      _shareTextAndImage(
                         shareText,
-                        sharePositionOrigin: box != null
+                        box != null
                             ? (box.localToGlobal(Offset.zero) & box.size)
                             : null,
                       );
@@ -2734,9 +2914,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       final box = context.findRenderObject() as RenderBox?;
-                      Share.share(
+                      _shareTextAndImage(
                         shareText,
-                        sharePositionOrigin: box != null
+                        box != null
                             ? (box.localToGlobal(Offset.zero) & box.size)
                             : null,
                       );
@@ -2765,9 +2945,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     GestureDetector(
                       onTap: () {
                         final box = context.findRenderObject() as RenderBox?;
-                        Share.share(
+                        _shareTextAndImage(
                           shareText,
-                          sharePositionOrigin: box != null
+                          box != null
                               ? (box.localToGlobal(Offset.zero) & box.size)
                               : null,
                         );
@@ -2781,9 +2961,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     GestureDetector(
                       onTap: () {
                         final box = context.findRenderObject() as RenderBox?;
-                        Share.share(
+                        _shareTextAndImage(
                           shareText,
-                          sharePositionOrigin: box != null
+                          box != null
                               ? (box.localToGlobal(Offset.zero) & box.size)
                               : null,
                         );
@@ -2797,9 +2977,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     GestureDetector(
                       onTap: () {
                         final box = context.findRenderObject() as RenderBox?;
-                        Share.share(
+                        _shareTextAndImage(
                           shareText,
-                          sharePositionOrigin: box != null
+                          box != null
                               ? (box.localToGlobal(Offset.zero) & box.size)
                               : null,
                         );
@@ -2813,9 +2993,9 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                     GestureDetector(
                       onTap: () {
                         final box = context.findRenderObject() as RenderBox?;
-                        Share.share(
+                        _shareTextAndImage(
                           shareText,
-                          sharePositionOrigin: box != null
+                          box != null
                               ? (box.localToGlobal(Offset.zero) & box.size)
                               : null,
                         );
@@ -3424,14 +3604,12 @@ class _Card extends StatelessWidget {
   final String? subtitle;
   final Widget child;
   final Widget? trailing;
-  final String? badge;
 
   const _Card({
     required this.title,
     required this.child,
     this.subtitle,
     this.trailing,
-    this.badge,
   });
 
   @override
@@ -3480,44 +3658,13 @@ class _Card extends StatelessWidget {
                   ],
                 ],
               ),
-              if (badge != null)
-                _SmallPill(text: badge!)
-              else if (trailing != null)
+              if (trailing != null)
                 trailing!,
             ],
           ),
           SizedBox(height: isTablet ? 12.0 : 12.h),
           child,
         ],
-      ),
-    );
-  }
-}
-
-class _SmallPill extends StatelessWidget {
-  final String text;
-
-  const _SmallPill({required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isTablet = MediaQuery.of(context).size.width >= 600;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 10.0 : 10.w,
-        vertical: isTablet ? 4.0 : 4.h,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F1F5),
-        borderRadius: BorderRadius.circular(isTablet ? 20.0 : 20.r),
-      ),
-      child: Text(
-        text,
-        style: GoogleFonts.poppins(
-          fontSize: isTablet ? 10.0 : 10.sp,
-          fontWeight: FontWeight.w600,
-          color: Colors.black54,
-        ),
       ),
     );
   }

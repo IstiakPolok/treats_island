@@ -9,11 +9,9 @@ import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 
 class OTPController extends GetxController {
-  final List<TextEditingController> otpControllers = List.generate(
-    6,
-    (index) => TextEditingController(),
-  );
-  final List<FocusNode> focusNodes = List.generate(6, (index) => FocusNode());
+  final TextEditingController otpController = TextEditingController();
+  final FocusNode otpFocusNode = FocusNode();
+  final RxString code = ''.obs;
 
   final RxInt activeIndex = 0.obs;
   final RxInt secondsRemaining = 45.obs;
@@ -32,6 +30,10 @@ class OTPController extends GetxController {
     final Map? args = Get.arguments as Map?;
     phone = args?['phone'] ?? args?['email'] ?? '';
     fromSignUp = args?['fromSignUp'] ?? false;
+    otpController.addListener(() {
+      code.value = otpController.text;
+      activeIndex.value = otpController.text.length;
+    });
     super.onInit();
     _listenForSms();
   }
@@ -41,11 +43,9 @@ class OTPController extends GetxController {
       final appSignature = await SmsAutoFill().getAppSignature;
       debugPrint('=== App Signature for SMS: $appSignature ===');
       await SmsAutoFill().listenForCode();
-      SmsAutoFill().code.listen((code) {
-        if (code.isNotEmpty && code.length == 6) {
-          for (int i = 0; i < 6; i++) {
-            otpControllers[i].text = code[i];
-          }
+      SmsAutoFill().code.listen((smsCode) {
+        if (smsCode.isNotEmpty && smsCode.length == 6) {
+          otpController.text = smsCode;
           verifyOTP();
         }
       });
@@ -120,7 +120,7 @@ class OTPController extends GetxController {
   }
 
   void verifyOTP() async {
-    String otp = otpControllers.map((controller) => controller.text).join();
+    String otp = otpController.text;
     if (otp.length < 6) {
       hasError.value = true;
       return;
@@ -173,10 +173,14 @@ class OTPController extends GetxController {
             if (fullName != null && fullName.isNotEmpty && fullName != 'null') {
               await SharedPreferencesHelper.saveName(fullName);
             }
-            if (userEmail != null && userEmail.isNotEmpty && userEmail != 'null') {
+            if (userEmail != null &&
+                userEmail.isNotEmpty &&
+                userEmail != 'null') {
               await SharedPreferencesHelper.saveEmail(userEmail);
             }
-            if (userPhone != null && userPhone.isNotEmpty && userPhone != 'null') {
+            if (userPhone != null &&
+                userPhone.isNotEmpty &&
+                userPhone != 'null') {
               await SharedPreferencesHelper.savePhone(userPhone);
             }
             if (image != null && image.isNotEmpty && image != 'null') {
@@ -193,9 +197,10 @@ class OTPController extends GetxController {
           );
 
           if (userEmail == null || userEmail.isEmpty || userEmail == 'null') {
-            Get.offAllNamed(AppStrings.nameSetRoute, arguments: {
-              'phone': userPhone ?? phone,
-            });
+            Get.offAllNamed(
+              AppStrings.nameSetRoute,
+              arguments: {'phone': userPhone ?? phone},
+            );
           } else {
             Get.offAllNamed(AppStrings.navbarRoute);
           }
@@ -235,12 +240,8 @@ class OTPController extends GetxController {
     } catch (e) {
       debugPrint('Error unregistering SMS listener: $e');
     }
-    for (var controller in otpControllers) {
-      controller.dispose();
-    }
-    for (var node in focusNodes) {
-      node.dispose();
-    }
+    otpController.dispose();
+    otpFocusNode.dispose();
     super.onClose();
   }
 }

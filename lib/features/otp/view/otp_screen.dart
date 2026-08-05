@@ -88,12 +88,86 @@ class OTPScreen extends StatelessWidget {
 
                           // ── OTP Input Fields ──────────────────────────────────────
                           AutofillGroup(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: List.generate(
-                                6,
-                                (index) =>
-                                    _buildOTPField(context, index, controller),
+                            child: GestureDetector(
+                              onTap: () {
+                                controller.otpFocusNode.requestFocus();
+                              },
+                              child: Stack(
+                                children: [
+                                  // Visual styled circles
+                                  Obx(() {
+                                    final codeValue = controller.code.value;
+                                    final activeIdx = controller.activeIndex.value;
+                                    return Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: List.generate(
+                                        6,
+                                        (index) {
+                                          final isActive = activeIdx == index;
+                                          final char = index < codeValue.length
+                                              ? codeValue[index]
+                                              : '';
+                                          return Container(
+                                            width: isTablet ? 56.0 : 48.r,
+                                            height: isTablet ? 56.0 : 48.r,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.pink.withValues(
+                                                alpha: 0.05,
+                                              ),
+                                              border: Border.all(
+                                                color: isActive
+                                                    ? AppColors.primary
+                                                    : Colors.pink.withValues(
+                                                        alpha: 0.3,
+                                                      ),
+                                                width: isActive
+                                                    ? (isTablet ? 2.0 : 2.w)
+                                                    : (isTablet ? 1.0 : 1.w),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                char,
+                                                style: GoogleFonts.poppins(
+                                                  fontSize: isTablet
+                                                      ? 18.0
+                                                      : 18.sp,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  }),
+                                  // Invisible TextField overlaying the Row to handle keyboard & autofill
+                                  Positioned.fill(
+                                    child: Opacity(
+                                      opacity: 0.01,
+                                      child: TextField(
+                                        controller: controller.otpController,
+                                        focusNode: controller.otpFocusNode,
+                                        keyboardType: TextInputType.number,
+                                        maxLength: 6,
+                                        autofillHints: const [
+                                          AutofillHints.oneTimeCode,
+                                        ],
+                                        decoration: const InputDecoration(
+                                          counterText: '',
+                                          border: InputBorder.none,
+                                        ),
+                                        onChanged: (value) {
+                                          if (value.length == 6) {
+                                            controller.verifyOTP();
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -200,11 +274,6 @@ class OTPScreen extends StatelessWidget {
                             return const SizedBox.shrink();
                           }),
 
-                          const Spacer(),
-
-                          // ── Custom Numeric Keypad ────────────────────────────────
-                          _buildCustomKeypad(context, controller),
-
                           SizedBox(height: isTablet ? 16.0 : 16.h),
 
                           // ── Verification Button ──────────────────────────────────
@@ -238,163 +307,6 @@ class OTPScreen extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildOTPField(
-    BuildContext context,
-    int index,
-    OTPController controller,
-  ) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width >= 600;
-
-    return Obx(() {
-      final isActive = controller.activeIndex.value == index;
-      return Container(
-        width: isTablet ? 56.0 : 48.r,
-        height: isTablet ? 56.0 : 48.r,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.pink.withValues(alpha: 0.05),
-          border: Border.all(
-            color: isActive
-                ? AppColors.primary
-                : Colors.pink.withValues(alpha: 0.3),
-            width: isActive ? (isTablet ? 2.0 : 2.w) : (isTablet ? 1.0 : 1.w),
-          ),
-        ),
-        child: Center(
-          child: TextField(
-            controller: controller.otpControllers[index],
-            focusNode: controller.focusNodes[index],
-            readOnly: true,
-            showCursor: false,
-            textAlign: TextAlign.center,
-            textAlignVertical: TextAlignVertical.center,
-            keyboardType: TextInputType.none,
-            style: GoogleFonts.poppins(
-              fontSize: isTablet ? 18.0 : 18.sp,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-            ),
-            decoration: const InputDecoration(
-              counterText: '',
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.zero,
-            ),
-            onTap: () {
-              controller.activeIndex.value = index;
-            },
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildCustomKeypad(BuildContext context, OTPController controller) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width >= 600;
-
-    Widget buildKey(String label, {VoidCallback? onTap, Widget? icon}) {
-      return Expanded(
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(30.r),
-          child: Container(
-            height: isTablet ? 56.0 : 50.h,
-            alignment: Alignment.center,
-            child:
-                icon ??
-                Text(
-                  label,
-                  style: GoogleFonts.poppins(
-                    fontSize: isTablet ? 24.0 : 24.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1A2E),
-                  ),
-                ),
-          ),
-        ),
-      );
-    }
-
-    void onNumberPressed(String digit) {
-      controller.hasError.value = false;
-      final index = controller.activeIndex.value;
-      if (index >= 0 && index < 6) {
-        controller.otpControllers[index].text = digit;
-        if (index < 5) {
-          controller.activeIndex.value = index + 1;
-        }
-      }
-      if (controller.otpControllers.every((c) => c.text.isNotEmpty)) {
-        controller.verifyOTP();
-      }
-    }
-
-    void onBackspacePressed() {
-      controller.hasError.value = false;
-      final index = controller.activeIndex.value;
-      if (index >= 0 && index < 6) {
-        if (controller.otpControllers[index].text.isNotEmpty) {
-          controller.otpControllers[index].text = '';
-        } else if (index > 0) {
-          controller.activeIndex.value = index - 1;
-          controller.otpControllers[index - 1].text = '';
-        }
-      }
-    }
-
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isTablet ? 12.0 : 12.w,
-        vertical: isTablet ? 8.0 : 8.h,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              buildKey('1', onTap: () => onNumberPressed('1')),
-              buildKey('2', onTap: () => onNumberPressed('2')),
-              buildKey('3', onTap: () => onNumberPressed('3')),
-            ],
-          ),
-          SizedBox(height: isTablet ? 10.0 : 10.h),
-          Row(
-            children: [
-              buildKey('4', onTap: () => onNumberPressed('4')),
-              buildKey('5', onTap: () => onNumberPressed('5')),
-              buildKey('6', onTap: () => onNumberPressed('6')),
-            ],
-          ),
-          SizedBox(height: isTablet ? 10.0 : 10.h),
-          Row(
-            children: [
-              buildKey('7', onTap: () => onNumberPressed('7')),
-              buildKey('8', onTap: () => onNumberPressed('8')),
-              buildKey('9', onTap: () => onNumberPressed('9')),
-            ],
-          ),
-          SizedBox(height: isTablet ? 10.0 : 10.h),
-          Row(
-            children: [
-              const Expanded(child: SizedBox.shrink()),
-              buildKey('0', onTap: () => onNumberPressed('0')),
-              buildKey(
-                '',
-                onTap: onBackspacePressed,
-                icon: Icon(
-                  Icons.backspace_outlined,
-                  color: const Color(0xFF1A1A2E),
-                  size: isTablet ? 22.0 : 22.sp,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }

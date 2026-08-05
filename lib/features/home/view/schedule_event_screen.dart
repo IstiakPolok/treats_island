@@ -528,73 +528,73 @@ class ScheduleEventScreen extends StatelessWidget {
 
   // ── Helper Sheets & Dialogs ────────────────────────────────────────
 
-  void _showDurationSelector(
-    BuildContext context,
-    ScheduleEventController controller,
-  ) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width >= 600;
+  // void _showDurationSelector(
+  //   BuildContext context,
+  //   ScheduleEventController controller,
+  // ) {
+  //   final size = MediaQuery.of(context).size;
+  //   final isTablet = size.width >= 600;
 
-    Get.bottomSheet(
-      Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: isTablet ? 450.0 : double.infinity,
-          ),
-          child: Container(
-            padding: EdgeInsets.all(isTablet ? 20.0 : 20.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(isTablet ? 20.0 : 20.r),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Select Event Duration',
-                  style: GoogleFonts.poppins(
-                    fontSize: isTablet ? 18.0 : 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1D1D2C),
-                  ),
-                ),
-                SizedBox(height: isTablet ? 16.0 : 16.h),
-                ...[3, 5, 7, 10, 14, 30].map(
-                  (days) => ListTile(
-                    title: Text(
-                      '$days days',
-                      style: GoogleFonts.poppins(
-                        fontSize: isTablet ? 14.0 : 14.sp,
-                      ),
-                    ),
-                    trailing: Obx(
-                      () => controller.durationDays.value == days
-                          ? Icon(
-                              Icons.check_circle,
-                              color: AppColors.primary,
-                              size: isTablet ? 20.0 : 20.sp,
-                            )
-                          : Icon(
-                              Icons.circle_outlined,
-                              size: isTablet ? 20.0 : 20.sp,
-                            ),
-                    ),
-                    onTap: () {
-                      controller.setDuration(days);
-                      Get.back();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  //   Get.bottomSheet(
+  //     Center(
+  //       child: ConstrainedBox(
+  //         constraints: BoxConstraints(
+  //           maxWidth: isTablet ? 450.0 : double.infinity,
+  //         ),
+  //         child: Container(
+  //           padding: EdgeInsets.all(isTablet ? 20.0 : 20.w),
+  //           decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.vertical(
+  //               top: Radius.circular(isTablet ? 20.0 : 20.r),
+  //             ),
+  //           ),
+  //           child: Column(
+  //             mainAxisSize: MainAxisSize.min,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Text(
+  //                 'Select Event Duration',
+  //                 style: GoogleFonts.poppins(
+  //                   fontSize: isTablet ? 18.0 : 18.sp,
+  //                   fontWeight: FontWeight.bold,
+  //                   color: const Color(0xFF1D1D2C),
+  //                 ),
+  //               ),
+  //               SizedBox(height: isTablet ? 16.0 : 16.h),
+  //               ...[3, 5, 7, 10, 14, 30].map(
+  //                 (days) => ListTile(
+  //                   title: Text(
+  //                     '$days days',
+  //                     style: GoogleFonts.poppins(
+  //                       fontSize: isTablet ? 14.0 : 14.sp,
+  //                     ),
+  //                   ),
+  //                   trailing: Obx(
+  //                     () => controller.durationDays.value == days
+  //                         ? Icon(
+  //                             Icons.check_circle,
+  //                             color: AppColors.primary,
+  //                             size: isTablet ? 20.0 : 20.sp,
+  //                           )
+  //                         : Icon(
+  //                             Icons.circle_outlined,
+  //                             size: isTablet ? 20.0 : 20.sp,
+  //                           ),
+  //                   ),
+  //                   onTap: () {
+  //                     controller.setDuration(days);
+  //                     Get.back();
+  //                   },
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _editOrganization(
     BuildContext context,

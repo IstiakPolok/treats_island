@@ -1,6 +1,8 @@
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import '../constants/app_strings.dart';
+import 'shared_preferences_helper.dart';
 
 class ApiService extends GetConnect {
   // Define the base URL. The user can update this constant as needed.
@@ -14,10 +16,46 @@ class ApiService extends GetConnect {
     return '$defaultBaseUrl$cleanPath';
   }
 
+  bool _isLoggingOut = false;
+
   @override
   void onInit() {
     httpClient.baseUrl = defaultBaseUrl;
     httpClient.timeout = const Duration(minutes: 5);
+
+    httpClient.addResponseModifier((request, response) async {
+      if (response.statusCode == 401) {
+        final body = response.body;
+        bool isTokenExpired = false;
+        if (body != null) {
+          if (body is Map) {
+            if (body['code'] == 'token_not_valid' ||
+                body['detail']?.toString().contains('token') == true) {
+              isTokenExpired = true;
+            }
+          } else if (body.toString().contains('token_not_valid') ||
+              body.toString().contains('Token is expired')) {
+            isTokenExpired = true;
+          }
+        } else {
+          isTokenExpired = true;
+        }
+
+        if (isTokenExpired && !_isLoggingOut) {
+          _isLoggingOut = true;
+          await SharedPreferencesHelper.clearAllData();
+          Get.offAllNamed(AppStrings.loginRoute);
+          Get.snackbar(
+            'Session Expired',
+            'Your session has expired. Please log in again.',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          _isLoggingOut = false;
+        }
+      }
+      return response;
+    });
+
     super.onInit();
   }
 
@@ -63,17 +101,12 @@ class ApiService extends GetConnect {
 
   /// Sends a POST request to send OTP code to the phone number.
   Future<Response> sendOtp(String phone) {
-    return post('/auth/send-otp/', {
-      'phone': phone,
-    });
+    return post('/auth/send-otp/', {'phone': phone});
   }
 
   /// Sends a POST request to verify the OTP code.
   Future<Response> verifyOtp(String phone, String otp) {
-    return post('/auth/verify-otp/', {
-      'phone': phone,
-      'otp': otp,
-    });
+    return post('/auth/verify-otp/', {'phone': phone, 'otp': otp});
   }
 
   /// Sends a PUT request with Bearer token to update user profile.
@@ -107,6 +140,16 @@ class ApiService extends GetConnect {
   /// Sends a GET request with Bearer token to fetch user profile.
   Future<Response> getProfile(String token) {
     return get('/auth/profile/', headers: {'Authorization': 'Bearer $token'});
+  }
+
+  /// Sends a GET request to fetch Terms and Conditions.
+  Future<Response> getTermsAndConditions() {
+    return get('/auth/terms-and-condition/');
+  }
+
+  /// Sends a GET request to fetch Privacy Policy.
+  Future<Response> getPrivacyPolicy() {
+    return get('/auth/privacy-policy/');
   }
 
   /// Sends a GET request to fetch organization types.

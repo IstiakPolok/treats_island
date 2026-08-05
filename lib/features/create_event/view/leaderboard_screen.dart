@@ -609,7 +609,8 @@ class LeaderboardScreen extends StatelessWidget {
                             avatarUrl: ApiService.formatImageUrl(
                               sortedParticipants[0]['image']?.toString(),
                             ),
-                            supporters: int.tryParse(
+                            supporters:
+                                int.tryParse(
                                   sortedParticipants[0]['total_supporters']
                                           ?.toString() ??
                                       '0',
@@ -638,7 +639,8 @@ class LeaderboardScreen extends StatelessWidget {
                             avatarUrl: ApiService.formatImageUrl(
                               sortedParticipants[1]['image']?.toString(),
                             ),
-                            supporters: int.tryParse(
+                            supporters:
+                                int.tryParse(
                                   sortedParticipants[1]['total_supporters']
                                           ?.toString() ??
                                       '0',
@@ -667,7 +669,8 @@ class LeaderboardScreen extends StatelessWidget {
                             avatarUrl: ApiService.formatImageUrl(
                               sortedParticipants[2]['image']?.toString(),
                             ),
-                            supporters: int.tryParse(
+                            supporters:
+                                int.tryParse(
                                   sortedParticipants[2]['total_supporters']
                                           ?.toString() ??
                                       '0',
@@ -714,12 +717,12 @@ class LeaderboardScreen extends StatelessWidget {
                               : 0.0,
                           avatarUrl:
                               (meObj != null &&
-                                      meObj['image'] != null &&
-                                      meObj['image'].toString().isNotEmpty)
-                                  ? ApiService.formatImageUrl(
-                                      meObj['image'].toString(),
-                                    )
-                                  : 'https://i.pravatar.cc/150?img=33',
+                                  meObj['image'] != null &&
+                                  meObj['image'].toString().isNotEmpty)
+                              ? ApiService.formatImageUrl(
+                                  meObj['image'].toString(),
+                                )
+                              : 'https://i.pravatar.cc/150?img=33',
                           supporters: meObj != null
                               ? (int.tryParse(
                                       meObj['total_supporters']?.toString() ??
@@ -762,7 +765,9 @@ class LeaderboardScreen extends StatelessWidget {
                             final String pName =
                                 p['full_name']?.toString() ?? 'Unnamed';
                             final String img = p['image']?.toString() ?? '';
-                            final String pAvatar = ApiService.formatImageUrl(img);
+                            final String pAvatar = ApiService.formatImageUrl(
+                              img,
+                            );
                             final double pAmount =
                                 double.tryParse(
                                   p['shop_achieved']?.toString() ?? '0',
@@ -775,8 +780,8 @@ class LeaderboardScreen extends StatelessWidget {
                                 0.0;
                             final int pSupporters =
                                 int.tryParse(
-                                      p['total_supporters']?.toString() ?? '0',
-                                    ) ??
+                                  p['total_supporters']?.toString() ?? '0',
+                                ) ??
                                 0;
                             return _buildAllStoreItem(
                               context: context,

@@ -330,7 +330,7 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                                   ?.toString() ??
                               '';
                           return _InfoRow(
-                            title: 'Display Name',
+                            title: 'Pop-Up Store Name',
                             value: name,
                             onTap: () =>
                                 Get.to(() => const DisplayNameScreen()),
@@ -469,7 +469,7 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        'Create My Pop-Up Store',
+                        'Save',
                         style: GoogleFonts.poppins(
                           fontSize: isTablet ? 15.0 : 15.sp,
                           fontWeight: FontWeight.w600,

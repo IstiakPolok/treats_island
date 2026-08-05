@@ -4,26 +4,26 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../../core/services/api_service.dart';
 
-class TermsConditionsScreen extends StatefulWidget {
+class PrivacyPolicyScreen extends StatefulWidget {
   final bool isEmbedded;
-  const TermsConditionsScreen({super.key, this.isEmbedded = false});
+  const PrivacyPolicyScreen({super.key, this.isEmbedded = false});
 
   @override
-  State<TermsConditionsScreen> createState() => _TermsConditionsScreenState();
+  State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
 }
 
-class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
+class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
   bool _isLoading = true;
   String? _errorMessage;
-  String _termsText = '';
+  String _policyText = '';
 
   @override
   void initState() {
     super.initState();
-    _fetchTerms();
+    _fetchPrivacyPolicy();
   }
 
-  Future<void> _fetchTerms() async {
+  Future<void> _fetchPrivacyPolicy() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -33,18 +33,18 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
       final apiService = Get.isRegistered<ApiService>()
           ? Get.find<ApiService>()
           : Get.put(ApiService());
-      final response = await apiService.getTermsAndConditions();
+      final response = await apiService.getPrivacyPolicy();
 
       if (response.status.isOk && response.body != null) {
         final Map<String, dynamic> data = Map<String, dynamic>.from(response.body);
         final String rawDescription = data['description']?.toString() ?? '';
         setState(() {
-          _termsText = _parseHtmlString(rawDescription);
+          _policyText = _parseHtmlString(rawDescription);
           _isLoading = false;
         });
       } else {
         setState(() {
-          _errorMessage = 'Failed to load Terms & Conditions. (Code: ${response.statusCode})';
+          _errorMessage = 'Failed to load Privacy Policy. (Code: ${response.statusCode})';
           _isLoading = false;
         });
       }
@@ -112,7 +112,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
                 onPressed: () => Navigator.of(context).pop(),
               ),
         title: Text(
-          'Terms & Conditions',
+          'Privacy Policy',
           style: GoogleFonts.poppins(
             color: const Color(0xFF1A1A2E),
             fontWeight: FontWeight.w600,
@@ -165,7 +165,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
               ),
               SizedBox(height: 20.h),
               ElevatedButton(
-                onPressed: _fetchTerms,
+                onPressed: _fetchPrivacyPolicy,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF6FB6),
                   shape: RoundedRectangleBorder(
@@ -197,7 +197,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Terms of Service',
+            'Privacy Policy',
             style: GoogleFonts.poppins(
               fontSize: isTablet ? 20.0 : 20.sp,
               fontWeight: FontWeight.w700,
@@ -214,7 +214,7 @@ class _TermsConditionsScreenState extends State<TermsConditionsScreen> {
           ),
           SizedBox(height: isTablet ? 20.0 : 20.h),
           Text(
-            _termsText,
+            _policyText,
             style: GoogleFonts.poppins(
               fontSize: isTablet ? 13.0 : 13.sp,
               color: Colors.black87,

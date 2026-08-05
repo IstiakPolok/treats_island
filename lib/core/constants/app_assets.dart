@@ -5,4 +5,5 @@ class AppAssets {
   static const String splashLogo = 'assets/logo/logo.png';
   static const String onboardingImage = 'assets/images/onboarding.png';
   static const String welcomeBg = 'assets/images/onboardbg.png';
+  static const String authBg = 'assets/images/authbg.png';
 }

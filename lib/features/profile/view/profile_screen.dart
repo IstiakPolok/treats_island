@@ -10,6 +10,7 @@ import '../../../core/services/shared_preferences_helper.dart';
 import 'account_setting_screen.dart';
 import 'events_list_screen.dart';
 import 'terms_conditions_screen.dart';
+import 'privacy_policy_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -165,30 +166,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       case 1:
         return const EventsListScreen(isEmbedded: true);
       case 2:
-        return Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              'Help Center',
-              style: GoogleFonts.poppins(
-                color: const Color(0xFF1A1A2E),
-                fontWeight: FontWeight.w600,
-                fontSize: 16.0,
-              ),
-            ),
-            centerTitle: false,
-          ),
-          body: Center(
-            child: Text(
-              'Help center information and support details will appear here.',
-              style: GoogleFonts.poppins(color: Colors.black45, fontSize: 13.0),
-            ),
-          ),
-        );
-      case 3:
         return const TermsConditionsScreen(isEmbedded: true);
+      case 3:
+        return const PrivacyPolicyScreen(isEmbedded: true);
       default:
         return const Center(child: Text('Select an option'));
     }
@@ -348,8 +328,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: Color(0xFFEDEDF2),
                                     ),
                                     _ProfileListItem(
-                                      icon: Icons.help_outline,
-                                      label: 'Help center',
+                                      icon: Icons.description_outlined,
+                                      label: 'Terms & conditions',
                                       isSelected: _selectedMenuIndex == 2,
                                       onTap: () {
                                         setState(() => _selectedMenuIndex = 2);
@@ -360,8 +340,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: Color(0xFFEDEDF2),
                                     ),
                                     _ProfileListItem(
-                                      icon: Icons.description_outlined,
-                                      label: 'Terms & conditions',
+                                      icon: Icons.privacy_tip_outlined,
+                                      label: 'Privacy policy',
                                       isSelected: _selectedMenuIndex == 3,
                                       onTap: () {
                                         setState(() => _selectedMenuIndex = 3);
@@ -555,19 +535,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     height: isTablet ? 1.0 : 1.h,
                                     color: const Color(0xFFEDEDF2),
                                   ),
-                                  const _ProfileListItem(
-                                    icon: Icons.help_outline,
-                                    label: 'Help center',
+
+                                  _ProfileListItem(
+                                    icon: Icons.description_outlined,
+                                    label: 'Terms & conditions',
+                                    onTap: () => Get.to(
+                                      () => const TermsConditionsScreen(),
+                                    ),
                                   ),
                                   Divider(
                                     height: isTablet ? 1.0 : 1.h,
                                     color: const Color(0xFFEDEDF2),
                                   ),
                                   _ProfileListItem(
-                                    icon: Icons.description_outlined,
-                                    label: 'Terms & conditions',
+                                    icon: Icons.privacy_tip_outlined,
+                                    label: 'Privacy policy',
                                     onTap: () => Get.to(
-                                      () => const TermsConditionsScreen(),
+                                      () => const PrivacyPolicyScreen(),
                                     ),
                                   ),
                                 ],

@@ -103,7 +103,7 @@ class LoginController extends GetxController {
   }
 
   void navigateToSignUp() {
-    Get.toNamed(AppStrings.signupRoute);
+    Get.offNamed(AppStrings.signupRoute);
   }
 
   Future<void> _registerDeviceToken(String authToken) async {
