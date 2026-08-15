@@ -367,93 +367,12 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 18.h),
-                  GestureDetector(
-                    onTap: () {
-                      controller.isTermsAccepted.value =
-                          !controller.isTermsAccepted.value;
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Obx(
-                          () => Container(
-                            width: 20.w,
-                            height: 20.w,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: controller.isTermsAccepted.value
-                                  ? const Color(0xFFFF6FB6)
-                                  : Colors.transparent,
-                              border: Border.all(
-                                color: controller.isTermsAccepted.value
-                                    ? const Color(0xFFFF6FB6)
-                                    : Colors.black54,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: controller.isTermsAccepted.value
-                                ? Icon(
-                                    Icons.check_rounded,
-                                    size: 13.sp,
-                                    color: Colors.white,
-                                  )
-                                : null,
-                          ),
-                        ),
-                        SizedBox(width: 10.w),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Terms and Conditions',
-                                style: GoogleFonts.poppins(
-                                  fontSize: isTablet ? 12.0 : 12.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF1A1A2E),
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                'By signing up, you agree to our\n'
-                                'Terms and Conditions and Privacy Policy.',
-                                style: GoogleFonts.poppins(
-                                  fontSize: isTablet ? 11.0 : 11.sp,
-                                  color: Colors.black54,
-                                  height: 1.3,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                   SizedBox(height: 26.h),
                   SizedBox(
                     width: double.infinity,
                     height: 52.h,
                     child: ElevatedButton(
                       onPressed: () async {
-                        if (!controller.isTermsAccepted.value) {
-                          Get.snackbar(
-                            'Agreement Required',
-                            'Please agree to the Terms and Conditions to proceed.',
-                            snackPosition: SnackPosition.BOTTOM,
-                            backgroundColor: const Color(0xFFFFEAF4),
-                            colorText: const Color(0xFFFF6FB6),
-                            margin: EdgeInsets.all(16.w),
-                            borderRadius: 16.r,
-                            icon: const Icon(
-                              Icons.info_outline,
-                              color: Color(0xFFFF6FB6),
-                            ),
-                          );
-                          return;
-                        }
-                        controller.isTermsAccepted.value = false;
                         Get.off(
                           () => EventOverviewScreen(
                             controller: controller,

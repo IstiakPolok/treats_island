@@ -10,6 +10,7 @@ import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:confetti/confetti.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
@@ -42,38 +43,124 @@ class EventOverviewScreen extends StatefulWidget {
 class _EventOverviewScreenState extends State<EventOverviewScreen> {
   late bool _isShopSelected;
   String _organizerName = 'No Name added';
+  late ConfettiController _confettiController;
 
-  Future<void> _shareTextAndImage(String shareText, Rect? origin) async {
-    try {
-      final byteData = await rootBundle.load('assets/logo/logo.png');
-      final tempDir = await getTemporaryDirectory();
-      final file = await File('${tempDir.path}/logo.png').create();
-      await file.writeAsBytes(
-        byteData.buffer.asUint8List(
-          byteData.offsetInBytes,
-          byteData.lengthInBytes,
+  Future<void> _shareTextAndImage(
+    String shareText,
+    Rect? origin, {
+    String? imageUrl,
+    String? videoUrl,
+  }) async {
+    // Show a loading dialog if downloading takes a moment
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6FB6)),
         ),
-      );
+      ),
+      barrierDismissible: false,
+    );
 
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: shareText,
-        sharePositionOrigin: origin,
-      );
+    try {
+      final List<XFile> filesToShare = [];
+
+      // Download custom video if available
+      if (videoUrl != null && videoUrl.isNotEmpty && videoUrl != 'null') {
+        final String videoFilename = 'video_${videoUrl.hashCode}.mp4';
+        final file = await _downloadFile(videoUrl, videoFilename);
+        if (file != null) {
+          filesToShare.add(XFile(file.path));
+        }
+      }
+
+      // Download custom image if available
+      if (imageUrl != null && imageUrl.isNotEmpty && imageUrl != 'null') {
+        final String imageFilename = 'image_${imageUrl.hashCode}.png';
+        final file = await _downloadFile(imageUrl, imageFilename);
+        if (file != null) {
+          filesToShare.add(XFile(file.path));
+        }
+      }
+
+      // If no custom media was downloaded, fallback to the default logo
+      if (filesToShare.isEmpty) {
+        try {
+          final byteData = await rootBundle.load('assets/logo/logo.png');
+          final tempDir = await getTemporaryDirectory();
+          final file = await File('${tempDir.path}/logo.png').create();
+          await file.writeAsBytes(
+            byteData.buffer.asUint8List(
+              byteData.offsetInBytes,
+              byteData.lengthInBytes,
+            ),
+          );
+          filesToShare.add(XFile(file.path));
+        } catch (e) {
+          debugPrint('Error preparing default logo share: $e');
+        }
+      }
+
+      // Close loading dialog
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      if (filesToShare.isNotEmpty) {
+        await Share.shareXFiles(
+          filesToShare,
+          text: shareText,
+          sharePositionOrigin: origin,
+        );
+      } else {
+        await Share.share(shareText, sharePositionOrigin: origin);
+      }
     } catch (e) {
-      debugPrint('Error preparing image share: $e');
-      Share.share(shareText, sharePositionOrigin: origin);
+      // Close loading dialog if open
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      debugPrint('Error preparing media share: $e');
+      await Share.share(shareText, sharePositionOrigin: origin);
     }
+  }
+
+  Future<File?> _downloadFile(String url, String filename) async {
+    try {
+      final HttpClient client = HttpClient();
+      final HttpClientRequest request = await client.getUrl(Uri.parse(url));
+      final HttpClientResponse response = await request.close();
+      if (response.statusCode == 200) {
+        final List<int> bytes = [];
+        await for (final List<int> chunk in response) {
+          bytes.addAll(chunk);
+        }
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/$filename');
+        await file.writeAsBytes(bytes);
+        return file;
+      }
+    } catch (e) {
+      debugPrint('Error downloading file $url: $e');
+    }
+    return null;
   }
 
   @override
   void initState() {
     super.initState();
     _isShopSelected = widget.showShopTab;
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     _loadOrganizerName();
     if (widget.showCongratsSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showCongratsSheet();
+        _confettiController.play();
+      });
+    } else if (widget.showShopTab) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _confettiController.play();
       });
     }
   }
@@ -89,6 +176,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
 
   @override
   void dispose() {
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -174,11 +262,23 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       // Construct shop image URL
       var shopImageUrl = '';
       if (fundraiser['image'] != null &&
-          fundraiser['image'].toString().isNotEmpty) {
+          fundraiser['image'].toString().isNotEmpty &&
+          fundraiser['image'].toString() != 'null') {
         shopImageUrl = ApiService.formatImageUrl(
           fundraiser['image'].toString(),
         );
       }
+
+      // Construct shop video URL
+      var shopVideoUrl = '';
+      if (fundraiser['video'] != null &&
+          fundraiser['video'].toString().isNotEmpty &&
+          fundraiser['video'].toString() != 'null') {
+        shopVideoUrl = ApiService.formatImageUrl(
+          fundraiser['video'].toString(),
+        );
+      }
+
       final String shopDescription =
           fundraiser['description']?.toString() ??
           'Support my fundraising campaign!';
@@ -434,6 +534,12 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                                 box != null
                                     ? (box.localToGlobal(Offset.zero) &
                                           box.size)
+                                    : null,
+                                imageUrl: shopImageUrl.isNotEmpty
+                                    ? shopImageUrl
+                                    : null,
+                                videoUrl: shopVideoUrl.isNotEmpty
+                                    ? shopVideoUrl
                                     : null,
                               );
                             },
@@ -1619,12 +1725,6 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       Obx(() {
         final Map<String, dynamic>? eventData =
             widget.controller.createdEvent['event'] as Map<String, dynamic>?;
-        final String status = eventData?['status']?.toString() ?? '';
-        final bool isOngoing = status.toLowerCase() == 'ongoing';
-
-        if (isOngoing) {
-          return const SizedBox.shrink();
-        }
 
         final List participants = eventData?['participants'] as List? ?? [];
 
@@ -2559,134 +2659,161 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24.w,
-            right: 24.w,
-            top: 20.h,
-            bottom: 24.h,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Stack(
+          alignment: Alignment.topCenter,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(
+                left: 24.w,
+                right: 24.w,
+                top: 20.h,
+                bottom: 24.h,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.celebration,
-                    color: AppColors.primary,
-                    size: 40.sp,
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                'Congratulations, $_organizerName!\nYour Event Is Scheduled',
-                style: GoogleFonts.poppins(
-                  fontSize: isTablet ? 20.0 : 20.sp,
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
-                  height: 1.3,
-                ),
-              ),
-              SizedBox(height: 8.h),
-              Text(
-                'Share the event details with your team and complete\n'
-                'the checklist before your fund raise.',
-                style: GoogleFonts.poppins(
-                  fontSize: isTablet ? 11.0 : 11.sp,
-                  color: const Color(0xff525252),
-                  height: 1.4,
-                ),
-              ),
-              SizedBox(height: 26.h),
-              _DetailsRow(
-                label: 'EVENT CODE',
-                value: eventCode,
-                trailing: Icon(
-                  Icons.copy_rounded,
-                  size: 16.sp,
-                  color: AppColors.primary,
-                ),
-              ),
-              SizedBox(height: 13.h),
-
-              _DashedDivider(color: const Color.fromARGB(172, 0, 0, 0)),
-              SizedBox(height: 13.h),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: _InfoMini(
-                      title: 'START DATE',
-                      value: displayStartDate,
-                    ),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _InfoMini(
-                      title: 'START TIME',
-                      value: displayStartTime,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InfoMini(title: 'END DATE', value: displayEndDate),
-                  ),
-                  SizedBox(width: 16.w),
-                  Expanded(
-                    child: _InfoMini(title: 'END TIME', value: displayEndTime),
-                  ),
-                ],
-              ),
-              SizedBox(height: 18.h),
-              SizedBox(
-                width: double.infinity,
-                height: 56.h,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    _showChecklistSheet();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.r),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Image.asset(
-                        'assets/icons/checklist.png',
-                        width: 16.sp,
-                        height: 16.sp,
+                      Icon(
+                        Icons.celebration,
+                        color: AppColors.primary,
+                        size: 40.sp,
                       ),
-                      SizedBox(width: 8.w),
-                      Text(
-                        'View checklist',
-                        style: GoogleFonts.poppins(
-                          fontSize: isTablet ? 16.0 : 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'Congratulations, $_organizerName!\nYour Event Is Scheduled',
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 20.0 : 20.sp,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF1A1A2E),
+                      height: 1.3,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Share the event details with your team and complete\n'
+                    'the checklist before your fund raise.',
+                    style: GoogleFonts.poppins(
+                      fontSize: isTablet ? 11.0 : 11.sp,
+                      color: const Color(0xff525252),
+                      height: 1.4,
+                    ),
+                  ),
+                  SizedBox(height: 26.h),
+                  _DetailsRow(
+                    label: 'EVENT CODE',
+                    value: eventCode,
+                    trailing: Icon(
+                      Icons.copy_rounded,
+                      size: 16.sp,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  SizedBox(height: 13.h),
+
+                  _DashedDivider(color: const Color.fromARGB(172, 0, 0, 0)),
+                  SizedBox(height: 13.h),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _InfoMini(
+                          title: 'START DATE',
+                          value: displayStartDate,
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: _InfoMini(
+                          title: 'START TIME',
+                          value: displayStartTime,
                         ),
                       ),
                     ],
                   ),
-                ),
+                  SizedBox(height: 12.h),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _InfoMini(
+                          title: 'END DATE',
+                          value: displayEndDate,
+                        ),
+                      ),
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: _InfoMini(
+                          title: 'END TIME',
+                          value: displayEndTime,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 18.h),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56.h,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _showChecklistSheet();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30.r),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/icons/checklist.png',
+                            width: 16.sp,
+                            height: 16.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            'View checklist',
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 16.0 : 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Positioned(
+              top: 0,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                colors: const [
+                  Color(0xFFFF6FB6),
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
+                ],
+              ),
+            ),
+          ],
         );
       },
     );
@@ -3083,514 +3210,554 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     final bool isTablet = screenWidth >= 600;
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7FB),
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            padding: isTablet
-                ? const EdgeInsets.fromLTRB(32.0, 56.0, 32.0, 18.0)
-                : EdgeInsets.fromLTRB(20.w, 50.h, 20.w, 18.h),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8E2FF),
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(isTablet ? 26.0 : 26.r),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: isTablet
+                    ? const EdgeInsets.fromLTRB(32.0, 56.0, 32.0, 18.0)
+                    : EdgeInsets.fromLTRB(20.w, 50.h, 20.w, 18.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8E2FF),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(isTablet ? 26.0 : 26.r),
+                  ),
+                ),
+                child: Column(
                   children: [
-                    IconButton(
-                      onPressed: () => Get.offAll(MainNavigationScreen()),
-                      icon: const Icon(Icons.close),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Obx(() {
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          onPressed: () => Get.offAll(MainNavigationScreen()),
+                          icon: const Icon(Icons.close),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Obx(() {
+                              final Map<String, dynamic>? eventData =
+                                  widget.controller.createdEvent['event']
+                                      as Map<String, dynamic>?;
+                              final String status =
+                                  eventData?['status']?.toString() ?? '';
+                              final bool isOngoing =
+                                  status.toLowerCase() == 'ongoing';
+
+                              if (isOngoing) {
+                                final parsedStart =
+                                    eventData?['start_date'] != null
+                                    ? DateTime.tryParse(
+                                        eventData!['start_date'].toString(),
+                                      )
+                                    : null;
+                                final durationDays =
+                                    eventData?['duration'] != null
+                                    ? (int.tryParse(
+                                            eventData!['duration'].toString(),
+                                          ) ??
+                                          5)
+                                    : 5;
+                                return _EventCountdownWidget(
+                                  startDate: parsedStart ?? DateTime.now(),
+                                  durationDays: parsedStart != null
+                                      ? durationDays
+                                      : 0,
+                                );
+                              }
+
+                              return Text(
+                                _isShopSelected ? 'Shop' : 'Event',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 18.0 : 18.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1A1A2E),
+                                ),
+                              );
+                            }),
+                          ),
+                        ),
+                        Obx(() {
                           final Map<String, dynamic>? eventData =
                               widget.controller.createdEvent['event']
                                   as Map<String, dynamic>?;
                           final String status =
                               eventData?['status']?.toString() ?? '';
+                          final bool isUpcoming =
+                              status.toLowerCase() == 'upcoming';
                           final bool isOngoing =
                               status.toLowerCase() == 'ongoing';
 
-                          if (isOngoing) {
-                            final parsedStart = eventData?['start_date'] != null
-                                ? DateTime.tryParse(
-                                    eventData!['start_date'].toString(),
-                                  )
-                                : null;
-                            final durationDays = eventData?['duration'] != null
-                                ? (int.tryParse(
-                                        eventData!['duration'].toString(),
-                                      ) ??
-                                      5)
-                                : 5;
-                            return _EventCountdownWidget(
-                              startDate: parsedStart ?? DateTime.now(),
-                              durationDays: parsedStart != null
-                                  ? durationDays
-                                  : 0,
-                            );
-                          }
-
-                          return Text(
-                            _isShopSelected ? 'Shop' : 'Event',
-                            style: GoogleFonts.poppins(
-                              fontSize: isTablet ? 18.0 : 18.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              hoverColor: Colors.transparent,
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                            ),
+                            child: PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                color: Color(0xFF1A1A2E),
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              color: Colors.white,
+                              elevation: 4,
+                              offset: const Offset(0, 40),
+                              onSelected: (value) async {
+                                if (value == 'edit') {
+                                  _showEditEventSheet();
+                                } else if (value == 'start') {
+                                  final eventData =
+                                      widget.controller.createdEvent['event']
+                                          as Map<String, dynamic>?;
+                                  final int? eventId =
+                                      eventData?['id'] as int? ??
+                                      widget.controller.createdEvent['id']
+                                          as int?;
+                                  if (eventId != null) {
+                                    final nowUtcStr = DateTime.now()
+                                        .toUtc()
+                                        .toIso8601String()
+                                        .replaceAll(RegExp(r'\.\d+'), '');
+                                    final success = await widget.controller
+                                        .updateEvent(
+                                          eventId: eventId,
+                                          startDateIso: nowUtcStr,
+                                        );
+                                    if (success) {
+                                      // Refresh full screen
+                                      await widget.controller.fetchMyEvents();
+                                      setState(() {});
+                                    }
+                                  }
+                                } else if (value == 'extend') {
+                                  final eventData =
+                                      widget.controller.createdEvent['event']
+                                          as Map<String, dynamic>?;
+                                  final int? eventId =
+                                      eventData?['id'] as int? ??
+                                      widget.controller.createdEvent['id']
+                                          as int?;
+                                  if (eventId != null) {
+                                    final success = await widget.controller
+                                        .extendEvent(eventId: eventId);
+                                    if (success) {
+                                      await widget.controller.fetchMyEvents();
+                                      setState(() {});
+                                    }
+                                  }
+                                }
+                              },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                    PopupMenuItem<String>(
+                                      value: 'edit',
+                                      enabled: !isOngoing,
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.edit,
+                                            color: isOngoing
+                                                ? Colors.grey
+                                                : const Color(0xFFFE53A1),
+                                            size: 18.sp,
+                                          ),
+                                          SizedBox(width: 12.w),
+                                          Expanded(
+                                            child: Text(
+                                              'Edit Event',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: isTablet
+                                                    ? 14.0
+                                                    : 14.sp,
+                                                fontWeight: FontWeight.w500,
+                                                color: isOngoing
+                                                    ? Colors.grey
+                                                    : const Color(0xFF1A1A2E),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      value: 'start',
+                                      enabled: !isOngoing,
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.flash_on,
+                                            color: isOngoing
+                                                ? Colors.grey
+                                                : const Color(0xFFFE53A1),
+                                            size: 18.sp,
+                                          ),
+                                          SizedBox(width: 12.w),
+                                          Expanded(
+                                            child: Text(
+                                              'Start Event Now',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: isTablet
+                                                    ? 14.0
+                                                    : 14.sp,
+                                                fontWeight: FontWeight.w500,
+                                                color: isOngoing
+                                                    ? Colors.grey
+                                                    : const Color(0xFF1A1A2E),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    PopupMenuItem<String>(
+                                      value: 'extend',
+                                      enabled: !isUpcoming,
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.add_circle,
+                                            color: isUpcoming
+                                                ? Colors.grey
+                                                : const Color(0xFFFE53A1),
+                                            size: 18.sp,
+                                          ),
+                                          SizedBox(width: 12.w),
+                                          Expanded(
+                                            child: Text(
+                                              'Extend 3 Days More',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: isTablet
+                                                    ? 14.0
+                                                    : 14.sp,
+                                                fontWeight: FontWeight.w500,
+                                                color: isUpcoming
+                                                    ? Colors.grey
+                                                    : const Color(0xFF1A1A2E),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                             ),
                           );
                         }),
-                      ),
+                      ],
                     ),
-                    Obx(() {
-                      final Map<String, dynamic>? eventData =
-                          widget.controller.createdEvent['event']
-                              as Map<String, dynamic>?;
-                      final String status =
-                          eventData?['status']?.toString() ?? '';
-                      final bool isUpcoming =
-                          status.toLowerCase() == 'upcoming';
-                      final bool isOngoing = status.toLowerCase() == 'ongoing';
+                    SizedBox(height: 6.h),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Obx(() {
+                            final Map<String, dynamic>? eventData =
+                                widget.controller.createdEvent['event']
+                                    as Map<String, dynamic>?;
 
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          hoverColor: Colors.transparent,
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                        ),
-                        child: PopupMenuButton<String>(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            color: Color(0xFF1A1A2E),
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          color: Colors.white,
-                          elevation: 4,
-                          offset: const Offset(0, 40),
-                          onSelected: (value) async {
-                            if (value == 'edit') {
-                              _showEditEventSheet();
-                            } else if (value == 'start') {
-                              final eventData =
-                                  widget.controller.createdEvent['event']
-                                      as Map<String, dynamic>?;
-                              final int? eventId =
-                                  eventData?['id'] as int? ??
-                                  widget.controller.createdEvent['id'] as int?;
-                              if (eventId != null) {
-                                final nowUtcStr = DateTime.now()
-                                    .toUtc()
-                                    .toIso8601String()
-                                    .replaceAll(RegExp(r'\.\d+'), '');
-                                final success = await widget.controller
-                                    .updateEvent(
-                                      eventId: eventId,
-                                      startDateIso: nowUtcStr,
-                                    );
-                                if (success) {
-                                  // Refresh full screen
-                                  await widget.controller.fetchMyEvents();
-                                  setState(() {});
-                                }
-                              }
-                            } else if (value == 'extend') {
-                              final eventData =
-                                  widget.controller.createdEvent['event']
-                                      as Map<String, dynamic>?;
-                              final int? eventId =
-                                  eventData?['id'] as int? ??
-                                  widget.controller.createdEvent['id'] as int?;
-                              if (eventId != null) {
-                                final success = await widget.controller
-                                    .extendEvent(eventId: eventId);
-                                if (success) {
-                                  await widget.controller.fetchMyEvents();
-                                  setState(() {});
-                                }
-                              }
+                            DateTime? startDateTime;
+                            DateTime? endDateTime;
+                            if (eventData?['start_date'] != null) {
+                              startDateTime = DateTime.tryParse(
+                                eventData!['start_date'].toString(),
+                              )?.toLocal();
                             }
-                          },
-                          itemBuilder: (BuildContext context) =>
-                              <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: 'edit',
-                                  enabled: !isOngoing,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.edit,
-                                        color: isOngoing
-                                            ? Colors.grey
-                                            : const Color(0xFFFE53A1),
-                                        size: 18.sp,
-                                      ),
-                                      SizedBox(width: 12.w),
-                                      Expanded(
-                                        child: Text(
-                                          'Edit Event',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: isTablet ? 14.0 : 14.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: isOngoing
-                                                ? Colors.grey
-                                                : const Color(0xFF1A1A2E),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'start',
-                                  enabled: !isOngoing,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.flash_on,
-                                        color: isOngoing
-                                            ? Colors.grey
-                                            : const Color(0xFFFE53A1),
-                                        size: 18.sp,
-                                      ),
-                                      SizedBox(width: 12.w),
-                                      Expanded(
-                                        child: Text(
-                                          'Start Event Now',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: isTablet ? 14.0 : 14.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: isOngoing
-                                                ? Colors.grey
-                                                : const Color(0xFF1A1A2E),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'extend',
-                                  enabled: !isUpcoming,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.add_circle,
-                                        color: isUpcoming
-                                            ? Colors.grey
-                                            : const Color(0xFFFE53A1),
-                                        size: 18.sp,
-                                      ),
-                                      SizedBox(width: 12.w),
-                                      Expanded(
-                                        child: Text(
-                                          'Extend 3 Days More',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: isTablet ? 14.0 : 14.sp,
-                                            fontWeight: FontWeight.w500,
-                                            color: isUpcoming
-                                                ? Colors.grey
-                                                : const Color(0xFF1A1A2E),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-                SizedBox(height: 6.h),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Obx(() {
-                        final Map<String, dynamic>? eventData =
-                            widget.controller.createdEvent['event']
-                                as Map<String, dynamic>?;
+                            if (eventData?['end_date'] != null) {
+                              endDateTime = DateTime.tryParse(
+                                eventData!['end_date'].toString(),
+                              )?.toLocal();
+                            }
 
-                        DateTime? startDateTime;
-                        DateTime? endDateTime;
-                        if (eventData?['start_date'] != null) {
-                          startDateTime = DateTime.tryParse(
-                            eventData!['start_date'].toString(),
-                          )?.toLocal();
-                        }
-                        if (eventData?['end_date'] != null) {
-                          endDateTime = DateTime.tryParse(
-                            eventData!['end_date'].toString(),
-                          )?.toLocal();
-                        }
+                            final String dynamicTeamName =
+                                eventData?['name']?.toString() ??
+                                'No Name added';
+                            final String dateRangeStr =
+                                (startDateTime != null && endDateTime != null)
+                                ? '${DateFormat('MMM d').format(startDateTime)} - ${DateFormat('MMM d').format(endDateTime)}'
+                                : 'No Date Added';
 
-                        final String dynamicTeamName =
-                            eventData?['name']?.toString() ?? 'No Name added';
-                        final String dateRangeStr =
-                            (startDateTime != null && endDateTime != null)
-                            ? '${DateFormat('MMM d').format(startDateTime)} - ${DateFormat('MMM d').format(endDateTime)}'
-                            : 'No Date Added';
+                            final creatorMap =
+                                eventData?['creator'] as Map<String, dynamic>?;
+                            final String creatorName =
+                                creatorMap?['full_name']?.toString() ?? '';
 
-                        final creatorMap =
-                            eventData?['creator'] as Map<String, dynamic>?;
-                        final String creatorName =
-                            creatorMap?['full_name']?.toString() ?? '';
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              creatorName.isNotEmpty
-                                  ? '$creatorName  '
-                                  : 'Organizer',
-                              style: GoogleFonts.poppins(
-                                fontSize: isTablet ? 12.0 : 12.sp,
-                                color: Colors.black45,
-                              ),
-                            ),
-                            SizedBox(height: isTablet ? 2.0 : 2.h),
-                            Row(
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  dynamicTeamName,
+                                  creatorName.isNotEmpty
+                                      ? '$creatorName  '
+                                      : 'Organizer',
                                   style: GoogleFonts.poppins(
-                                    fontSize: isTablet ? 16.0 : 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF1A1A2E),
+                                    fontSize: isTablet ? 12.0 : 12.sp,
+                                    color: Colors.black45,
+                                  ),
+                                ),
+                                SizedBox(height: isTablet ? 2.0 : 2.h),
+                                Row(
+                                  children: [
+                                    Text(
+                                      dynamicTeamName,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: isTablet ? 16.0 : 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF1A1A2E),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: isTablet ? 2.0 : 2.h),
+                                Text(
+                                  dateRangeStr,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: isTablet ? 12.0 : 12.sp,
+                                    color: Colors.black45,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }),
+                        ),
+                        InkWell(
+                          onTap: _showChecklistSheet,
+                          borderRadius: BorderRadius.circular(
+                            isTablet ? 18.0 : 18.r,
+                          ),
+                          child: CircleAvatar(
+                            radius: isTablet ? 18.0 : 18.r,
+                            backgroundColor: Colors.black,
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Image(
+                                    image: const AssetImage(
+                                      'assets/icons/checklist.png',
+                                    ),
+                                    width: isTablet ? 20.0 : 20.w,
+                                    height: isTablet ? 20.0 : 20.w,
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    width: isTablet ? 10.0 : 10.w,
+                                    height: isTablet ? 10.0 : 10.w,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: isTablet ? 2.0 : 2.h),
-                            Text(
-                              dateRangeStr,
-                              style: GoogleFonts.poppins(
-                                fontSize: isTablet ? 12.0 : 12.sp,
-                                color: Colors.black45,
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
-                    InkWell(
-                      onTap: _showChecklistSheet,
-                      borderRadius: BorderRadius.circular(
-                        isTablet ? 18.0 : 18.r,
-                      ),
-                      child: CircleAvatar(
-                        radius: isTablet ? 18.0 : 18.r,
-                        backgroundColor: Colors.black,
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: Image(
-                                image: const AssetImage(
-                                  'assets/icons/checklist.png',
-                                ),
-                                width: isTablet ? 20.0 : 20.w,
-                                height: isTablet ? 20.0 : 20.w,
-                              ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: Container(
-                                width: isTablet ? 10.0 : 10.w,
-                                height: isTablet ? 10.0 : 10.w,
-                                decoration: const BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
-                SizedBox(height: isTablet ? 16.0 : 16.h),
-                Container(
-                  padding: EdgeInsets.all(10.w),
+                    SizedBox(height: isTablet ? 16.0 : 16.h),
+                    Container(
+                      padding: EdgeInsets.all(10.w),
 
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30.r),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isShopSelected = false;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(24.r),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12.h),
-                            decoration: BoxDecoration(
-                              color: _isShopSelected
-                                  ? Colors.white
-                                  : AppColors.primary,
-                              borderRadius: BorderRadius.circular(
-                                isTablet ? 24.0 : 24.r,
-                              ),
-                              border: Border.all(
-                                color: _isShopSelected
-                                    ? Colors.black12
-                                    : Colors.transparent,
-                              ),
-                            ),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today_rounded,
-                                    size: isTablet ? 14.0 : 14.sp,
-                                    color: _isShopSelected
-                                        ? Colors.black45
-                                        : Colors.white,
-                                  ),
-                                  SizedBox(width: isTablet ? 6.0 : 6.w),
-                                  Text(
-                                    'Event',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isTablet ? 13.0 : 13.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: _isShopSelected
-                                          ? Colors.black45
-                                          : Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30.r),
                       ),
-                      SizedBox(width: isTablet ? 8.0 : 8.w),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              _isShopSelected = true;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(
-                            isTablet ? 24.0 : 24.r,
-                          ),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: isTablet ? 12.0 : 12.h,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isShopSelected = false;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(24.r),
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 12.h),
+                                decoration: BoxDecoration(
+                                  color: _isShopSelected
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                  borderRadius: BorderRadius.circular(
+                                    isTablet ? 24.0 : 24.r,
+                                  ),
+                                  border: Border.all(
+                                    color: _isShopSelected
+                                        ? Colors.black12
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today_rounded,
+                                        size: isTablet ? 14.0 : 14.sp,
+                                        color: _isShopSelected
+                                            ? Colors.black45
+                                            : Colors.white,
+                                      ),
+                                      SizedBox(width: isTablet ? 6.0 : 6.w),
+                                      Text(
+                                        'Event',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isTablet ? 13.0 : 13.sp,
+                                          fontWeight: FontWeight.w600,
+                                          color: _isShopSelected
+                                              ? Colors.black45
+                                              : Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: _isShopSelected
-                                  ? AppColors.primary
-                                  : Colors.white,
+                          ),
+                          SizedBox(width: isTablet ? 8.0 : 8.w),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isShopSelected = true;
+                                });
+                              },
                               borderRadius: BorderRadius.circular(
                                 isTablet ? 24.0 : 24.r,
                               ),
-                              border: Border.all(
-                                color: _isShopSelected
-                                    ? Colors.transparent
-                                    : Colors.black12,
-                              ),
-                            ),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.storefront_outlined,
-                                    size: isTablet ? 14.0 : 14.sp,
-                                    color: _isShopSelected
-                                        ? Colors.white
-                                        : Colors.black45,
+                              child: Container(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: isTablet ? 12.0 : 12.h,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _isShopSelected
+                                      ? AppColors.primary
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(
+                                    isTablet ? 24.0 : 24.r,
                                   ),
-                                  SizedBox(width: isTablet ? 6.0 : 6.w),
-                                  Obx(() {
-                                    final String? shopName = widget
-                                        .controller
-                                        .fundraiserDetails['name']
-                                        ?.toString();
-                                    final bool hasName =
-                                        shopName != null &&
-                                        shopName.trim().isNotEmpty &&
-                                        shopName != 'null';
-                                    return Text(
-                                      hasName
-                                          ? 'Pop-UP Store'
-                                          : 'Create Pop-UP Store',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: isTablet ? 13.0 : 13.sp,
-                                        fontWeight: FontWeight.w600,
+                                  border: Border.all(
+                                    color: _isShopSelected
+                                        ? Colors.transparent
+                                        : Colors.black12,
+                                  ),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.storefront_outlined,
+                                        size: isTablet ? 14.0 : 14.sp,
                                         color: _isShopSelected
                                             ? Colors.white
                                             : Colors.black45,
                                       ),
-                                    );
-                                  }),
-                                ],
+                                      SizedBox(width: isTablet ? 6.0 : 6.w),
+                                      Obx(() {
+                                        final String? shopName = widget
+                                            .controller
+                                            .fundraiserDetails['name']
+                                            ?.toString();
+                                        final bool hasName =
+                                            shopName != null &&
+                                            shopName.trim().isNotEmpty &&
+                                            shopName != 'null';
+                                        return Text(
+                                          hasName
+                                              ? 'Pop-UP Store'
+                                              : 'Create Pop-UP Store',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: isTablet ? 13.0 : 13.sp,
+                                            fontWeight: FontWeight.w600,
+                                            color: _isShopSelected
+                                                ? Colors.white
+                                                : Colors.black45,
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: isTablet
-                  ? const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0)
-                  : EdgeInsets.all(20.w),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 650.0),
-                  child: FutureBuilder<Map<String, dynamic>?>(
-                    future: _getFundraiserDetails(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: isTablet
+                      ? const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 20.0,
+                        )
+                      : EdgeInsets.all(20.w),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 650.0),
+                      child: FutureBuilder<Map<String, dynamic>?>(
+                        future: _getFundraiserDetails(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
 
-                      final fundraiser = snapshot.data;
-                      final String? name = fundraiser?['name']?.toString();
-                      final bool hasName =
-                          name != null &&
-                          name.trim().isNotEmpty &&
-                          name != 'null';
+                          final fundraiser = snapshot.data;
+                          final String? name = fundraiser?['name']?.toString();
+                          final bool hasName =
+                              name != null &&
+                              name.trim().isNotEmpty &&
+                              name != 'null';
 
-                      if (_isShopSelected) {
-                        return Column(
-                          children: hasName
-                              ? _buildShopCreatedChildren(fundraiser)
-                              : _buildShopChildren(),
-                        );
-                      } else {
-                        return Column(children: _buildEventChildren(hasName));
-                      }
-                    },
+                          if (_isShopSelected) {
+                            return Column(
+                              children: hasName
+                                  ? _buildShopCreatedChildren(fundraiser)
+                                  : _buildShopChildren(),
+                            );
+                          } else {
+                            return Column(
+                              children: _buildEventChildren(hasName),
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
+            ],
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              colors: const [
+                Color(0xFFFF6FB6),
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+              ],
             ),
           ),
         ],
@@ -3658,8 +3825,7 @@ class _Card extends StatelessWidget {
                   ],
                 ],
               ),
-              if (trailing != null)
-                trailing!,
+              if (trailing != null) trailing!,
             ],
           ),
           SizedBox(height: isTablet ? 12.0 : 12.h),
