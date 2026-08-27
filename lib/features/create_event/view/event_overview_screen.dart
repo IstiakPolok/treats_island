@@ -1150,7 +1150,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       _buildShopActionRow(fundraiser),
       SizedBox(height: 12.h),
       _buildShopListItem(
-        title: 'Store Note',
+        title: 'Message to Supporters',
         onTap: () => Get.to(() => const StoreNoteScreen())?.then((value) {
           if (value == true) {
             setState(() {});

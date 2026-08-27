@@ -498,7 +498,7 @@ class _UploadCard extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            'Tap to change',
+                            'Tap to change \nThe video will be less the 15 sec ',
                             style: GoogleFonts.poppins(
                               fontSize: isTablet ? 9.5 : 9.5.sp,
                               color: Colors.white70,

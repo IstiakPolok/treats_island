@@ -241,8 +241,12 @@ class _StoreNoteScreenState extends State<StoreNoteScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFFFEAF4),
-                                    borderRadius: BorderRadius.circular(isTablet ? 16.0 : 16.r),
-                                    border: Border.all(color: const Color(0xFFFFC9E1)),
+                                    borderRadius: BorderRadius.circular(
+                                      isTablet ? 16.0 : 16.r,
+                                    ),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFC9E1),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -297,10 +301,14 @@ class _StoreNoteScreenState extends State<StoreNoteScreen> {
                                   color: Colors.black38,
                                 ),
                                 enabledBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color(0xFFEDEDF2)),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFEDEDF2),
+                                  ),
                                 ),
                                 focusedBorder: const UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Color(0xFFFF6FB6)),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFFF6FB6),
+                                  ),
                                 ),
                               ),
                             ),
@@ -314,7 +322,9 @@ class _StoreNoteScreenState extends State<StoreNoteScreen> {
                                   backgroundColor: const Color(0xFFFF6FB6),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(isTablet ? 30.0 : 30.r),
+                                    borderRadius: BorderRadius.circular(
+                                      isTablet ? 30.0 : 30.r,
+                                    ),
                                   ),
                                 ),
                                 child: _isLoading
