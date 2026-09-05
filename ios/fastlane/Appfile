@@ -1,0 +1,6 @@
+app_identifier("com.treatsisland.app") # The bundle identifier of your app
+apple_id("Laronhall5@gmail.com") # Your Apple Developer Portal username
+team_id("G5M2J5PRCV") # Developer Portal Team ID
+itc_team_id("G5M2J5PRCV") # App Store Connect Team ID
+
+# For more information about the Appfile, see https://docs.fastlane.tools/advanced/#appfile

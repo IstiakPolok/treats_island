@@ -1,0 +1,18 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# All available actions: https://docs.fastlane.tools/actions
+# List of all platform's custom lanes: https://docs.fastlane.tools/advanced/#custom-lanes
+
+# The fastlane_version line documents the minimum version required for local users
+default_platform(:android)
+
+platform :android do
+  desc "Submit a new Beta Build to Google Play"
+  lane :beta do
+    # For more info on building a Flutter APK/AAB: https://docs.flutter.dev/deployment/android
+    # You can run gradle tasks directly using fastlane's gradle action:
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(track: "beta")
+  end
+end

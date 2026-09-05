@@ -1,0 +1,52 @@
+# The fastlane_version line documents the minimum version required for local users
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new beta build to TestFlight"
+  lane :beta do
+    # 1. Dynamically load App Store Connect API Key if environment variables are set.
+    # Otherwise, Fastlane will fall back to standard Apple ID credentials (interactive login / 2FA).
+    api_key = nil
+    if ENV["APP_STORE_CONNECT_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"] && ENV["APP_STORE_CONNECT_KEY_CONTENT"]
+      UI.message("Loading App Store Connect API Key from environment...")
+      api_key = app_store_connect_api_key(
+        key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+        key_content: ENV["APP_STORE_CONNECT_KEY_CONTENT"],
+        is_key_content_base64: true
+      )
+    elsif ENV["APP_STORE_CONNECT_KEY_ID"] && ENV["APP_STORE_CONNECT_ISSUER_ID"] && ENV["APP_STORE_CONNECT_KEY_FILEPATH"]
+      UI.message("Loading App Store Connect API Key from file path...")
+      api_key = app_store_connect_api_key(
+        key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+        key_filepath: ENV["APP_STORE_CONNECT_KEY_FILEPATH"]
+      )
+    else
+      UI.important("App Store Connect API Key environment variables not found. Falling back to Apple ID login.")
+    end
+
+    # 2. Compile Flutter iOS app assets and dependencies (without signing code yet)
+    UI.message("Building Flutter iOS app (no codesign)...")
+    sh("flutter build ios --release --no-codesign")
+
+    # 3. Increment the build number to ensure a unique build version on TestFlight
+    increment_build_number(xcodeproj: "Runner.xcodeproj")
+
+    # 4. Build and sign the Xcode archive (.ipa) using automatic or pre-installed profiles
+    UI.message("Archiving and signing the application...")
+    build_app(
+      workspace: "Runner.xcworkspace", 
+      scheme: "Runner"
+    )
+
+    # 5. Upload the built app to TestFlight
+    UI.message("Uploading to TestFlight...")
+    if api_key
+      upload_to_testflight(api_key: api_key)
+    else
+      upload_to_testflight
+    end
+  end
+end
+
