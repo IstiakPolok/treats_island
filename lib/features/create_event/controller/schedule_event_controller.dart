@@ -438,6 +438,7 @@ class ScheduleEventController extends GetxController {
   Future<bool> extendEvent({required int eventId}) async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) {
+      debugPrint('=== EXTEND EVENT: NO ACCESS TOKEN FOUND ===');
       Get.snackbar(
         'Authentication Required',
         'Please login to extend the event.',
@@ -448,33 +449,33 @@ class ScheduleEventController extends GetxController {
 
     isUpdating.value = true;
     try {
+      debugPrint('=== EXTEND EVENT CONTROLLER START ===');
+      debugPrint('Extending Event ID: $eventId');
       final response = await _apiService.extendEvent(
         token: token,
         eventId: eventId,
       );
       isUpdating.value = false;
 
+      debugPrint('=== EXTEND EVENT CONTROLLER RESPONSE ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Status Text: ${response.statusText}');
+      debugPrint('Body: ${response.body}');
+      debugPrint('=======================================');
+
       if (response.status.isOk && response.body != null) {
         final Map<String, dynamic> body = Map<String, dynamic>.from(
           response.body,
         );
-        if (body.containsKey('message')) {
-          Get.snackbar(
-            'Success',
-            body['message'].toString(),
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.black.withAlpha(26),
-            colorText: Colors.black,
-          );
-        } else {
-          Get.snackbar(
-            'Success',
-            'Event extended successfully!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.black.withAlpha(26),
-            colorText: Colors.black,
-          );
-        }
+        final message =
+            body['message']?.toString() ?? 'Event extended successfully!';
+        Get.snackbar(
+          'Success',
+          message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black.withAlpha(26),
+          colorText: Colors.black,
+        );
         return true;
       } else {
         String errorMsg = 'Failed to extend event. Please try again.';
@@ -486,11 +487,13 @@ class ScheduleEventController extends GetxController {
             errorMsg = bodyMap.values.first.toString();
           }
         }
+        debugPrint('=== EXTEND EVENT CONTROLLER ERROR: $errorMsg ===');
         Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
         return false;
       }
     } catch (e) {
       isUpdating.value = false;
+      debugPrint('=== EXTEND EVENT CONTROLLER EXCEPTION: $e ===');
       Get.snackbar(
         'Error',
         'An error occurred: $e',

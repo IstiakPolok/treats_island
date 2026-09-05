@@ -69,9 +69,7 @@ class EventOverviewHeader extends StatelessWidget {
                             )
                           : null;
                       final durationDays = eventData?['duration'] != null
-                          ? (int.tryParse(
-                                  eventData!['duration'].toString(),
-                                ) ??
+                          ? (int.tryParse(eventData!['duration'].toString()) ??
                                 5)
                           : 5;
                       return EventCountdownWidget(
@@ -93,10 +91,8 @@ class EventOverviewHeader extends StatelessWidget {
               ),
               Obx(() {
                 final Map<String, dynamic>? eventData =
-                    controller.createdEvent['event']
-                        as Map<String, dynamic>?;
-                final String status =
-                    eventData?['status']?.toString() ?? '';
+                    controller.createdEvent['event'] as Map<String, dynamic>?;
+                final String status = eventData?['status']?.toString() ?? '';
                 final bool isUpcoming = status.toLowerCase() == 'upcoming';
                 final bool isOngoing = status.toLowerCase() == 'ongoing';
 
@@ -107,10 +103,7 @@ class EventOverviewHeader extends StatelessWidget {
                     highlightColor: Colors.transparent,
                   ),
                   child: PopupMenuButton<String>(
-                    icon: const Icon(
-                      Icons.more_vert,
-                      color: Color(0xFF1A1A2E),
-                    ),
+                    icon: const Icon(Icons.more_vert, color: Color(0xFF1A1A2E)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16.r),
                     ),
@@ -121,8 +114,9 @@ class EventOverviewHeader extends StatelessWidget {
                       if (value == 'edit') {
                         onEditTap();
                       } else if (value == 'start') {
-                        final eData = controller.createdEvent['event']
-                            as Map<String, dynamic>?;
+                        final eData =
+                            controller.createdEvent['event']
+                                as Map<String, dynamic>?;
                         final int? eventId =
                             eData?['id'] as int? ??
                             controller.createdEvent['id'] as int?;
@@ -141,19 +135,35 @@ class EventOverviewHeader extends StatelessWidget {
                           }
                         }
                       } else if (value == 'extend') {
-                        final eData = controller.createdEvent['event']
-                            as Map<String, dynamic>?;
+                        debugPrint('=== EXTEND MENU ITEM SELECTED ===');
+                        final eData =
+                            controller.createdEvent['event']
+                                as Map<String, dynamic>?;
                         final int? eventId =
                             eData?['id'] as int? ??
                             controller.createdEvent['id'] as int?;
+                        debugPrint('Found Event ID for extend: $eventId');
+                        debugPrint(
+                          'Full createdEvent map: ${controller.createdEvent}',
+                        );
                         if (eventId != null) {
                           final success = await controller.extendEvent(
                             eventId: eventId,
                           );
+                          debugPrint('Extend Event Result: $success');
                           if (success) {
                             await controller.fetchMyEvents();
                             onRefresh();
                           }
+                        } else {
+                          debugPrint(
+                            'ERROR: Cannot extend event because eventId is null',
+                          );
+                          Get.snackbar(
+                            'Error',
+                            'Event ID not found to extend duration.',
+                            snackPosition: SnackPosition.BOTTOM,
+                          );
                         }
                       }
                     },
@@ -257,8 +267,7 @@ class EventOverviewHeader extends StatelessWidget {
               Expanded(
                 child: Obx(() {
                   final Map<String, dynamic>? eventData =
-                      controller.createdEvent['event']
-                          as Map<String, dynamic>?;
+                      controller.createdEvent['event'] as Map<String, dynamic>?;
 
                   DateTime? startDateTime;
                   DateTime? endDateTime;
@@ -277,8 +286,8 @@ class EventOverviewHeader extends StatelessWidget {
                       eventData?['name']?.toString() ?? 'No Name added';
                   final String dateRangeStr =
                       (startDateTime != null && endDateTime != null)
-                          ? '${DateFormat('MMM d').format(startDateTime)} - ${DateFormat('MMM d').format(endDateTime)}'
-                          : 'No Date Added';
+                      ? '${DateFormat('MMM d').format(startDateTime)} - ${DateFormat('MMM d').format(endDateTime)}'
+                      : 'No Date Added';
 
                   final creatorMap =
                       eventData?['creator'] as Map<String, dynamic>?;
@@ -289,9 +298,7 @@ class EventOverviewHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        creatorName.isNotEmpty
-                            ? '$creatorName  '
-                            : 'Organizer',
+                        creatorName.isNotEmpty ? '$creatorName  ' : 'Organizer',
                         style: GoogleFonts.poppins(
                           fontSize: isTablet ? 12.0 : 12.sp,
                           color: Colors.black45,
@@ -320,9 +327,7 @@ class EventOverviewHeader extends StatelessWidget {
               ),
               InkWell(
                 onTap: onChecklistTap,
-                borderRadius: BorderRadius.circular(
-                  isTablet ? 18.0 : 18.r,
-                ),
+                borderRadius: BorderRadius.circular(isTablet ? 18.0 : 18.r),
                 child: CircleAvatar(
                   radius: isTablet ? 18.0 : 18.r,
                   backgroundColor: Colors.black,
@@ -330,9 +335,7 @@ class EventOverviewHeader extends StatelessWidget {
                     children: [
                       Center(
                         child: Image(
-                          image: const AssetImage(
-                            'assets/icons/checklist.png',
-                          ),
+                          image: const AssetImage('assets/icons/checklist.png'),
                           width: isTablet ? 20.0 : 20.w,
                           height: isTablet ? 20.0 : 20.w,
                         ),
@@ -417,9 +420,7 @@ class EventOverviewHeader extends StatelessWidget {
                 Expanded(
                   child: InkWell(
                     onTap: () => onTabSelected(true),
-                    borderRadius: BorderRadius.circular(
-                      isTablet ? 24.0 : 24.r,
-                    ),
+                    borderRadius: BorderRadius.circular(isTablet ? 24.0 : 24.r),
                     child: Container(
                       padding: EdgeInsets.symmetric(
                         vertical: isTablet ? 12.0 : 12.h,
@@ -454,7 +455,8 @@ class EventOverviewHeader extends StatelessWidget {
                               final String? shopName = controller
                                   .fundraiserDetails['name']
                                   ?.toString();
-                              final bool hasName = shopName != null &&
+                              final bool hasName =
+                                  shopName != null &&
                                   shopName.trim().isNotEmpty &&
                                   shopName != 'null';
                               return Text(

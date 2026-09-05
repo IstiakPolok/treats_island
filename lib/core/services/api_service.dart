@@ -353,10 +353,23 @@ class ApiService extends GetConnect {
 
   /// Sends a POST request with Bearer token to extend an event.
   Future<Response> extendEvent({required String token, required int eventId}) {
+    final String url = '/event/$eventId/extend/';
+    debugPrint('=== API REQUEST: POST $url ===');
+    debugPrint('Event ID: $eventId');
+    debugPrint('Authorization token: $token');
+
     return post(
-      '/event/$eventId/extend/',
+      url,
       {},
       headers: {'Authorization': 'Bearer $token'},
-    );
+    ).then((response) {
+      debugPrint('=== API RESPONSE: POST $url ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Status Text: ${response.statusText}');
+      debugPrint('Headers: ${response.headers}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('================================');
+      return response;
+    });
   }
 }
