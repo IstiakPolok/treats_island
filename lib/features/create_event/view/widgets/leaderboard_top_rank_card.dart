@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../controller/schedule_event_controller.dart';
 import '../sheets/leaderboard_shop_details_sheet.dart';
 import 'laurel_wreath_rank.dart';
 
@@ -11,6 +12,10 @@ class LeaderboardTopRankCard extends StatelessWidget {
   final String avatarUrl;
   final int supporters;
   final double? goal;
+  final Map<String, dynamic>? participant;
+  final String? shareLink;
+  final int? fundraiserId;
+  final ScheduleEventController? controller;
 
   const LeaderboardTopRankCard({
     super.key,
@@ -20,6 +25,10 @@ class LeaderboardTopRankCard extends StatelessWidget {
     required this.avatarUrl,
     this.supporters = 0,
     this.goal,
+    this.participant,
+    this.shareLink,
+    this.fundraiserId,
+    this.controller,
   });
 
   @override
@@ -32,6 +41,10 @@ class LeaderboardTopRankCard extends StatelessWidget {
         avatarUrl: avatarUrl,
         supporters: supporters,
         goal: goal,
+        participant: participant,
+        shareLink: shareLink,
+        fundraiserId: fundraiserId,
+        controller: controller,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8.h),

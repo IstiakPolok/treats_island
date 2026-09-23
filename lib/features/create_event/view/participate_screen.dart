@@ -18,6 +18,7 @@ class ParticipateScreen extends StatefulWidget {
 class _ParticipateScreenState extends State<ParticipateScreen> {
   late final TextEditingController _rangeController;
   final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -26,7 +27,17 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
       text: widget.controller.estimatedEarningsRange,
     );
     _focusNode.addListener(() {
-      if (!_focusNode.hasFocus) {
+      if (_focusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+      } else {
         if (_rangeController.text.trim().isEmpty) {
           setState(() {
             final display = widget.controller.estimatedEarningsRange;
@@ -39,6 +50,7 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _rangeController.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -52,199 +64,208 @@ class _ParticipateScreenState extends State<ParticipateScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isTablet ? 500.0 : double.infinity,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20.0 : 20.w,
-                    vertical: isTablet ? 10.0 : 10.h,
-                  ),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => Get.back(),
-                        icon: const Icon(Icons.arrow_back),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            'Participate',
-                            style: GoogleFonts.poppins(
-                              fontSize: isTablet ? 18.0 : 18.sp,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: isTablet ? 40.0 : 40.w),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isTablet ? 500.0 : double.infinity,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isTablet ? 20.0 : 20.w,
+                      vertical: isTablet ? 10.0 : 10.h,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        SizedBox(height: isTablet ? 16.0 : 16.h),
-                        Text(
-                          'HOW MANY SELLERS\nDO YOU EXPECT\nTO PARTICIPATE?',
-                          style: GoogleFonts.antonSc(
-                            fontSize: isTablet ? 36.0 : 36.sp,
-                            fontWeight: FontWeight.normal,
-                            height: 1.3,
-                            color: const Color(0xFF1A1A2E),
+                        IconButton(
+                          onPressed: () => Get.back(),
+                          icon: const Icon(Icons.arrow_back),
+                        ),
+                        Expanded(
+                          child: Center(
+                            child: Text(
+                              'Participate',
+                              style: GoogleFonts.poppins(
+                                fontSize: isTablet ? 18.0 : 18.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ),
                           ),
                         ),
-                        SizedBox(height: isTablet ? 28.0 : 28.h),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: isTablet ? 20.0 : 20.w,
-                            vertical: isTablet ? 18.0 : 18.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(
-                              isTablet ? 30.0 : 30.r,
-                            ),
-                            border: Border.all(color: const Color(0xFFE7E7EC)),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                'ESTIMATED EARNINGS',
-                                style: GoogleFonts.poppins(
-                                  fontSize: isTablet ? 12.0 : 12.sp,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black38,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              SizedBox(height: isTablet ? 10.0 : 10.h),
-                              Obx(() {
-                                final display =
-                                    widget.controller.estimatedEarningsRange;
-                                if (!_focusNode.hasFocus &&
-                                    widget
-                                        .controller
-                                        .earningsOverride
-                                        .value
-                                        .isEmpty &&
-                                    _rangeController.text != display) {
-                                  _rangeController.text = display;
-                                  _rangeController.selection =
-                                      TextSelection.fromPosition(
-                                        TextPosition(offset: display.length),
-                                      );
-                                }
-                                return TextField(
-                                  controller: _rangeController,
-                                  focusNode: _focusNode,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: isTablet ? 26.0 : 26.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF1A1A2E),
-                                  ),
-                                  decoration: const InputDecoration(
-                                    border: InputBorder.none,
-                                    isDense: true,
-                                  ),
-                                  onChanged:
-                                      widget.controller.setEarningsOverride,
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
-                        SizedBox(height: isTablet ? 28.0 : 28.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _OptionPill(
-                                label: 'Just me',
-                                value: 1,
-                                controller: widget.controller,
-                              ),
-                            ),
-                            SizedBox(width: isTablet ? 12.0 : 12.w),
-                            Expanded(
-                              child: _OptionPill(
-                                label: '5',
-                                value: 5,
-                                controller: widget.controller,
-                              ),
-                            ),
-                            SizedBox(width: isTablet ? 12.0 : 12.w),
-                            Expanded(
-                              child: _OptionPill(
-                                label: '10',
-                                value: 10,
-                                controller: widget.controller,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: isTablet ? 14.0 : 14.h),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _OptionPill(
-                                label: '20',
-                                value: 20,
-                                controller: widget.controller,
-                              ),
-                            ),
-                            SizedBox(width: isTablet ? 12.0 : 12.w),
-                            Expanded(
-                              child: _OptionPill(
-                                label: '30',
-                                value: 30,
-                                controller: widget.controller,
-                              ),
-                            ),
-                            SizedBox(width: isTablet ? 12.0 : 12.w),
-                            Expanded(
-                              child: _OptionPill(
-                                label: '50',
-                                value: 50,
-                                controller: widget.controller,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: isTablet ? 14.0 : 14.h),
-                        _OptionPill(
-                          label: '51+',
-                          value: 51,
-                          controller: widget.controller,
-                          fullWidth: true,
-                        ),
-                        SizedBox(height: isTablet ? 24.0 : 24.h),
+                        SizedBox(width: isTablet ? 40.0 : 40.w),
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 20.0 : 20.w,
-                    vertical: isTablet ? 18.0 : 18.h,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 20.0 : 20.w,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: isTablet ? 16.0 : 16.h),
+                          Text(
+                            'HOW MANY SELLERS\nDO YOU EXPECT\nTO PARTICIPATE?',
+                            style: GoogleFonts.antonSc(
+                              fontSize: isTablet ? 36.0 : 36.sp,
+                              fontWeight: FontWeight.normal,
+                              height: 1.3,
+                              color: const Color(0xFF1A1A2E),
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 28.0 : 28.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _OptionPill(
+                                  label: 'Just me',
+                                  value: 1,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: _OptionPill(
+                                  label: '5',
+                                  value: 5,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: _OptionPill(
+                                  label: '10',
+                                  value: 10,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: isTablet ? 14.0 : 14.h),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _OptionPill(
+                                  label: '20',
+                                  value: 20,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: _OptionPill(
+                                  label: '30',
+                                  value: 30,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 12.0 : 12.w),
+                              Expanded(
+                                child: _OptionPill(
+                                  label: '50',
+                                  value: 50,
+                                  controller: widget.controller,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: isTablet ? 14.0 : 14.h),
+                          _OptionPill(
+                            label: '51+',
+                            value: 51,
+                            controller: widget.controller,
+                            fullWidth: true,
+                          ),
+                          SizedBox(height: isTablet ? 24.0 : 24.h),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isTablet ? 20.0 : 20.w,
+                              vertical: isTablet ? 18.0 : 18.h,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(
+                                isTablet ? 30.0 : 30.r,
+                              ),
+                              border: Border.all(
+                                color: const Color(0xFFE7E7EC),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'ESTIMATED EARNINGS',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: isTablet ? 12.0 : 12.sp,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black38,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                SizedBox(height: isTablet ? 10.0 : 10.h),
+                                Obx(() {
+                                  final display =
+                                      widget.controller.estimatedEarningsRange;
+                                  if (!_focusNode.hasFocus &&
+                                      widget.controller.earningsOverride.value.isEmpty &&
+                                      _rangeController.text != display) {
+                                    _rangeController.text = display;
+                                    _rangeController.selection =
+                                        TextSelection.fromPosition(
+                                          TextPosition(offset: display.length),
+                                        );
+                                  }
+                                  return TextField(
+                                    controller: _rangeController,
+                                    focusNode: _focusNode,
+                                    textInputAction: TextInputAction.done,
+                                    onSubmitted: (_) => _focusNode.unfocus(),
+                                    scrollPadding: EdgeInsets.only(
+                                      bottom: isTablet ? 80.0 : 80.h,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isTablet ? 26.0 : 26.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF1A1A2E),
+                                    ),
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      isDense: true,
+                                    ),
+                                    onChanged: widget.controller.setEarningsOverride,
+                                  );
+                                }),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: isTablet ? 20.0 : 20.h),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: PrimaryButton(
-                    text: 'Save',
-                    onPressed: () => Get.to(() => const ScheduleEventScreen()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 20.0 : 20.w,
+                      vertical: isTablet ? 18.0 : 18.h,
+                    ),
+                    child: PrimaryButton(
+                      text: 'Save',
+                      onPressed: () => Get.to(() => const ScheduleEventScreen()),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -273,7 +294,10 @@ class _OptionPill extends StatelessWidget {
     return Obx(() {
       final isSelected = controller.sellerCount.value == value;
       return GestureDetector(
-        onTap: () => controller.setSellerCount(value),
+        onTap: () {
+          FocusScope.of(context).unfocus();
+          controller.setSellerCount(value);
+        },
         child: Container(
           width: fullWidth ? double.infinity : null,
           padding: EdgeInsets.symmetric(vertical: isTablet ? 14.0 : 14.h),

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../shop/view/create_pop_up_store_screen.dart';
 import '../../../shop/view/store_note_screen.dart';
+import '../../../shop/view/widgets/shop_payout_status_banner.dart';
 import '../../controller/schedule_event_controller.dart';
 import '../supporters_screen.dart';
 import 'shop_action_row.dart';
@@ -245,6 +246,8 @@ class ShopCreatedView extends StatelessWidget {
           fundraiser: fundraiser,
           onShareTap: onShareTap,
         ),
+        SizedBox(height: 12.h),
+        const ShopPayoutStatusBanner(),
         SizedBox(height: 12.h),
         _buildShopListItem(
           context: context,

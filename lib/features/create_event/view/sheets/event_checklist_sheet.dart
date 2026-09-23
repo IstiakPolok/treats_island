@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../otp/view/verification_required_screen.dart';
+import '../../../shop/controller/stripe_connect_controller.dart';
 import '../../../shop/view/create_pop_up_store_screen.dart';
 import '../../controller/schedule_event_controller.dart';
 import '../widgets/overview_info_items.dart';
@@ -27,6 +28,13 @@ class EventChecklistSheet {
         payoutNumber != null &&
         payoutNumber.trim().isNotEmpty &&
         payoutNumber != 'null';
+
+    final stripeController = Get.isRegistered<StripeConnectController>()
+        ? Get.find<StripeConnectController>()
+        : Get.put(StripeConnectController());
+    final bool isPaymentSetup =
+        (stripeController.status.value?.payoutsEnabled ?? false) ||
+        hasPayoutNumber;
 
     final String? shopName = controller.fundraiserDetails['name']?.toString();
     final bool hasShop =
@@ -95,8 +103,8 @@ class EventChecklistSheet {
               ),
               SizedBox(height: 12.h),
               ChecklistRow(
-                text: 'Add your payment  method',
-                checked: hasPayoutNumber,
+                text: 'Add your payment method',
+                checked: isPaymentSetup,
                 showArrow: true,
                 onTap: () {
                   Navigator.pop(sheetContext);

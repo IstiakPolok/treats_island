@@ -24,8 +24,27 @@ class FundraiseSummaryCard extends StatelessWidget {
     double amount,
     String avatarUrl, {
     double? goal,
+    Map<String, dynamic>? participant,
   }) {
     final bool isTablet = MediaQuery.of(context).size.width >= 600;
+    final int? myFundraiserId = int.tryParse(
+      controller.fundraiserDetails['id']?.toString() ?? '',
+    );
+    final String? myShareLink =
+        controller.fundraiserDetails['share_link']?.toString();
+
+    final int? fId = int.tryParse(
+          participant?['fundraiser_id']?.toString() ??
+              participant?['fundraiser']?.toString() ??
+              '',
+        ) ??
+        myFundraiserId;
+
+    final String? link = participant?['share_link']?.toString() ??
+        participant?['store_link']?.toString() ??
+        participant?['store_url']?.toString() ??
+        myShareLink;
+
     return GestureDetector(
       onTap: () => LeaderboardShopDetailsSheet.show(
         context,
@@ -34,6 +53,10 @@ class FundraiseSummaryCard extends StatelessWidget {
         avatarUrl: avatarUrl,
         supporters: supporters,
         goal: goal,
+        participant: participant,
+        fundraiserId: fId,
+        shareLink: link,
+        controller: controller,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8.h),
@@ -136,8 +159,8 @@ class FundraiseSummaryCard extends StatelessWidget {
         controller.createdEvent['event'] as Map<String, dynamic>?;
     final double totalSale =
         eventData != null && eventData['total_achieved'] != null
-            ? double.tryParse(eventData['total_achieved'].toString()) ?? 0.0
-            : 0.0;
+        ? double.tryParse(eventData['total_achieved'].toString()) ?? 0.0
+        : 0.0;
     final List participants = eventData?['participants'] as List? ?? [];
     final int storeCount = participants.length;
 
@@ -180,7 +203,7 @@ class FundraiseSummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Fundraise Summary',
+                      'Fundraiser Summary',
                       style: GoogleFonts.poppins(
                         fontSize: isTablet ? 15.0 : 15.sp,
                         fontWeight: FontWeight.w500,
@@ -257,9 +280,7 @@ class FundraiseSummaryCard extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: () {
-                  Get.to(
-                    () => LeaderboardScreen(controller: controller),
-                  );
+                  Get.to(() => LeaderboardScreen(controller: controller));
                 },
                 child: Text(
                   'See more',
@@ -327,6 +348,7 @@ class FundraiseSummaryCard extends StatelessWidget {
                   achieved,
                   avatarUrl,
                   goal: goal,
+                  participant: participant,
                 );
               },
             ),

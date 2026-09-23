@@ -86,14 +86,14 @@ class ConfirmEventDialog {
                       : controller.teamName.value,
                   isTablet,
                 ),
-                _buildInfoRow(
-                  context,
-                  'Location',
-                  controller.teamLocation.value.isEmpty
-                      ? 'Not specified'
-                      : controller.teamLocation.value,
-                  isTablet,
-                ),
+                // _buildInfoRow(
+                //   context,
+                //   'Location',
+                //   controller.teamLocation.value.isEmpty
+                //       ? 'Not specified'
+                //       : controller.teamLocation.value,
+                //   isTablet,
+                // ),
                 _buildInfoRow(
                   context,
                   'Duration',

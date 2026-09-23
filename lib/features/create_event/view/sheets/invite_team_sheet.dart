@@ -12,8 +12,7 @@ class InviteTeamSheet {
     final Map<String, dynamic>? eventData =
         controller.createdEvent['event'] as Map<String, dynamic>?;
 
-    final code =
-        eventData?['code'] ?? controller.createdEvent['code'] ?? '';
+    final code = eventData?['code'] ?? controller.createdEvent['code'] ?? '';
 
     DateTime? startDateTime;
     DateTime? endDateTime;
@@ -45,10 +44,10 @@ class InviteTeamSheet {
         'https://treatsislandcandy.store/join-event?je=$code';
 
     final String shareText =
-        'Hello Team - I set up a virtual fundraiser with Treats Island Candy! It is 100% contactless. We get to keep 50% of total profit and Treat Island Candy will ship the product directly to our buyers. Each of us will create a Pop-Up Store selling this specialized candy! The prices range from \$15 to \$25 per container and you won\'t find these premium products in general stores. Our fundraising window begins on $startD at $startT and goes until $endD, at $endT. Before the fundraiser begins:\n\n'
-        'Click on the link $inviteLink to JOIN THE EVENT\n\n'
-        'Confirm the Event Code $code.   Download the APP.\n\n'
-        'Create your personalized Pop-Up Store';
+        'Hello Team - I set up a virtual fundraiser with Treats Island GO! It is 100% contactless. We get to keep 50% of total profit and Treat Island GO will ship the product directly to our buyers. Each of us will create a Pop-Up Store selling this specialized candy! The prices range from \$15 to \$25 per container and you won\'t find these premium products in general stores. Our fundraising window begins on $startD at $startT and goes until $endD, at $endT. Before the fundraiser begins:\n\n'
+        'First, copy the Event Code $code.\n\n'
+        'After downloading the app, JOIN THE EVENT  and Create your personalized Pop-Up Store!\n\n'
+        'Now, Download the app HERE!\n$inviteLink';
 
     showModalBottomSheet<void>(
       context: context,
@@ -90,7 +89,7 @@ class InviteTeamSheet {
                 ),
                 SizedBox(height: 20.h),
                 Text(
-                  'INSTRUCTION FOR YOUR TEAM',
+                  'INSTRUCTIONS FOR YOUR TEAM',
                   style: GoogleFonts.antonSc(
                     fontSize: isTablet ? 18.0 : 18.sp,
                     color: const Color(0xFF1A1A2E),

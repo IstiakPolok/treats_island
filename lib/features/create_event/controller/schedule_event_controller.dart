@@ -47,9 +47,16 @@ class ScheduleEventController extends GetxController {
           response.body is List) {
         final List eventsList = response.body;
         if (eventsList.isNotEmpty) {
-          final latestEvent = eventsList.last;
+          final currentEventId =
+              createdEvent['event']?['id'] ?? createdEvent['id'];
+          final targetEvent = (currentEventId != null)
+              ? eventsList.firstWhere(
+                  (e) => e is Map && e['id'] == currentEventId,
+                  orElse: () => eventsList.last,
+                )
+              : eventsList.last;
           createdEvent.value = {
-            'event': Map<String, dynamic>.from(latestEvent),
+            'event': Map<String, dynamic>.from(targetEvent),
           };
 
           final eventData = createdEvent['event'];

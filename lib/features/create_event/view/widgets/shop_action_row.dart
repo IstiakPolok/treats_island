@@ -19,16 +19,20 @@ class ShopActionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final goalVal = fundraiser?['goal'];
-    final double? parsedGoal =
-        goalVal != null ? double.tryParse(goalVal.toString()) : null;
-    final String goalText =
-        parsedGoal != null ? '\$${parsedGoal.toInt()}' : '\$0';
+    final double? parsedGoal = goalVal != null
+        ? double.tryParse(goalVal.toString())
+        : null;
+    final String goalText = parsedGoal != null
+        ? '\$${parsedGoal.toInt()}'
+        : '\$0';
 
     final achievedVal = fundraiser?['achieved'];
-    final double? parsedAchieved =
-        achievedVal != null ? double.tryParse(achievedVal.toString()) : null;
-    final String achievedText =
-        parsedAchieved != null ? '\$${parsedAchieved.toInt()}' : '\$0';
+    final double? parsedAchieved = achievedVal != null
+        ? double.tryParse(achievedVal.toString())
+        : null;
+    final String achievedText = parsedAchieved != null
+        ? '\$${parsedAchieved.toInt()}'
+        : '\$0';
 
     final Map<String, dynamic>? eventData =
         controller.createdEvent['event'] as Map<String, dynamic>?;
@@ -38,8 +42,7 @@ class ShopActionRow extends StatelessWidget {
     if (isOngoing) {
       final double achVal = parsedAchieved ?? 0.0;
       final double gVal = parsedGoal ?? 1200.0;
-      final double progress =
-          gVal > 0 ? (achVal / gVal).clamp(0.0, 1.0) : 0.0;
+      final double progress = gVal > 0 ? (achVal / gVal).clamp(0.0, 1.0) : 0.0;
 
       // Calculate time remaining using start_date and duration
       String timeToGo = 'Ongoing';
@@ -98,7 +101,7 @@ class ShopActionRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Total Fundraise',
+                          'Total Funds Raised',
                           style: GoogleFonts.poppins(
                             fontSize: isTablet ? 13.0 : 13.sp,
                             fontWeight: FontWeight.w500,

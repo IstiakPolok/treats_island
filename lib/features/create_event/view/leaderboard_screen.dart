@@ -116,15 +116,48 @@ class LeaderboardScreen extends StatelessWidget {
                         )
                       else ...[
                         // Top 3 Leader Cards
-                        for (int i = 0; i < sortedParticipants.length && i < 3; i++)
-                          LeaderboardTopRankCard(
-                            rank: i + 1,
-                            name: sortedParticipants[i]['full_name']?.toString() ?? 'Unnamed',
-                            amount: double.tryParse(sortedParticipants[i]['shop_achieved']?.toString() ?? '0') ?? 0.0,
-                            avatarUrl: ApiService.formatImageUrl(sortedParticipants[i]['image']?.toString()),
-                            supporters: int.tryParse(sortedParticipants[i]['total_supporters']?.toString() ?? '0') ?? 0,
-                            goal: double.tryParse(sortedParticipants[i]['shop_goal']?.toString() ?? '0'),
+                        for (int i = 0; i < sortedParticipants.length && i < 3; i++) ...[
+                          Builder(
+                            builder: (context) {
+                              final p = sortedParticipants[i] is Map<String, dynamic>
+                                  ? sortedParticipants[i]
+                                  : Map<String, dynamic>.from(sortedParticipants[i]);
+                              final pEmail = p['email']?.toString() ?? '';
+                              final bool isMe = (localEmail.isNotEmpty &&
+                                      pEmail.toLowerCase() == localEmail.toLowerCase()) ||
+                                  p['is_mine'] == true ||
+                                  p['is_creator'] == true ||
+                                  (meObj != null && p == meObj);
+                              final int? pFundraiserId = int.tryParse(
+                                    p['fundraiser_id']?.toString() ??
+                                        p['fundraiser']?.toString() ??
+                                        '',
+                                  ) ??
+                                  (isMe
+                                      ? int.tryParse(
+                                          controller.fundraiserDetails['id']?.toString() ?? '',
+                                        )
+                                      : null);
+                              final String? pShareLink = p['share_link']?.toString() ??
+                                  p['store_link']?.toString() ??
+                                  p['store_url']?.toString() ??
+                                  (isMe ? controller.fundraiserDetails['share_link']?.toString() : null);
+
+                              return LeaderboardTopRankCard(
+                                rank: i + 1,
+                                name: p['full_name']?.toString() ?? 'Unnamed',
+                                amount: double.tryParse(p['shop_achieved']?.toString() ?? '0') ?? 0.0,
+                                avatarUrl: ApiService.formatImageUrl(p['image']?.toString()),
+                                supporters: int.tryParse(p['total_supporters']?.toString() ?? '0') ?? 0,
+                                goal: double.tryParse(p['shop_goal']?.toString() ?? '0'),
+                                participant: p,
+                                shareLink: pShareLink,
+                                fundraiserId: pFundraiserId,
+                                controller: controller,
+                              );
+                            },
                           ),
+                        ],
 
                         // Visual Break Dots
                         Padding(
@@ -156,6 +189,10 @@ class LeaderboardScreen extends StatelessWidget {
                               : 'https://i.pravatar.cc/150?img=33',
                           supporters: meObj != null ? (int.tryParse(meObj['total_supporters']?.toString() ?? '0') ?? 0) : 0,
                           goal: meObj != null ? double.tryParse(meObj['shop_goal']?.toString() ?? '0') : 1200,
+                          participant: meObj != null ? Map<String, dynamic>.from(meObj) : null,
+                          shareLink: controller.fundraiserDetails['share_link']?.toString(),
+                          fundraiserId: int.tryParse(controller.fundraiserDetails['id']?.toString() ?? ''),
+                          controller: controller,
                         ),
 
                         SizedBox(height: 32.h),
@@ -187,6 +224,27 @@ class LeaderboardScreen extends StatelessWidget {
                             final double pAmount = double.tryParse(p['shop_achieved']?.toString() ?? '0') ?? 0.0;
                             final double pGoal = double.tryParse(p['shop_goal']?.toString() ?? '0') ?? 0.0;
                             final int pSupporters = int.tryParse(p['total_supporters']?.toString() ?? '0') ?? 0;
+                            final pEmail = p['email']?.toString() ?? '';
+                            final bool isMe = (localEmail.isNotEmpty &&
+                                    pEmail.toLowerCase() == localEmail.toLowerCase()) ||
+                                p['is_mine'] == true ||
+                                p['is_creator'] == true ||
+                                (meObj != null && p == meObj);
+                            final int? pFundraiserId = int.tryParse(
+                                  p['fundraiser_id']?.toString() ??
+                                      p['fundraiser']?.toString() ??
+                                      '',
+                                ) ??
+                                (isMe
+                                    ? int.tryParse(
+                                        controller.fundraiserDetails['id']?.toString() ?? '',
+                                      )
+                                    : null);
+                            final String? pShareLink = p['share_link']?.toString() ??
+                                p['store_link']?.toString() ??
+                                p['store_url']?.toString() ??
+                                (isMe ? controller.fundraiserDetails['share_link']?.toString() : null);
+
                             return LeaderboardAllStoreItem(
                               rank: index + 1,
                               name: pName,
@@ -194,6 +252,10 @@ class LeaderboardScreen extends StatelessWidget {
                               amount: pAmount,
                               avatarUrl: pAvatar,
                               goal: pGoal,
+                              participant: p,
+                              shareLink: pShareLink,
+                              fundraiserId: pFundraiserId,
+                              controller: controller,
                             );
                           },
                         ),

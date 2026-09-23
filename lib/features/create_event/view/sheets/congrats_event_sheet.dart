@@ -94,8 +94,7 @@ class CongratsEventSheet {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'Share the event details with your team and complete\n'
-                    'the checklist before your fund raise.',
+                    'Share the event details with your team and complete the checklist before your fund raise.',
                     style: GoogleFonts.poppins(
                       fontSize: isTablet ? 11.0 : 11.sp,
                       color: const Color(0xff525252),

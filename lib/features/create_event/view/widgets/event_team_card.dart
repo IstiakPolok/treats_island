@@ -46,35 +46,35 @@ class EventTeamCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 14.h),
-              SizedBox(
-                width: 140.w,
-                height: 36.h,
-                child: ElevatedButton(
-                  onPressed: onInviteSellerTap,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Invite Seller',
-                    style: GoogleFonts.poppins(
-                      fontSize: isTablet ? 12.0 : 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
+              // SizedBox(
+              //   width: 140.w,
+              //   height: 36.h,
+              //   child: ElevatedButton(
+              //     onPressed: onInviteSellerTap,
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: AppColors.primary,
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(20.r),
+              //       ),
+              //       elevation: 0,
+              //     ),
+              //     child: Text(
+              //       'Invite Seller',
+              //       style: GoogleFonts.poppins(
+              //         fontSize: isTablet ? 12.0 : 12.sp,
+              //         fontWeight: FontWeight.w600,
+              //         color: Colors.white,
+              //       ),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );
       }
 
       return OverviewCard(
-        title: 'Your Team',
+        title: 'See Pop-Up Stores',
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -87,14 +87,11 @@ class EventTeamCard extends StatelessWidget {
                 color: Colors.black.withValues(alpha: 0.05),
               ),
               itemBuilder: (context, index) {
-                final participant =
-                    participants[index] as Map<String, dynamic>;
+                final participant = participants[index] as Map<String, dynamic>;
                 final String name =
                     participant['full_name']?.toString() ?? 'No Name';
                 final String? imageRelPath = participant['image']?.toString();
-                final String imageUrl = ApiService.formatImageUrl(
-                  imageRelPath,
-                );
+                final String imageUrl = ApiService.formatImageUrl(imageRelPath);
 
                 return Row(
                   children: [
@@ -157,31 +154,31 @@ class EventTeamCard extends StatelessWidget {
               },
             ),
             SizedBox(height: 24.h),
-            Align(
-              alignment: Alignment.center,
-              child: SizedBox(
-                width: 140.w,
-                height: 36.h,
-                child: ElevatedButton(
-                  onPressed: onInviteSellerTap,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Invite Seller',
-                    style: GoogleFonts.poppins(
-                      fontSize: isTablet ? 12.0 : 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            // Align(
+            //   alignment: Alignment.center,
+            //   child: SizedBox(
+            //     width: 140.w,
+            //     height: 36.h,
+            //     child: ElevatedButton(
+            //       onPressed: onInviteSellerTap,
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: AppColors.primary,
+            //         shape: RoundedRectangleBorder(
+            //           borderRadius: BorderRadius.circular(20.r),
+            //         ),
+            //         elevation: 0,
+            //       ),
+            //       child: Text(
+            //         'Invite Seller',
+            //         style: GoogleFonts.poppins(
+            //           fontSize: isTablet ? 12.0 : 12.sp,
+            //           fontWeight: FontWeight.w600,
+            //           color: Colors.white,
+            //         ),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       );

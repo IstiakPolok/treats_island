@@ -94,7 +94,7 @@ class LaunchEventScreen extends StatelessWidget {
                         iconAsset: 'assets/icons/icon1.png',
                         title: 'Choose your fundraising window',
                         subtitle:
-                            'Select when your candy fundraiser will go live\n'
+                            'Select when your candy fundraiser will go live '
                             'and how long supporters can shop.',
                       ),
                       SizedBox(height: isTablet ? 16.0 : 16.h),
@@ -102,7 +102,7 @@ class LaunchEventScreen extends StatelessWidget {
                         iconAsset: 'assets/icons/icon2.png',
                         title: 'Invite your team',
                         subtitle:
-                            'Share your unique event link so members can\n'
+                            'Share your unique event link so members can '
                             'join and create their personal pop-up stores.',
                       ),
                       SizedBox(height: isTablet ? 16.0 : 16.h),
@@ -110,8 +110,8 @@ class LaunchEventScreen extends StatelessWidget {
                         iconAsset: 'assets/icons/icon3.png',
                         title: 'Raise together',
                         subtitle:
-                            'Every team member gets a personalized\n'
-                            'storefront to share, helping your fundraiser\n'
+                            'Every team member gets a personalized '
+                            'storefront to share, helping your fundraiser '
                             'grow faster.',
                       ),
                       const Spacer(),

@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
+import '../../shop/controller/stripe_connect_controller.dart';
 import '../controller/schedule_event_controller.dart';
 import 'sheets/congrats_event_sheet.dart';
 import 'sheets/edit_event_sheet.dart';
@@ -37,6 +39,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
   late bool _isShopSelected;
   String _organizerName = 'No Name added';
   late ConfettiController _confettiController;
+  late Future<Map<String, dynamic>?> _fundraiserFuture;
 
   @override
   void initState() {
@@ -46,6 +49,7 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
       duration: const Duration(seconds: 3),
     );
     _loadOrganizerName();
+    _fundraiserFuture = _getFundraiserDetails();
 
     if (widget.showCongratsSheet) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -57,6 +61,23 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         _confettiController.play();
       });
     }
+  }
+
+  Future<void> _handleRefresh() async {
+    final stripeController = Get.isRegistered<StripeConnectController>()
+        ? Get.find<StripeConnectController>()
+        : Get.put(StripeConnectController());
+    await Future.wait([
+      _loadOrganizerName(),
+      widget.controller.fetchMyEvents(),
+      stripeController.fetchConnectStatus(),
+    ]);
+    if (!mounted) return;
+    final future = _getFundraiserDetails();
+    setState(() {
+      _fundraiserFuture = future;
+    });
+    await future;
   }
 
   Future<void> _loadOrganizerName() async {
@@ -192,50 +213,65 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
                 },
                 onEditTap: _showEditEventSheet,
                 onChecklistTap: _showChecklistSheet,
-                onRefresh: () {
-                  if (mounted) setState(() {});
-                },
+                onRefresh: () => _handleRefresh(),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: isTablet
-                      ? const EdgeInsets.symmetric(
-                          horizontal: 24.0,
-                          vertical: 20.0,
-                        )
-                      : EdgeInsets.all(20.w),
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 650.0),
-                      child: FutureBuilder<Map<String, dynamic>?>(
-                        future: _getFundraiserDetails(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
+                child: RefreshIndicator(
+                  onRefresh: _handleRefresh,
+                  color: AppColors.primary,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: isTablet
+                        ? const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 20.0,
+                          )
+                        : EdgeInsets.all(20.w),
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 650.0),
+                        child: FutureBuilder<Map<String, dynamic>?>(
+                          future: _fundraiserFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                    ConnectionState.waiting &&
+                                !snapshot.hasData &&
+                                widget.controller.fundraiserDetails.isEmpty) {
+                              return Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: isTablet ? 60.0 : 60.h,
+                                ),
+                                child: const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              );
+                            }
 
-                          final fundraiser = snapshot.data;
+                            final fundraiser = snapshot.data ??
+                                (widget.controller.fundraiserDetails.isNotEmpty
+                                    ? widget.controller.fundraiserDetails
+                                    : null);
 
-                          if (_isShopSelected) {
-                            return ShopTabView(
-                              controller: widget.controller,
-                              fundraiser: fundraiser,
-                              onShareTap: () =>
-                                  _handleSharePopupStore(fundraiser),
-                              onRefresh: () => setState(() {}),
-                            );
-                          } else {
-                            return EventTabView(
-                              controller: widget.controller,
-                              organizerName: _organizerName,
-                              onInviteSellerTap: _showInviteTeamSheet,
-                            );
-                          }
-                        },
+                            if (_isShopSelected) {
+                              return ShopTabView(
+                                controller: widget.controller,
+                                fundraiser: fundraiser,
+                                onShareTap: () =>
+                                    _handleSharePopupStore(fundraiser),
+                                onRefresh: () => _handleRefresh(),
+                              );
+                            } else {
+                              return EventTabView(
+                                controller: widget.controller,
+                                organizerName: _organizerName,
+                                onInviteSellerTap: _showInviteTeamSheet,
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ),
                   ),

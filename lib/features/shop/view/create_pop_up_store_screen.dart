@@ -8,9 +8,9 @@ import 'package:video_player/video_player.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
 import '../../create_event/controller/schedule_event_controller.dart';
-import '../../create_event/view/event_overview_screen.dart';
 import 'display_name_screen.dart';
 import 'fundraising_goal_screen.dart';
+import 'shop_created_success_screen.dart';
 import 'store_note_screen.dart';
 
 class CreatePopUpStoreScreen extends StatelessWidget {
@@ -374,9 +374,8 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () async {
                         Get.off(
-                          () => EventOverviewScreen(
-                            controller: controller,
-                            showShopTab: true,
+                          () => ShopCreatedSuccessScreen(
+                            scheduleController: controller,
                           ),
                         );
                       },

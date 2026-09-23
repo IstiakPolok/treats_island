@@ -8,6 +8,8 @@ class ApiService extends GetConnect {
   // Define the base URL. The user can update this constant as needed.
   //static const String defaultBaseUrl = 'https://api.treatsislandvf.tech';
   static const String defaultBaseUrl = 'https://api.treatsislandgo.com';
+  // static const String defaultBaseUrl =
+  //     'https://patronage-esquire-everyday.ngrok-free.dev';
 
   static String formatImageUrl(String? path) {
     if (path == null || path.isEmpty || path == 'null') return '';
@@ -358,17 +360,77 @@ class ApiService extends GetConnect {
     debugPrint('Event ID: $eventId');
     debugPrint('Authorization token: $token');
 
-    return post(
-      url,
-      {},
-      headers: {'Authorization': 'Bearer $token'},
-    ).then((response) {
+    return post(url, {}, headers: {'Authorization': 'Bearer $token'}).then((
+      response,
+    ) {
       debugPrint('=== API RESPONSE: POST $url ===');
       debugPrint('Status Code: ${response.statusCode}');
       debugPrint('Status Text: ${response.statusText}');
       debugPrint('Headers: ${response.headers}');
       debugPrint('Response Body: ${response.body}');
       debugPrint('================================');
+      return response;
+    });
+  }
+
+  /// Sends a GET request with Bearer token to get Stripe Connect payout status.
+  Future<Response> getConnectStatus(String token) {
+    const String url = '/shop/connect/status/';
+    debugPrint('=== API REQUEST: GET $url ===');
+    return get(url, headers: {'Authorization': 'Bearer $token'}).then((
+      response,
+    ) {
+      debugPrint('=== API RESPONSE: GET $url ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      return response;
+    });
+  }
+
+  /// Sends a POST request with Bearer token to create a Stripe Connect onboarding link.
+  Future<Response> createConnectOnboardUrl(
+    String token, {
+    String returnUrl = 'https://treatsislandgo.com/payout/return',
+    String refreshUrl = 'https://treatsislandgo.com/payout/refresh',
+  }) {
+    const String url = '/shop/connect/onboard/';
+    final body = {'return_url': returnUrl, 'refresh_url': refreshUrl};
+    debugPrint('=== API REQUEST: POST $url ===');
+    debugPrint('Body: $body');
+    return post(url, body, headers: {'Authorization': 'Bearer $token'}).then((
+      response,
+    ) {
+      debugPrint('=== API RESPONSE: POST $url ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      return response;
+    });
+  }
+
+  /// Sends a POST request with Bearer token to get a Stripe Express dashboard URL.
+  Future<Response> getConnectDashboardUrl(String token) {
+    const String url = '/shop/connect/dashboard/';
+    debugPrint('=== API REQUEST: POST $url ===');
+    return post(url, {}, headers: {'Authorization': 'Bearer $token'}).then((
+      response,
+    ) {
+      debugPrint('=== API RESPONSE: POST $url ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      return response;
+    });
+  }
+
+  /// Sends a POST request with Bearer token to claim / retry pending payouts.
+  Future<Response> retryPendingPayouts(String token) {
+    const String url = '/shop/connect/retry-pending/';
+    debugPrint('=== API REQUEST: POST $url ===');
+    return post(url, {}, headers: {'Authorization': 'Bearer $token'}).then((
+      response,
+    ) {
+      debugPrint('=== API RESPONSE: POST $url ===');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
       return response;
     });
   }

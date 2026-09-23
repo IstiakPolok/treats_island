@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../controller/schedule_event_controller.dart';
 import '../sheets/leaderboard_shop_details_sheet.dart';
 
 class LeaderboardAllStoreItem extends StatelessWidget {
@@ -10,6 +11,10 @@ class LeaderboardAllStoreItem extends StatelessWidget {
   final double amount;
   final String avatarUrl;
   final double? goal;
+  final Map<String, dynamic>? participant;
+  final String? shareLink;
+  final int? fundraiserId;
+  final ScheduleEventController? controller;
 
   const LeaderboardAllStoreItem({
     super.key,
@@ -19,6 +24,10 @@ class LeaderboardAllStoreItem extends StatelessWidget {
     required this.amount,
     required this.avatarUrl,
     this.goal,
+    this.participant,
+    this.shareLink,
+    this.fundraiserId,
+    this.controller,
   });
 
   @override
@@ -31,6 +40,10 @@ class LeaderboardAllStoreItem extends StatelessWidget {
         avatarUrl: avatarUrl,
         supporters: supporters,
         goal: goal,
+        participant: participant,
+        shareLink: shareLink,
+        fundraiserId: fundraiserId,
+        controller: controller,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(vertical: 8.h),
