@@ -375,7 +375,7 @@ class ApiService extends GetConnect {
 
   /// Sends a GET request with Bearer token to get Stripe Connect payout status.
   Future<Response> getConnectStatus(String token) {
-    const String url = '/shop/connect/status/';
+    const String url = '/event/connect/status/';
     debugPrint('=== API REQUEST: GET $url ===');
     return get(url, headers: {'Authorization': 'Bearer $token'}).then((
       response,
@@ -387,29 +387,38 @@ class ApiService extends GetConnect {
     });
   }
 
-  /// Sends a POST request with Bearer token to create a Stripe Connect onboarding link.
+  /// Sends a POST request with Bearer token to create a Stripe Connect banking / onboarding link.
+  /// Skips social steps and lands directly on bank account / debit card entry.
   Future<Response> createConnectOnboardUrl(
     String token, {
     String returnUrl = 'https://treatsislandgo.com/payout/return',
     String refreshUrl = 'https://treatsislandgo.com/payout/refresh',
-  }) {
-    const String url = '/shop/connect/onboard/';
+  }) async {
+    const String bankingUrl = '/event/connect/banking/';
     final body = {'return_url': returnUrl, 'refresh_url': refreshUrl};
-    debugPrint('=== API REQUEST: POST $url ===');
+    debugPrint('=== API REQUEST: POST $bankingUrl ===');
     debugPrint('Body: $body');
-    return post(url, body, headers: {'Authorization': 'Bearer $token'}).then((
-      response,
-    ) {
-      debugPrint('=== API RESPONSE: POST $url ===');
-      debugPrint('Status Code: ${response.statusCode}');
-      debugPrint('Response Body: ${response.body}');
-      return response;
-    });
+    final response = await post(bankingUrl, body, headers: {'Authorization': 'Bearer $token'});
+    debugPrint('=== API RESPONSE: POST $bankingUrl ===');
+    debugPrint('Status Code: ${response.statusCode}');
+    debugPrint('Response Body: ${response.body}');
+
+    // Fallback to /event/connect/onboard/ if banking endpoint returns 404
+    if (response.statusCode == 404) {
+      const String onboardUrl = '/event/connect/onboard/';
+      debugPrint('=== API FALLBACK REQUEST: POST $onboardUrl ===');
+      final fallbackResponse = await post(onboardUrl, body, headers: {'Authorization': 'Bearer $token'});
+      debugPrint('=== API RESPONSE: POST $onboardUrl ===');
+      debugPrint('Status Code: ${fallbackResponse.statusCode}');
+      debugPrint('Response Body: ${fallbackResponse.body}');
+      return fallbackResponse;
+    }
+    return response;
   }
 
   /// Sends a POST request with Bearer token to get a Stripe Express dashboard URL.
   Future<Response> getConnectDashboardUrl(String token) {
-    const String url = '/shop/connect/dashboard/';
+    const String url = '/event/connect/dashboard/';
     debugPrint('=== API REQUEST: POST $url ===');
     return post(url, {}, headers: {'Authorization': 'Bearer $token'}).then((
       response,
@@ -423,7 +432,7 @@ class ApiService extends GetConnect {
 
   /// Sends a POST request with Bearer token to claim / retry pending payouts.
   Future<Response> retryPendingPayouts(String token) {
-    const String url = '/shop/connect/retry-pending/';
+    const String url = '/event/connect/retry-pending/';
     debugPrint('=== API REQUEST: POST $url ===');
     return post(url, {}, headers: {'Authorization': 'Bearer $token'}).then((
       response,

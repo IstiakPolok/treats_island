@@ -38,7 +38,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
     }
   }
 
-  /// Fetches real-time payout status from GET /shop/connect/status/
+  /// Fetches real-time payout status from GET /event/connect/status/
   Future<void> fetchConnectStatus() async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) return;
@@ -62,7 +62,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
     }
   }
 
-  /// Triggers Stripe onboarding via POST /shop/connect/onboard/ and opens the in-app browser
+  /// Triggers Stripe onboarding via POST /event/connect/banking/ or /event/connect/onboard/ and opens the in-app browser
   Future<bool> startOnboarding({
     String returnUrl = 'https://treatsislandgo.com/payout/return',
     String refreshUrl = 'https://treatsislandgo.com/payout/refresh',
@@ -89,7 +89,11 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
       if (response.status.isOk && response.body != null && response.body is Map) {
         final body = Map<String, dynamic>.from(response.body);
         final String? onboardingUrl =
-            body['onboarding_url']?.toString() ?? body['url']?.toString();
+            body['onboarding_url']?.toString() ??
+            body['banking_url']?.toString() ??
+            body['url']?.toString() ??
+            body['stripe_url']?.toString() ??
+            body['link']?.toString();
 
         if (onboardingUrl != null && onboardingUrl.isNotEmpty) {
           return await _openBrowserUrl(onboardingUrl, isDashboard: false);
@@ -101,23 +105,18 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
         return await _showBackendNotReadyDialog(
           title: 'Backend Endpoint Pending',
           message:
-              'The /shop/connect/onboard/ endpoint is not yet live on the server.\n\nWould you like to test the In-App Browser flow using the sample Stripe URL?',
+              'The /event/connect/banking/ endpoint is not yet live on the server.\n\nWould you like to test the In-App Browser flow using the sample Stripe URL?',
           sampleUrl:
               'https://connect.stripe.com/setup/e/acct_1UIK2TAbS2etFrSE/LZYYLH8HfwXD',
           isDashboard: false,
         );
       }
 
-      String errorMsg = 'Failed to generate Stripe onboarding link.';
-      if (response.body != null && response.body is Map) {
-        final bodyMap = response.body as Map;
-        if (bodyMap.containsKey('detail')) {
-          errorMsg = bodyMap['detail'].toString();
-        } else if (bodyMap.isNotEmpty) {
-          errorMsg = bodyMap.values.first.toString();
-        }
-      }
-      Get.snackbar('Notice', errorMsg, snackPosition: SnackPosition.BOTTOM);
+      final String errorMsg = _cleanErrorMessage(
+        response.body,
+        'Failed to generate Stripe onboarding link.',
+      );
+      Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
       return false;
     } catch (e) {
       isOnboardingLoading.value = false;
@@ -130,7 +129,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
     }
   }
 
-  /// Opens Stripe Express dashboard via POST /shop/connect/dashboard/
+  /// Opens Stripe Express dashboard via POST /event/connect/dashboard/
   Future<void> openDashboard() async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) {
@@ -150,7 +149,11 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
       if (response.status.isOk && response.body != null && response.body is Map) {
         final body = Map<String, dynamic>.from(response.body);
         final String? dashboardUrl =
-            body['dashboard_url']?.toString() ?? body['url']?.toString();
+            body['dashboard_url']?.toString() ??
+            body['url']?.toString() ??
+            body['login_link']?.toString() ??
+            body['stripe_url']?.toString() ??
+            body['link']?.toString();
 
         if (dashboardUrl != null && dashboardUrl.isNotEmpty) {
           await _openBrowserUrl(dashboardUrl, isDashboard: true);
@@ -162,7 +165,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
         await _showBackendNotReadyDialog(
           title: 'Dashboard Endpoint Pending',
           message:
-              'The /shop/connect/dashboard/ endpoint is not yet live on the server.\n\nWould you like to test the In-App Dashboard flow using the sample Stripe URL?',
+              'The /event/connect/dashboard/ endpoint is not yet live on the server.\n\nWould you like to test the In-App Dashboard flow using the sample Stripe URL?',
           sampleUrl:
               'https://connect.stripe.com/express/acct_1UIK2TAbS2etFrSE/7tifHrT95PiN',
           isDashboard: true,
@@ -170,16 +173,11 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
         return;
       }
 
-      String errorMsg = 'Failed to open Stripe dashboard.';
-      if (response.body != null && response.body is Map) {
-        final bodyMap = response.body as Map;
-        if (bodyMap.containsKey('detail')) {
-          errorMsg = bodyMap['detail'].toString();
-        } else if (bodyMap.isNotEmpty) {
-          errorMsg = bodyMap.values.first.toString();
-        }
-      }
-      Get.snackbar('Notice', errorMsg, snackPosition: SnackPosition.BOTTOM);
+      final String errorMsg = _cleanErrorMessage(
+        response.body,
+        'Failed to open Stripe dashboard.',
+      );
+      Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       isDashboardLoading.value = false;
       Get.snackbar(
@@ -316,7 +314,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
     return false;
   }
 
-  /// Claims / retries pending payouts via POST /shop/connect/retry-pending/
+  /// Claims / retries pending payouts via POST /event/connect/retry-pending/
   Future<void> retryPendingPayouts() async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) return;
@@ -339,20 +337,49 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
         String errorMsg = 'Failed to retry pending payouts.';
         if (response.statusCode == 404) {
           errorMsg =
-              'The /shop/connect/retry-pending/ endpoint is pending backend deployment.';
-        } else if (response.body != null && response.body is Map) {
-          final bodyMap = response.body as Map;
-          if (bodyMap.containsKey('detail')) {
-            errorMsg = bodyMap['detail'].toString();
-          } else if (bodyMap.isNotEmpty) {
-            errorMsg = bodyMap.values.first.toString();
-          }
+              'The /event/connect/retry-pending/ endpoint is pending backend deployment.';
+        } else {
+          errorMsg = _cleanErrorMessage(response.body, errorMsg);
         }
-        Get.snackbar('Notice', errorMsg, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
       isRetrying.value = false;
       Get.snackbar('Error', 'An error occurred: $e', snackPosition: SnackPosition.BOTTOM);
     }
+  }
+
+  /// Extracts and cleans error messages, stripping Stripe request ID prefixes like "Request req_xxx: "
+  String _cleanErrorMessage(dynamic body, String defaultMsg) {
+    if (body == null) return defaultMsg;
+    String raw = '';
+    if (body is Map) {
+      if (body.containsKey('error')) {
+        final err = body['error'];
+        raw = err is Map ? (err['message'] ?? err.toString()) : err.toString();
+      } else if (body.containsKey('detail')) {
+        raw = body['detail'].toString();
+      } else if (body.containsKey('message')) {
+        raw = body['message'].toString();
+      } else if (body.isNotEmpty) {
+        final firstVal = body.values.first;
+        if (firstVal is List && firstVal.isNotEmpty) {
+          raw = firstVal.first.toString();
+        } else {
+          raw = firstVal.toString();
+        }
+      }
+    } else if (body is String) {
+      raw = body;
+    }
+
+    if (raw.trim().isEmpty) return defaultMsg;
+
+    // Strip Stripe request ID prefix like "Request req_PoJ1dftsdzpjc7: "
+    raw = raw
+        .replaceFirst(RegExp(r'^Request\s+[^:]+:\s*', caseSensitive: false), '')
+        .trim();
+
+    return raw.isNotEmpty ? raw : defaultMsg;
   }
 }

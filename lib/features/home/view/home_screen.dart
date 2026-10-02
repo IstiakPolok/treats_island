@@ -74,6 +74,13 @@ class HomeScreen extends StatelessWidget {
                               Get.isRegistered<ScheduleEventController>()
                               ? Get.find<ScheduleEventController>()
                               : Get.put(ScheduleEventController());
+                          if (controller.eventData.value != null) {
+                            scheduleController.createdEvent.value = {
+                              'event': Map<String, dynamic>.from(
+                                controller.eventData.value!,
+                              ),
+                            };
+                          }
                           Get.to(
                             () => EventOverviewScreen(
                               controller: scheduleController,

@@ -18,14 +18,53 @@ class StripeConnectStatusModel {
   });
 
   factory StripeConnectStatusModel.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic>? earnings =
+        json['earnings_summary'] is Map ? json['earnings_summary'] as Map<String, dynamic> : null;
+
+    final String statusStr = (json['status'] ?? json['banking_status'] ?? json['banking_setup_status'] ?? '')
+        .toString()
+        .toLowerCase();
+    final bool isStatusActive = statusStr == 'active' || statusStr == 'completed';
+
     return StripeConnectStatusModel(
       accountId: json['account_id']?.toString(),
-      onboardingCompleted: json['onboarding_completed'] == true,
-      payoutsEnabled: json['payouts_enabled'] == true,
-      detailsSubmitted: json['details_submitted'] == true,
-      totalCreatorEarnings: _parseDouble(json['total_creator_earnings']),
-      pendingPayoutAmount: _parseDouble(json['pending_payout_amount']),
-      transferredAmount: _parseDouble(json['transferred_amount']),
+      onboardingCompleted: json['onboarding_completed'] == true ||
+          json['is_banking_setup'] == true ||
+          json['banking_completed'] == true ||
+          isStatusActive,
+      payoutsEnabled: json['payouts_enabled'] == true ||
+          json['banking_completed'] == true ||
+          json['is_banking_setup'] == true ||
+          isStatusActive,
+      detailsSubmitted: json['details_submitted'] == true ||
+          json['is_banking_setup'] == true ||
+          isStatusActive,
+      totalCreatorEarnings: _parseDouble(
+        earnings?['total_creator_earnings'] ??
+        earnings?['total_earnings'] ??
+        earnings?['earnings'] ??
+        json['total_creator_earnings'] ??
+        json['total_earnings'] ??
+        json['earnings'],
+      ),
+      pendingPayoutAmount: _parseDouble(
+        earnings?['pending_payout_amount'] ??
+        earnings?['pending_amount'] ??
+        earnings?['pending_earnings'] ??
+        earnings?['pending'] ??
+        json['pending_payout_amount'] ??
+        json['pending_amount'] ??
+        json['pending_earnings'] ??
+        json['pending'],
+      ),
+      transferredAmount: _parseDouble(
+        earnings?['transferred_amount'] ??
+        earnings?['transferred'] ??
+        earnings?['paid_out'] ??
+        json['transferred_amount'] ??
+        json['transferred'] ??
+        json['paid_out'],
+      ),
     );
   }
 

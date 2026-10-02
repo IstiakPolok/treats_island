@@ -25,6 +25,21 @@ class EventPayoutManagerCard extends StatelessWidget {
       final Map<String, dynamic>? eventData = rawMap['event'] is Map
           ? rawMap['event'] as Map<String, dynamic>
           : null;
+
+      final dynamic isMineValue =
+          eventData?['is_mine'] ??
+          rawMap['is_mine'] ??
+          eventData?['is_creator'] ??
+          rawMap['is_creator'];
+      final bool isMine = isMineValue != null
+          ? (isMineValue == true ||
+              isMineValue.toString().toLowerCase() == 'true')
+          : true;
+
+      if (!isMine) {
+        return const SizedBox.shrink();
+      }
+
       final String? payoutNumber =
           eventData?['payout_manager']?.toString() ??
           rawMap['payout_manager']?.toString();
