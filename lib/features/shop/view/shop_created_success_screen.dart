@@ -13,10 +13,7 @@ import '../controller/stripe_connect_controller.dart';
 class ShopCreatedSuccessScreen extends StatefulWidget {
   final ScheduleEventController scheduleController;
 
-  const ShopCreatedSuccessScreen({
-    super.key,
-    required this.scheduleController,
-  });
+  const ShopCreatedSuccessScreen({super.key, required this.scheduleController});
 
   @override
   State<ShopCreatedSuccessScreen> createState() =>
@@ -27,14 +24,15 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
   late final ConfettiController _confettiController;
   final StripeConnectController _stripeController =
       Get.isRegistered<StripeConnectController>()
-          ? Get.find<StripeConnectController>()
-          : Get.put(StripeConnectController());
+      ? Get.find<StripeConnectController>()
+      : Get.put(StripeConnectController());
 
   @override
   void initState() {
     super.initState();
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _confettiController.play();
       _stripeController.fetchConnectStatus();
@@ -53,7 +51,8 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
     if (link != null && link.isNotEmpty && link != 'null') {
       return link;
     }
-    final id = fundraiser['id'] ??
+    final id =
+        fundraiser['id'] ??
         widget.scheduleController.createdEvent['event']?['id'] ??
         widget.scheduleController.createdEvent['id'];
     if (id != null) {
@@ -106,7 +105,9 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFFF6FB6).withValues(alpha: 0.2),
+                              color: const Color(
+                                0xFFFF6FB6,
+                              ).withValues(alpha: 0.2),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -205,8 +206,8 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                                         'Copied',
                                         'Store link copied to clipboard!',
                                         snackPosition: SnackPosition.BOTTOM,
-                                        backgroundColor:
-                                            Colors.black.withValues(alpha: 0.8),
+                                        backgroundColor: Colors.black
+                                            .withValues(alpha: 0.8),
                                         colorText: Colors.white,
                                       );
                                     },
@@ -229,7 +230,9 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                                         color: Color(0xFFD4D4DF),
                                       ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24.r),
+                                        borderRadius: BorderRadius.circular(
+                                          24.r,
+                                        ),
                                       ),
                                       padding: EdgeInsets.symmetric(
                                         vertical: 10.h,
@@ -265,7 +268,9 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                                       backgroundColor: const Color(0xFF1A1A2E),
                                       elevation: 0,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24.r),
+                                        borderRadius: BorderRadius.circular(
+                                          24.r,
+                                        ),
                                       ),
                                       padding: EdgeInsets.symmetric(
                                         vertical: 10.h,
@@ -283,117 +288,117 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                       Divider(color: const Color(0xFFEEEEF4), thickness: 1.2),
                       SizedBox(height: 20.h),
 
-                      // Stripe Connect Soft Onboarding Card
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(isTablet ? 20.0 : 18.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF7FD),
-                          borderRadius: BorderRadius.circular(22.r),
-                          border: Border.all(
-                            color: const Color(0xFFE2D6F5),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  '💰',
-                                  style: TextStyle(
-                                    fontSize: isTablet ? 22.0 : 22.sp,
-                                  ),
-                                ),
-                                SizedBox(width: 10.w),
-                                Expanded(
-                                  child: Text(
-                                    'Set Up Your 50% Profit Payouts',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isTablet ? 15.0 : 15.sp,
-                                      fontWeight: FontWeight.w700,
-                                      color: const Color(0xFF1A1A2E),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 10.h),
-                            Text(
-                              'Connect your bank account or debit card with Stripe to receive direct deposits.',
-                              style: GoogleFonts.poppins(
-                                fontSize: isTablet ? 13.0 : 13.sp,
-                                color: Colors.black87,
-                                height: 1.4,
-                              ),
-                            ),
-                            SizedBox(height: 6.h),
-                            Text(
-                              'No rush! Your sales earnings are safely held until you connect.',
-                              style: GoogleFonts.poppins(
-                                fontSize: isTablet ? 11.5 : 11.5.sp,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            SizedBox(height: 20.h),
+                      // // Stripe Connect Soft Onboarding Card
+                      // Container(
+                      //   width: double.infinity,
+                      //   padding: EdgeInsets.all(isTablet ? 20.0 : 18.w),
+                      //   decoration: BoxDecoration(
+                      //     color: const Color(0xFFFAF7FD),
+                      //     borderRadius: BorderRadius.circular(22.r),
+                      //     border: Border.all(
+                      //       color: const Color(0xFFE2D6F5),
+                      //       width: 1.2,
+                      //     ),
+                      //   ),
+                      //   child: Column(
+                      //     crossAxisAlignment: CrossAxisAlignment.start,
+                      //     children: [
+                      //       Row(
+                      //         children: [
+                      //           Text(
+                      //             '💰',
+                      //             style: TextStyle(
+                      //               fontSize: isTablet ? 22.0 : 22.sp,
+                      //             ),
+                      //           ),
+                      //           SizedBox(width: 10.w),
+                      //           Expanded(
+                      //             child: Text(
+                      //               'Set Up Your 50% Profit Payouts',
+                      //               style: GoogleFonts.poppins(
+                      //                 fontSize: isTablet ? 15.0 : 15.sp,
+                      //                 fontWeight: FontWeight.w700,
+                      //                 color: const Color(0xFF1A1A2E),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       SizedBox(height: 10.h),
+                      //       Text(
+                      //         'Connect your bank account or debit card with Stripe to receive direct deposits.',
+                      //         style: GoogleFonts.poppins(
+                      //           fontSize: isTablet ? 13.0 : 13.sp,
+                      //           color: Colors.black87,
+                      //           height: 1.4,
+                      //         ),
+                      //       ),
+                      //       SizedBox(height: 6.h),
+                      //       Text(
+                      //         'No rush! Your sales earnings are safely held until you connect.',
+                      //         style: GoogleFonts.poppins(
+                      //           fontSize: isTablet ? 11.5 : 11.5.sp,
+                      //           color: Colors.black54,
+                      //         ),
+                      //       ),
+                      //       SizedBox(height: 20.h),
 
-                            // Connect Button
-                            Obx(
-                              () => SizedBox(
-                                width: double.infinity,
-                                height: isTablet ? 50.0 : 50.h,
-                                child: ElevatedButton(
-                                  onPressed: _stripeController
-                                          .isOnboardingLoading.value
-                                      ? null
-                                      : () async {
-                                          final success = await _stripeController
-                                              .startOnboarding();
-                                          if (success) {
-                                            _goToDashboard();
-                                          }
-                                        },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF6FB6),
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30.r),
-                                    ),
-                                  ),
-                                  child: _stripeController
-                                          .isOnboardingLoading.value
-                                      ? const CircularProgressIndicator(
-                                          color: Colors.white,
-                                        )
-                                      : Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.account_balance_rounded,
-                                              color: Colors.white,
-                                              size: 18.sp,
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text(
-                                              'Connect Bank Account (Stripe)',
-                                              style: GoogleFonts.poppins(
-                                                fontSize: isTablet ? 14.0 : 14.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      //       // Connect Button
+                      //       Obx(
+                      //         () => SizedBox(
+                      //           width: double.infinity,
+                      //           height: isTablet ? 50.0 : 50.h,
+                      //           child: ElevatedButton(
+                      //             onPressed: _stripeController
+                      //                     .isOnboardingLoading.value
+                      //                 ? null
+                      //                 : () async {
+                      //                     final success = await _stripeController
+                      //                         .startOnboarding();
+                      //                     if (success) {
+                      //                       _goToDashboard();
+                      //                     }
+                      //                   },
+                      //             style: ElevatedButton.styleFrom(
+                      //               backgroundColor: const Color(0xFFFF6FB6),
+                      //               elevation: 0,
+                      //               shape: RoundedRectangleBorder(
+                      //                 borderRadius: BorderRadius.circular(30.r),
+                      //               ),
+                      //             ),
+                      //             child: _stripeController
+                      //                     .isOnboardingLoading.value
+                      //                 ? const CircularProgressIndicator(
+                      //                     color: Colors.white,
+                      //                   )
+                      //                 : Row(
+                      //                     mainAxisAlignment:
+                      //                         MainAxisAlignment.center,
+                      //                     children: [
+                      //                       Icon(
+                      //                         Icons.account_balance_rounded,
+                      //                         color: Colors.white,
+                      //                         size: 18.sp,
+                      //                       ),
+                      //                       SizedBox(width: 8.w),
+                      //                       Text(
+                      //                         'Connect Bank Account (Stripe)',
+                      //                         style: GoogleFonts.poppins(
+                      //                           fontSize: isTablet ? 14.0 : 14.sp,
+                      //                           fontWeight: FontWeight.w600,
+                      //                           color: Colors.white,
+                      //                         ),
+                      //                       ),
+                      //                     ],
+                      //                   ),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
 
-                      SizedBox(height: 20.h),
+                      // SizedBox(height: 20.h),
 
                       // Non-blocking button
                       TextButton(
