@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
+import '../../../core/utils/date_time_utils.dart';
 
 class EventsListScreen extends StatefulWidget {
   final bool isEmbedded;
@@ -79,14 +79,12 @@ class _EventsListScreenState extends State<EventsListScreen> {
   }
 
   String _formatDateRange(String startStr, String endStr) {
-    try {
-      final start = DateTime.parse(startStr).toLocal();
-      final end = DateTime.parse(endStr).toLocal();
-      final formatter = DateFormat('MMM dd, yyyy');
-      return '${formatter.format(start)} - ${formatter.format(end)}';
-    } catch (_) {
-      return 'N/A';
-    }
+    return DateTimeUtils.formatLocalDateRange(
+      startStr,
+      endStr,
+      pattern: 'MMM dd, yyyy',
+      fallback: 'N/A',
+    );
   }
 
   @override

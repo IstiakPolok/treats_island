@@ -84,5 +84,11 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Treats Island requires access to your camera to take photos and videos for your store and events.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Treats Island requires access to your photo library to select photos and videos for your store and events.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Treats Island requires access to your microphone to record videos for your store and events.</string>
 </dict>
 </plist>

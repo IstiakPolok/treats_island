@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class HomeEventStatusCard extends StatelessWidget {
   final Map<String, dynamic>? eventData;
@@ -28,9 +28,9 @@ class HomeEventStatusCard extends StatelessWidget {
 
     if (eventData != null && eventData!['end_date'] != null && isOngoing) {
       dateIcon = Icons.access_time_rounded;
-      final endDate = DateTime.tryParse(eventData!['end_date'].toString());
+      final endDate = DateTimeUtils.parseToLocal(eventData!['end_date']);
       if (endDate != null) {
-        final now = DateTime.now().toUtc();
+        final now = DateTime.now();
         final diff = endDate.difference(now);
         if (diff.isNegative) {
           dateLabel = 'Live Event 0D 0h 0m 0s';
@@ -43,13 +43,17 @@ class HomeEventStatusCard extends StatelessWidget {
         }
       }
     } else if (eventData != null && eventData!['start_date'] != null) {
-      final parsedDate = DateTime.tryParse(eventData!['start_date'].toString());
+      final parsedDate = DateTimeUtils.parseToLocal(eventData!['start_date']);
       if (parsedDate != null) {
         final duration =
             int.tryParse(eventData!['duration']?.toString() ?? '0') ?? 0;
+        final formattedDate =
+            DateTimeUtils.formatLocalDate(parsedDate, pattern: 'MMM d, yyyy');
+        final formattedTime =
+            DateTimeUtils.formatLocalTime(parsedDate, withTimezone: true);
         dateLabel = started
             ? '$duration Day To Go'
-            : 'Start At ${DateFormat('MMM d, yyyy').format(parsedDate.toLocal())}';
+            : 'Start At $formattedDate, $formattedTime';
       }
     }
 

@@ -72,6 +72,9 @@ class _FundraisingGoalScreenState extends State<FundraisingGoalScreen> {
     });
 
     try {
+      debugPrint(
+        '🔧 API call: updateFundraiserGoal, fundraiserId: $fundraiserId, goal: $_goal',
+      );
       final response = await _apiService.updateFundraiserGoal(
         token,
         int.parse(fundraiserId.toString()),

@@ -2,6 +2,7 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/api_service.dart';
@@ -163,6 +164,10 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
         );
         widget.controller.fundraiserDetails.assignAll(result);
         return result;
+      } else {
+        debugPrint(
+          'GET FUNDRAISER FAILED: status=${response.statusCode}, body=${response.body}',
+        );
       }
     } catch (e) {
       debugPrint('GET FUNDRAISER EXCEPTION: $e');
@@ -181,7 +186,18 @@ class _EventOverviewScreenState extends State<EventOverviewScreen> {
     }
 
     if (data != null && mounted) {
-      SharePopupStoreSheet.show(context, data);
+      final String shareLink = data['share_link']?.toString() ?? '';
+      if (shareLink.isNotEmpty) {
+        SharePlus.instance.share(
+          ShareParams(
+            text: 'Check out my Pop-Up Store on Treats Island!\n$shareLink',
+            title: 'Treats Island Pop-Up Store',
+            subject: 'Treats Island Pop-Up Store',
+          ),
+        );
+      } else {
+        SharePopupStoreSheet.show(context, data);
+      }
     } else {
       Get.snackbar(
         'Error',

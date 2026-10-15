@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../controller/schedule_event_controller.dart';
 import '../../utils/share_helper.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class InviteTeamSheet {
   static void show(BuildContext context, ScheduleEventController controller) {
@@ -14,31 +15,23 @@ class InviteTeamSheet {
 
     final code = eventData?['code'] ?? controller.createdEvent['code'] ?? '';
 
-    DateTime? startDateTime;
-    DateTime? endDateTime;
-    if (eventData?['start_date'] != null) {
-      startDateTime = DateTime.tryParse(
-        eventData!['start_date'].toString(),
-      )?.toLocal();
-    }
-    if (eventData?['end_date'] != null) {
-      endDateTime = DateTime.tryParse(
-        eventData!['end_date'].toString(),
-      )?.toLocal();
-    }
+    final startDateTime =
+        DateTimeUtils.parseToLocal(eventData?['start_date']) ??
+        controller.startDate.value;
+    final endDateTime =
+        DateTimeUtils.parseToLocal(eventData?['end_date']) ??
+        controller.endDate;
 
-    final String startD = startDateTime != null
-        ? DateFormat('MM/dd/yy').format(startDateTime)
-        : '___/___/26';
-    final String startT = startDateTime != null
-        ? DateFormat('h:mm a').format(startDateTime).toLowerCase()
-        : '9:00 am';
-    final String endD = endDateTime != null
-        ? DateFormat('MM/dd/yy').format(endDateTime)
-        : '___/___/26';
-    final String endT = endDateTime != null
-        ? DateFormat('h:mm a').format(endDateTime).toLowerCase()
-        : '9:00 am';
+    final String startD = DateFormat('MM/dd/yy').format(startDateTime);
+    final String startT = DateTimeUtils.formatLocalTime(
+      startDateTime,
+      withTimezone: true,
+    );
+    final String endD = DateFormat('MM/dd/yy').format(endDateTime);
+    final String endT = DateTimeUtils.formatLocalTime(
+      endDateTime,
+      withTimezone: true,
+    );
 
     final String inviteLink =
         'https://treatsislandcandy.store/join-event?je=$code';

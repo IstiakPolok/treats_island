@@ -248,6 +248,8 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                                         ShareParams(
                                           text:
                                               'Check out my Pop-Up Store on Treats Island!\n$shareLink',
+                                          title: 'Treats Island Pop-Up Store',
+                                          subject: 'Treats Island Pop-Up Store',
                                         ),
                                       );
                                     },

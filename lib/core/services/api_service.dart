@@ -129,19 +129,44 @@ class ApiService extends GetConnect {
         imagePath,
         filename: imagePath.split('/').last,
       );
+      final formData = FormData(fields);
+      return put(
+        '/auth/profile/',
+        formData,
+        headers: {'Authorization': 'Bearer $token'},
+      );
     }
 
-    final formData = FormData(fields);
     return put(
       '/auth/profile/',
-      formData,
-      headers: {'Authorization': 'Bearer $token'},
+      fields,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
     );
   }
 
   /// Sends a GET request with Bearer token to fetch user profile.
   Future<Response> getProfile(String token) {
     return get('/auth/profile/', headers: {'Authorization': 'Bearer $token'});
+  }
+
+  /// Sends a request with Bearer token to delete user account.
+  /// Supports DELETE /auth/delete-account/ (with POST fallback).
+  Future<Response> deleteAccount(String token) async {
+    Response response = await delete(
+      '/auth/delete-account/',
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 405) {
+      response = await post(
+        '/auth/delete-account/',
+        {},
+        headers: {'Authorization': 'Bearer $token'},
+      );
+    }
+    return response;
   }
 
   /// Sends a GET request to fetch Terms and Conditions.
@@ -210,10 +235,26 @@ class ApiService extends GetConnect {
 
   /// Sends a GET request with Bearer token to fetch fundraiser details.
   Future<Response> getFundraiser(String token, int eventId) {
-    return get(
-      '/event/$eventId/my-fundraiser/',
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final String url = '/event/$eventId/my-fundraiser/';
+    debugPrint('=== API REQUEST: GET $url ===');
+    debugPrint('Event ID: $eventId');
+    debugPrint('Authorization: Bearer $token');
+
+    return get(url, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: GET $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: GET $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a PUT request with Bearer token to update fundraiser name.
@@ -222,11 +263,28 @@ class ApiService extends GetConnect {
     int fundraiserId,
     String name,
   ) {
-    return put(
-      '/event/fundraiser/$fundraiserId/name/',
-      {'name': name},
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final String url = '/event/fundraiser/$fundraiserId/name/';
+    final Map<String, dynamic> body = {'name': name};
+    debugPrint('=== API REQUEST: PUT $url ===');
+    debugPrint('Fundraiser ID: $fundraiserId');
+    debugPrint('Body: $body');
+    debugPrint('Authorization: Bearer $token');
+
+    return put(url, body, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: PUT $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: PUT $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a PUT request with Bearer token to update fundraiser goal.
@@ -235,11 +293,28 @@ class ApiService extends GetConnect {
     int fundraiserId,
     double goal,
   ) {
-    return put(
-      '/event/fundraiser/$fundraiserId/goal/',
-      {'goal': goal},
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final String url = '/event/fundraiser/$fundraiserId/goal/';
+    final Map<String, dynamic> body = {'goal': goal};
+    debugPrint('=== API REQUEST: PUT $url ===');
+    debugPrint('Fundraiser ID: $fundraiserId');
+    debugPrint('Body: $body');
+    debugPrint('Authorization: Bearer $token');
+
+    return put(url, body, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: PUT $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: PUT $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a PUT request with Bearer token to update fundraiser media.
@@ -273,27 +348,51 @@ class ApiService extends GetConnect {
     final formData = FormData(fields);
     final String url = '/event/fundraiser/$fundraiserId/media/';
     debugPrint('=== API REQUEST: PUT $url ===');
+    debugPrint('Fundraiser ID: $fundraiserId');
     debugPrint('Fields: ${fields.keys.toList()}');
     if (imagePath != null) debugPrint('imagePath: $imagePath');
     if (videoPath != null) debugPrint('videoPath: $videoPath');
+    debugPrint('Authorization: Bearer $token');
 
-    return put(url, formData, headers: {'Authorization': 'Bearer $token'}).then(
-      (response) {
-        debugPrint('=== API RESPONSE: PUT $url ===');
-        debugPrint('Status Code: ${response.statusCode}');
-        debugPrint('Status Text: ${response.statusText}');
-        debugPrint('Response Body: ${response.body}');
-        return response;
-      },
-    );
+    return put(url, formData, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: PUT $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: PUT $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a GET request with Bearer token to fetch fundraiser supporters.
   Future<Response> getFundraiserSupporters(String token, int fundraiserId) {
-    return get(
-      '/event/fundraiser/$fundraiserId/supporters/',
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final String url = '/event/fundraiser/$fundraiserId/supporters/';
+    debugPrint('=== API REQUEST: GET $url ===');
+    debugPrint('Fundraiser ID: $fundraiserId');
+    debugPrint('Authorization: Bearer $token');
+
+    return get(url, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: GET $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: GET $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a PUT request with Bearer token to update an event.
@@ -346,11 +445,28 @@ class ApiService extends GetConnect {
     int fundraiserId,
     String description,
   ) {
-    return put(
-      '/event/fundraiser/$fundraiserId/description/',
-      {'description': description},
-      headers: {'Authorization': 'Bearer $token'},
-    );
+    final String url = '/event/fundraiser/$fundraiserId/description/';
+    final Map<String, dynamic> body = {'description': description};
+    debugPrint('=== API REQUEST: PUT $url ===');
+    debugPrint('Fundraiser ID: $fundraiserId');
+    debugPrint('Body: $body');
+    debugPrint('Authorization: Bearer $token');
+
+    return put(url, body, headers: {'Authorization': 'Bearer $token'})
+        .then((response) {
+          debugPrint('=== API RESPONSE: PUT $url ===');
+          debugPrint('Status Code: ${response.statusCode}');
+          debugPrint('Status Text: ${response.statusText}');
+          debugPrint('Response Body: ${response.body}');
+          debugPrint('================================');
+          return response;
+        })
+        .catchError((error) {
+          debugPrint('=== API ERROR: PUT $url ===');
+          debugPrint('Error: $error');
+          debugPrint('================================');
+          throw error;
+        });
   }
 
   /// Sends a POST request with Bearer token to extend an event.
@@ -398,7 +514,11 @@ class ApiService extends GetConnect {
     final body = {'return_url': returnUrl, 'refresh_url': refreshUrl};
     debugPrint('=== API REQUEST: POST $bankingUrl ===');
     debugPrint('Body: $body');
-    final response = await post(bankingUrl, body, headers: {'Authorization': 'Bearer $token'});
+    final response = await post(
+      bankingUrl,
+      body,
+      headers: {'Authorization': 'Bearer $token'},
+    );
     debugPrint('=== API RESPONSE: POST $bankingUrl ===');
     debugPrint('Status Code: ${response.statusCode}');
     debugPrint('Response Body: ${response.body}');
@@ -407,7 +527,11 @@ class ApiService extends GetConnect {
     if (response.statusCode == 404) {
       const String onboardUrl = '/event/connect/onboard/';
       debugPrint('=== API FALLBACK REQUEST: POST $onboardUrl ===');
-      final fallbackResponse = await post(onboardUrl, body, headers: {'Authorization': 'Bearer $token'});
+      final fallbackResponse = await post(
+        onboardUrl,
+        body,
+        headers: {'Authorization': 'Bearer $token'},
+      );
       debugPrint('=== API RESPONSE: POST $onboardUrl ===');
       debugPrint('Status Code: ${fallbackResponse.statusCode}');
       debugPrint('Response Body: ${fallbackResponse.body}');

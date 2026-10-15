@@ -7,9 +7,10 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../controller/schedule_event_controller.dart';
-import '../../utils/share_helper.dart';
+import 'package:share_plus/share_plus.dart';
 import 'overview_card.dart';
 import 'overview_info_items.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class EventDetailsCard extends StatelessWidget {
   final ScheduleEventController controller;
@@ -63,41 +64,65 @@ class EventDetailsCard extends StatelessWidget {
                 );
               }),
               const DashedDivider(color: Color(0xFFEDEDF2)),
-              Obx(
-                () => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Obx(() {
+                final Map<String, dynamic>? eventData =
+                    (controller.createdEvent['event']
+                        as Map<String, dynamic>?) ??
+                    (controller.createdEvent.isNotEmpty
+                        ? controller.createdEvent
+                        : null);
+
+                final startDateTime =
+                    DateTimeUtils.parseToLocal(eventData?['start_date']) ??
+                    controller.startDate.value;
+
+                final durationDays = eventData?['duration'] != null
+                    ? (int.tryParse(eventData!['duration'].toString()) ??
+                        controller.durationDays.value)
+                    : controller.durationDays.value;
+
+                final endDateTime =
+                    DateTimeUtils.parseToLocal(eventData?['end_date']) ??
+                    startDateTime.add(Duration(days: durationDays));
+
+                return Column(
                   children: [
-                    InfoMini(
-                      title: 'START DATE',
-                      value: DateFormat(
-                        'EEEE, MMMM dd, yyyy',
-                      ).format(controller.startDate.value),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InfoMini(
+                          title: 'START DATE',
+                          value: DateTimeUtils.formatLocalDate(startDateTime),
+                        ),
+                        InfoMiniDate(
+                          title: 'START TIME',
+                          value: DateTimeUtils.formatLocalTime(
+                            startDateTime,
+                            withTimezone: true,
+                          ),
+                        ),
+                      ],
                     ),
-                    InfoMiniDate(
-                      title: 'START TIME',
-                      value: controller.formattedStartTime,
+                    SizedBox(height: 12.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InfoMini(
+                          title: 'END DATE',
+                          value: DateTimeUtils.formatLocalDate(endDateTime),
+                        ),
+                        InfoMiniDate(
+                          title: 'END TIME',
+                          value: DateTimeUtils.formatLocalTime(
+                            endDateTime,
+                            withTimezone: true,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Obx(
-                () => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InfoMini(
-                      title: 'END DATE',
-                      value: DateFormat(
-                        'EEEE, MMMM dd, yyyy',
-                      ).format(controller.endDate),
-                    ),
-                    InfoMiniDate(
-                      title: 'END TIME',
-                      value: controller.formattedEndTime,
-                    ),
-                  ],
-                ),
-              ),
+                );
+              }),
               const DashedDivider(color: Color(0xFFEDEDF2)),
               Row(
                 children: [
@@ -113,42 +138,35 @@ class EventDetailsCard extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () {
                           final Map<String, dynamic>? eventData =
-                              controller.createdEvent['event']
-                                  as Map<String, dynamic>?;
+                              (controller.createdEvent['event']
+                                  as Map<String, dynamic>?) ??
+                              (controller.createdEvent.isNotEmpty
+                                  ? controller.createdEvent
+                                  : null);
                           final code =
                               eventData?['code'] ??
                               controller.createdEvent['code'] ??
                               '';
 
-                          DateTime? startDateTime;
-                          DateTime? endDateTime;
-                          if (eventData?['start_date'] != null) {
-                            startDateTime = DateTime.tryParse(
-                              eventData!['start_date'].toString(),
-                            )?.toLocal();
-                          }
-                          if (eventData?['end_date'] != null) {
-                            endDateTime = DateTime.tryParse(
-                              eventData!['end_date'].toString(),
-                            )?.toLocal();
-                          }
+                          final startDateTime =
+                              DateTimeUtils.parseToLocal(eventData?['start_date']) ??
+                              controller.startDate.value;
+                          final endDateTime =
+                              DateTimeUtils.parseToLocal(eventData?['end_date']) ??
+                              controller.endDate;
 
-                          final String startD = startDateTime != null
-                              ? DateFormat('MM/dd/yy').format(startDateTime)
-                              : '___/___/26';
-                          final String startT = startDateTime != null
-                              ? DateFormat(
-                                  'h:mm a',
-                                ).format(startDateTime).toLowerCase()
-                              : '9:00 am';
-                          final String endD = endDateTime != null
-                              ? DateFormat('MM/dd/yy').format(endDateTime)
-                              : '___/___/26';
-                          final String endT = endDateTime != null
-                              ? DateFormat(
-                                  'h:mm a',
-                                ).format(endDateTime).toLowerCase()
-                              : '9:00 am';
+                          final String startD =
+                              DateFormat('MM/dd/yy').format(startDateTime);
+                          final String startT = DateTimeUtils.formatLocalTime(
+                            startDateTime,
+                            withTimezone: true,
+                          );
+                          final String endD =
+                              DateFormat('MM/dd/yy').format(endDateTime);
+                          final String endT = DateTimeUtils.formatLocalTime(
+                            endDateTime,
+                            withTimezone: true,
+                          );
 
                           final String inviteLink =
                               'https://treatsislandcandy.store/join-event?je=$code';
@@ -161,11 +179,15 @@ class EventDetailsCard extends StatelessWidget {
 
                           final box =
                               btnContext.findRenderObject() as RenderBox?;
-                          ShareHelper.shareTextAndImage(
-                            shareText,
-                            box != null
-                                ? (box.localToGlobal(Offset.zero) & box.size)
-                                : null,
+                          SharePlus.instance.share(
+                            ShareParams(
+                              text: shareText,
+                              title: 'Treats Island Event Invitation',
+                              subject: 'Treats Island Event Invitation',
+                              sharePositionOrigin: box != null
+                                  ? (box.localToGlobal(Offset.zero) & box.size)
+                                  : null,
+                            ),
                           );
                         },
                         style: ElevatedButton.styleFrom(

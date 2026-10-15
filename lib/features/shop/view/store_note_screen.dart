@@ -137,6 +137,9 @@ class _StoreNoteScreenState extends State<StoreNoteScreen> {
 
     try {
       final desc = _controller.text.trim();
+      debugPrint(
+        '🔧 API call: updateFundraiserDescription, fundraiserId: $fundraiserId, desc: $desc',
+      );
       final response = await _apiService.updateFundraiserDescription(
         token,
         int.parse(fundraiserId.toString()),

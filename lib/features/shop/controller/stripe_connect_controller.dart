@@ -63,7 +63,7 @@ class StripeConnectController extends GetxController with WidgetsBindingObserver
   }
 
   /// Triggers Stripe onboarding via POST /event/connect/banking/ or /event/connect/onboard/ and opens the in-app browser
-  Future<bool> startOnboarding({
+  Future<bool> startOnboarding({  
     String returnUrl = 'https://treatsislandgo.com/payout/return',
     String refreshUrl = 'https://treatsislandgo.com/payout/refresh',
   }) async {

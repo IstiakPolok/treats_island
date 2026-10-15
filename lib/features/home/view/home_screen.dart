@@ -14,12 +14,27 @@ import 'widgets/home_mini_video_card.dart';
 import 'widgets/home_pink_action_card.dart';
 import 'widgets/home_start_fundraiser_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final HomeController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<HomeController>()
+        ? Get.find<HomeController>()
+        : Get.put(HomeController());
+    controller.refreshUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final controller = Get.put(HomeController());
     final size = MediaQuery.of(context).size;
     final isTablet = size.width >= 600;
 

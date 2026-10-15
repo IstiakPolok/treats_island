@@ -2,10 +2,10 @@ import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../controller/schedule_event_controller.dart';
 import '../widgets/overview_info_items.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class CongratsEventSheet {
   static void show({
@@ -19,32 +19,27 @@ class CongratsEventSheet {
     final Map<String, dynamic>? eventData =
         controller.createdEvent['event'] as Map<String, dynamic>?;
 
-    DateTime? startDateTime;
-    DateTime? endDateTime;
-    if (eventData?['start_date'] != null) {
-      startDateTime = DateTime.tryParse(
-        eventData!['start_date'].toString(),
-      )?.toLocal();
-    }
-    if (eventData?['end_date'] != null) {
-      endDateTime = DateTime.tryParse(
-        eventData!['end_date'].toString(),
-      )?.toLocal();
-    }
+    final startDateTime =
+        DateTimeUtils.parseToLocal(eventData?['start_date']) ??
+        controller.startDate.value;
+    final endDateTime =
+        DateTimeUtils.parseToLocal(eventData?['end_date']) ??
+        controller.endDate;
 
     final String eventCode = eventData?['code']?.toString() ?? 'ZVT AYF';
-    final String displayStartDate = startDateTime != null
-        ? DateFormat('EEEE, MMMM dd, yyyy').format(startDateTime)
-        : 'Monday, May 22, 2026';
-    final String displayStartTime = startDateTime != null
-        ? DateFormat('h:mm a').format(startDateTime)
-        : '5.00 pm';
-    final String displayEndDate = endDateTime != null
-        ? DateFormat('EEEE, MMMM dd, yyyy').format(endDateTime)
-        : 'Monday, May 22, 2026';
-    final String displayEndTime = endDateTime != null
-        ? DateFormat('h:mm a').format(endDateTime)
-        : '5.00 pm';
+    final String displayStartDate =
+        DateTimeUtils.formatLocalDate(startDateTime);
+    final String displayStartTime = DateTimeUtils.formatLocalTime(
+      startDateTime,
+      withTimezone: true,
+      toLowerCase: false,
+    );
+    final String displayEndDate = DateTimeUtils.formatLocalDate(endDateTime);
+    final String displayEndTime = DateTimeUtils.formatLocalTime(
+      endDateTime,
+      withTimezone: true,
+      toLowerCase: false,
+    );
 
     showModalBottomSheet<void>(
       context: context,

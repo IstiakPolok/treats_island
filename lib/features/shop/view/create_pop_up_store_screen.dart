@@ -12,6 +12,7 @@ import 'display_name_screen.dart';
 import 'fundraising_goal_screen.dart';
 import 'shop_created_success_screen.dart';
 import 'store_note_screen.dart';
+import 'widgets/circular_photo_adjust_screen.dart';
 
 class CreatePopUpStoreScreen extends StatelessWidget {
   const CreatePopUpStoreScreen({super.key});
@@ -44,6 +45,8 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       return;
     }
 
+    if (!context.mounted) return;
+
     final ImagePicker picker = ImagePicker();
     XFile? pickedFile;
 
@@ -51,18 +54,147 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       if (isVideo) {
         pickedFile = await picker.pickVideo(source: ImageSource.gallery);
       } else {
-        pickedFile = await picker.pickImage(source: ImageSource.gallery);
+        // Show option sheet: Choose from gallery or take photo
+        final ImageSource? source = await showModalBottomSheet<ImageSource>(
+          context: context,
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+          ),
+          builder: (sheetContext) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2.r),
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'Upload Store Photo',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1A1A2E),
+                    ),
+                  ),
+                  SizedBox(height: 6.h),
+                  Text(
+                    'You will be able to zoom and center it in the circular preview',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 11.sp,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFEAF4),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.photo_library_rounded,
+                        color: const Color(0xFFFF6FB6),
+                        size: 22.sp,
+                      ),
+                    ),
+                    title: Text(
+                      'Choose from Gallery',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                  ),
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(8.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFEAF4),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.camera_alt_rounded,
+                        color: const Color(0xFFFF6FB6),
+                        size: 22.sp,
+                      ),
+                    ),
+                    title: Text(
+                      'Take a Photo',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        if (source == null) return;
+        pickedFile = await picker.pickImage(source: source);
       }
     } catch (e) {
+      debugPrint('Error picking media: $e');
+      String errorMessage = 'Failed to pick media: $e';
+      final String errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('camera_access_denied') ||
+          errorStr.contains('permission')) {
+        errorMessage =
+            'Camera access was denied. Please enable camera permissions in device Settings.';
+      } else if (errorStr.contains('not available') ||
+          errorStr.contains('no_available_camera')) {
+        errorMessage =
+            'Camera is not available on this device (e.g. simulator). Please choose from the gallery.';
+      }
       Get.snackbar(
-        'Error',
-        'Failed to pick media: $e',
+        'Camera Error',
+        errorMessage,
         snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.black,
       );
       return;
     }
 
     if (pickedFile == null) return;
+
+    // If it's a photo, open the circular adjuster screen so the user can zoom in/out,
+    // pan, rotate, and center it precisely for the circular share sheet & avatars.
+    String uploadImagePath = pickedFile.path;
+    if (!isVideo) {
+      final String shopName =
+          controller.fundraiserDetails['name']?.toString() ?? 'My Store';
+
+      final String? adjustedPath = await Get.to<String?>(
+        () => CircularPhotoAdjustScreen(
+          imageFile: File(pickedFile!.path),
+          shopName: shopName,
+        ),
+        transition: Transition.cupertino,
+      );
+
+      // If user cancelled or closed adjustment screen, do not proceed with upload
+      if (adjustedPath == null) {
+        return;
+      }
+      uploadImagePath = adjustedPath;
+    }
 
     if (isVideo) {
       // Validate file format
@@ -161,7 +293,7 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       final response = await apiService.updateFundraiserMedia(
         token: token,
         fundraiserId: int.parse(fundraiserId.toString()),
-        imagePath: isVideo ? null : pickedFile.path,
+        imagePath: isVideo ? null : uploadImagePath,
         videoPath: isVideo ? pickedFile.path : null,
       );
 
@@ -497,7 +629,9 @@ class _UploadCard extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            'Tap to change \nThe video will be less the 15 sec ',
+                            isVideo
+                                ? 'Tap to change \nThe video will be less the 15 sec '
+                                : 'Tap to change or adjust photo',
                             style: GoogleFonts.poppins(
                               fontSize: isTablet ? 9.5 : 9.5.sp,
                               color: Colors.white70,

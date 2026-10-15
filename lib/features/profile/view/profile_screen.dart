@@ -162,7 +162,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDetailView(int index) {
     switch (index) {
       case 0:
-        return const AccountSettingScreen(isEmbedded: true);
+        return AccountSettingScreen(
+          isEmbedded: true,
+          onProfileUpdated: () {
+            _loadLocalProfile();
+            _fetchProfileData();
+          },
+        );
       case 1:
         return const EventsListScreen(isEmbedded: true);
       case 2:
@@ -517,9 +523,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   _ProfileListItem(
                                     icon: Icons.settings_outlined,
                                     label: 'Account setting',
-                                    onTap: () => Get.to(
-                                      () => const AccountSettingScreen(),
-                                    ),
+                                    onTap: () async {
+                                      await Get.to(
+                                        () => const AccountSettingScreen(),
+                                      );
+                                      _loadLocalProfile();
+                                      _fetchProfileData();
+                                    },
                                   ),
                                   Divider(
                                     height: isTablet ? 1.0 : 1.h,

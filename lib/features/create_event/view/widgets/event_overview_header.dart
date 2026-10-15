@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../shared/widgets/bottom_navbar.dart';
 import '../../controller/schedule_event_controller.dart';
 import 'event_countdown_widget.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class EventOverviewHeader extends StatelessWidget {
   final ScheduleEventController controller;
@@ -56,18 +56,18 @@ class EventOverviewHeader extends StatelessWidget {
                 child: Center(
                   child: Obx(() {
                     final Map<String, dynamic>? eventData =
-                        controller.createdEvent['event']
-                            as Map<String, dynamic>?;
+                        (controller.createdEvent['event']
+                            as Map<String, dynamic>?) ??
+                        (controller.createdEvent.isNotEmpty
+                            ? controller.createdEvent
+                            : null);
                     final String status =
                         eventData?['status']?.toString() ?? '';
                     final bool isOngoing = status.toLowerCase() == 'ongoing';
 
                     if (isOngoing) {
-                      final parsedStart = eventData?['start_date'] != null
-                          ? DateTime.tryParse(
-                              eventData!['start_date'].toString(),
-                            )
-                          : null;
+                      final parsedStart =
+                          DateTimeUtils.parseToLocal(eventData?['start_date']);
                       final durationDays = eventData?['duration'] != null
                           ? (int.tryParse(eventData!['duration'].toString()) ??
                                 5)
@@ -267,27 +267,24 @@ class EventOverviewHeader extends StatelessWidget {
               Expanded(
                 child: Obx(() {
                   final Map<String, dynamic>? eventData =
-                      controller.createdEvent['event'] as Map<String, dynamic>?;
+                      (controller.createdEvent['event']
+                          as Map<String, dynamic>?) ??
+                      (controller.createdEvent.isNotEmpty
+                          ? controller.createdEvent
+                          : null);
 
-                  DateTime? startDateTime;
-                  DateTime? endDateTime;
-                  if (eventData?['start_date'] != null) {
-                    startDateTime = DateTime.tryParse(
-                      eventData!['start_date'].toString(),
-                    )?.toLocal();
-                  }
-                  if (eventData?['end_date'] != null) {
-                    endDateTime = DateTime.tryParse(
-                      eventData!['end_date'].toString(),
-                    )?.toLocal();
-                  }
+                  final startDateTime =
+                      DateTimeUtils.parseToLocal(eventData?['start_date']);
+                  final endDateTime =
+                      DateTimeUtils.parseToLocal(eventData?['end_date']);
 
                   final String dynamicTeamName =
                       eventData?['name']?.toString() ?? 'No Name added';
                   final String dateRangeStr =
-                      (startDateTime != null && endDateTime != null)
-                      ? '${DateFormat('MMM d').format(startDateTime)} - ${DateFormat('MMM d').format(endDateTime)}'
-                      : 'No Date Added';
+                      DateTimeUtils.formatLocalDateRange(
+                        startDateTime,
+                        endDateTime,
+                      );
 
                   final creatorMap =
                       eventData?['creator'] as Map<String, dynamic>?;

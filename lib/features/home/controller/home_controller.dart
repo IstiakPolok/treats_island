@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
+import '../../../core/utils/date_time_utils.dart';
 
 class HomeController extends GetxController {
   final RxString userName = 'Jhon'.obs;
@@ -56,6 +57,11 @@ class HomeController extends GetxController {
     }
   }
 
+  Future<void> refreshUserData() async {
+    await loadHomeState();
+    await fetchProfileData();
+  }
+
   Future<void> fetchProfileData() async {
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token != null && token.isNotEmpty) {
@@ -67,7 +73,9 @@ class HomeController extends GetxController {
         if (response.status.isOk &&
             response.body != null &&
             response.body is Map) {
-          final fullName = response.body['full_name']?.toString() ?? '';
+          final fullName = response.body['full_name']?.toString() ??
+              response.body['name']?.toString() ??
+              '';
           if (fullName.isNotEmpty) {
             await SharedPreferencesHelper.saveName(fullName);
             userName.value = fullName;
@@ -138,9 +146,9 @@ class HomeController extends GetxController {
 
   String getRemainingTime(String? endDateStr) {
     if (endDateStr == null) return '0 Day 0 Hours 0 Min';
-    final endDate = DateTime.tryParse(endDateStr);
+    final endDate = DateTimeUtils.parseToLocal(endDateStr);
     if (endDate == null) return '0 Day 0 Hours 0 Min';
-    final now = DateTime.now().toUtc();
+    final now = DateTime.now();
     final difference = endDate.difference(now);
     if (difference.isNegative) return '0 Day 0 Hours 0 Min';
     final days = difference.inDays;

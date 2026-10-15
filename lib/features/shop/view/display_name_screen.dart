@@ -78,10 +78,10 @@ class _DisplayNameScreenState extends State<DisplayNameScreen> {
 
     try {
       // Debug prints
-      print(
+      debugPrint(
         '🔧 API call: updateFundraiserName, fundraiserId: $fundraiserId, name: $name',
       );
-      print('🔧 Token: $token');
+      debugPrint('🔧 Token: $token');
       final response = await _apiService.updateFundraiserName(
         token,
         int.parse(fundraiserId.toString()),

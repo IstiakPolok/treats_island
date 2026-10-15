@@ -58,6 +58,9 @@ class _SupportersScreenState extends State<SupportersScreen> {
     });
 
     try {
+      debugPrint(
+        '🔧 API call: getFundraiserSupporters, fundraiserId: $fundraiserId',
+      );
       final response = await _apiService.getFundraiserSupporters(
         token,
         int.parse(fundraiserId.toString()),

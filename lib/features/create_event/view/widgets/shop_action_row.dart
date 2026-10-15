@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../controller/schedule_event_controller.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class ShopActionRow extends StatelessWidget {
   final ScheduleEventController controller;
@@ -14,6 +16,27 @@ class ShopActionRow extends StatelessWidget {
     required this.fundraiser,
     required this.onShareTap,
   });
+
+  void _handleShareLink(BuildContext context) {
+    final String shareLink = fundraiser?['share_link']?.toString() ??
+        controller.fundraiserDetails['share_link']?.toString() ??
+        '';
+    if (shareLink.isNotEmpty) {
+      final box = context.findRenderObject() as RenderBox?;
+      SharePlus.instance.share(
+        ShareParams(
+          text: 'Check out my Pop-Up Store on Treats Island!\n$shareLink',
+          title: 'Treats Island Pop-Up Store',
+          subject: 'Treats Island Pop-Up Store',
+          sharePositionOrigin: box != null
+              ? (box.localToGlobal(Offset.zero) & box.size)
+              : null,
+        ),
+      );
+    } else {
+      onShareTap();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,9 +70,8 @@ class ShopActionRow extends StatelessWidget {
       // Calculate time remaining using start_date and duration
       String timeToGo = 'Ongoing';
       if (eventData?['start_date'] != null && eventData?['duration'] != null) {
-        final parsedStart = DateTime.tryParse(
-          eventData!['start_date'].toString(),
-        );
+        final parsedStart =
+            DateTimeUtils.parseToLocal(eventData!['start_date']);
         final durationDays =
             int.tryParse(eventData['duration'].toString()) ?? 5;
         if (parsedStart != null) {
@@ -119,26 +141,28 @@ class ShopActionRow extends StatelessWidget {
                         ),
                       ],
                     ),
-                    GestureDetector(
-                      onTap: onShareTap,
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 18.w,
-                          vertical: 10.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.15),
+                    Builder(
+                      builder: (btnContext) => GestureDetector(
+                        onTap: () => _handleShareLink(btnContext),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 18.w,
+                            vertical: 10.h,
                           ),
-                          borderRadius: BorderRadius.circular(24.r),
-                        ),
-                        child: Text(
-                          'Share Link',
-                          style: GoogleFonts.poppins(
-                            fontSize: isTablet ? 14.0 : 14.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A1A2E),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: Colors.black.withValues(alpha: 0.15),
+                            ),
+                            borderRadius: BorderRadius.circular(24.r),
+                          ),
+                          child: Text(
+                            'Share Link',
+                            style: GoogleFonts.poppins(
+                              fontSize: isTablet ? 14.0 : 14.sp,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A2E),
+                            ),
                           ),
                         ),
                       ),
@@ -282,20 +306,22 @@ class ShopActionRow extends StatelessWidget {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: onShareTap,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF6FB6),
-                borderRadius: BorderRadius.circular(20.r),
-              ),
-              child: Text(
-                'Share Link',
-                style: GoogleFonts.poppins(
-                  fontSize: isTablet ? 11.0 : 11.sp,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+          Builder(
+            builder: (btnContext) => GestureDetector(
+              onTap: () => _handleShareLink(btnContext),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF6FB6),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Text(
+                  'Share Link',
+                  style: GoogleFonts.poppins(
+                    fontSize: isTablet ? 11.0 : 11.sp,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../controller/schedule_event_controller.dart';
+import '../../../../core/utils/date_time_utils.dart';
 
 class EditEventSheet {
   static void show(BuildContext context, ScheduleEventController controller) {
@@ -30,13 +31,9 @@ class EditEventSheet {
     final selectedType = currentTypeName.obs;
 
     // Start date
-    DateTime? currentStart;
-    if (eventData?['start_date'] != null) {
-      currentStart = DateTime.tryParse(
-        eventData!['start_date'].toString(),
-      )?.toLocal();
-    }
-    currentStart ??= controller.startDate.value;
+    final currentStart =
+        DateTimeUtils.parseToLocal(eventData?['start_date']) ??
+        controller.startDate.value;
     final selectedDate = currentStart.obs;
 
     // Estimated participants

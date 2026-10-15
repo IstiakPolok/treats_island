@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -11,16 +10,29 @@ class ShareHelper {
     Rect? origin, {
     String? imageUrl,
     String? videoUrl,
+    String? title,
+    String? subject,
   }) async {
-    // Show a loading dialog if downloading takes a moment
-    Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6FB6)),
+    final bool hasMediaToDownload =
+        (videoUrl != null && videoUrl.isNotEmpty && videoUrl != 'null') ||
+        (imageUrl != null && imageUrl.isNotEmpty && imageUrl != 'null');
+
+    if (hasMediaToDownload) {
+      // Show a loading dialog if downloading takes a moment
+      Get.dialog(
+        const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6FB6)),
+          ),
         ),
-      ),
-      barrierDismissible: false,
-    );
+        barrierDismissible: false,
+      );
+    }
+
+    final String effectiveTitle =
+        title ?? subject ?? 'Treats Island Pop-Up Store';
+    final String effectiveSubject =
+        subject ?? title ?? 'Treats Island Pop-Up Store';
 
     try {
       final List<XFile> filesToShare = [];
@@ -30,7 +42,13 @@ class ShareHelper {
         final String videoFilename = 'video_${videoUrl.hashCode}.mp4';
         final file = await _downloadFile(videoUrl, videoFilename);
         if (file != null) {
-          filesToShare.add(XFile(file.path));
+          filesToShare.add(
+            XFile(
+              file.path,
+              mimeType: 'video/mp4',
+              name: 'store_video.mp4',
+            ),
+          );
         }
       }
 
@@ -39,30 +57,18 @@ class ShareHelper {
         final String imageFilename = 'image_${imageUrl.hashCode}.png';
         final file = await _downloadFile(imageUrl, imageFilename);
         if (file != null) {
-          filesToShare.add(XFile(file.path));
-        }
-      }
-
-      // If no custom media was downloaded, fallback to the default logo
-      if (filesToShare.isEmpty) {
-        try {
-          final byteData = await rootBundle.load('assets/logo/logo.png');
-          final tempDir = await getTemporaryDirectory();
-          final file = await File('${tempDir.path}/logo.png').create();
-          await file.writeAsBytes(
-            byteData.buffer.asUint8List(
-              byteData.offsetInBytes,
-              byteData.lengthInBytes,
+          filesToShare.add(
+            XFile(
+              file.path,
+              mimeType: 'image/png',
+              name: 'store_photo.png',
             ),
           );
-          filesToShare.add(XFile(file.path));
-        } catch (e) {
-          debugPrint('Error preparing default logo share: $e');
         }
       }
 
       // Close loading dialog
-      if (Get.isDialogOpen ?? false) {
+      if (hasMediaToDownload && (Get.isDialogOpen ?? false)) {
         Get.back();
       }
 
@@ -70,6 +76,8 @@ class ShareHelper {
         await SharePlus.instance.share(
           ShareParams(
             text: shareText,
+            title: effectiveTitle,
+            subject: effectiveSubject,
             files: filesToShare,
             sharePositionOrigin: origin,
           ),
@@ -78,13 +86,15 @@ class ShareHelper {
         await SharePlus.instance.share(
           ShareParams(
             text: shareText,
+            title: effectiveTitle,
+            subject: effectiveSubject,
             sharePositionOrigin: origin,
           ),
         );
       }
     } catch (e) {
       // Close loading dialog if open
-      if (Get.isDialogOpen ?? false) {
+      if (hasMediaToDownload && (Get.isDialogOpen ?? false)) {
         Get.back();
       }
       debugPrint('Error preparing media share: $e');
@@ -92,6 +102,8 @@ class ShareHelper {
         await SharePlus.instance.share(
           ShareParams(
             text: shareText,
+            title: effectiveTitle,
+            subject: effectiveSubject,
             sharePositionOrigin: origin,
           ),
         );

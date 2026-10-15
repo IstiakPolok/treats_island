@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/services/api_service.dart';
-import '../../utils/share_helper.dart';
+import 'package:share_plus/share_plus.dart';
 
 class SharePopupStoreSheet {
   static void show(
@@ -24,16 +24,6 @@ class SharePopupStoreSheet {
           fundraiser['image'].toString() != 'null') {
         shopImageUrl = ApiService.formatImageUrl(
           fundraiser['image'].toString(),
-        );
-      }
-
-      // Construct shop video URL
-      var shopVideoUrl = '';
-      if (fundraiser['video'] != null &&
-          fundraiser['video'].toString().isNotEmpty &&
-          fundraiser['video'].toString() != 'null') {
-        shopVideoUrl = ApiService.formatImageUrl(
-          fundraiser['video'].toString(),
         );
       }
 
@@ -280,25 +270,27 @@ class SharePopupStoreSheet {
                           return GestureDetector(
                             onTap: () {
                               final String shareText = shareLink.isNotEmpty
-                                  ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n$shopDescription\n\n$shareLink'
+                                  ? 'Check out my Pop-Up Store on Treats Island!\n$shareLink'
                                   : shopName.isNotEmpty
                                   ? 'Check out $shopName Pop-Up Store and support our fundraiser!\n\n$shopDescription'
                                   : 'Check out our fundraising Pop-Up Store!\n\n$shopDescription';
 
+                              final String effectiveTitle = shopName.isNotEmpty
+                                  ? '$shopName Pop-Up Store'
+                                  : 'Treats Island Pop-Up Store';
+
                               final box =
                                   btnContext.findRenderObject() as RenderBox?;
-                              ShareHelper.shareTextAndImage(
-                                shareText,
-                                box != null
-                                    ? (box.localToGlobal(Offset.zero) &
-                                          box.size)
-                                    : null,
-                                imageUrl: shopImageUrl.isNotEmpty
-                                    ? shopImageUrl
-                                    : null,
-                                videoUrl: shopVideoUrl.isNotEmpty
-                                    ? shopVideoUrl
-                                    : null,
+                              SharePlus.instance.share(
+                                ShareParams(
+                                  text: shareText,
+                                  title: effectiveTitle,
+                                  subject: effectiveTitle,
+                                  sharePositionOrigin: box != null
+                                      ? (box.localToGlobal(Offset.zero) &
+                                            box.size)
+                                      : null,
+                                ),
                               );
                             },
                             child: Container(

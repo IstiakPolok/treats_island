@@ -5,12 +5,19 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/constants/app_strings.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
+import '../../home/controller/home_controller.dart';
 
 class AccountSettingScreen extends StatefulWidget {
   final bool isEmbedded;
-  const AccountSettingScreen({super.key, this.isEmbedded = false});
+  final VoidCallback? onProfileUpdated;
+  const AccountSettingScreen({
+    super.key,
+    this.isEmbedded = false,
+    this.onProfileUpdated,
+  });
 
   @override
   State<AccountSettingScreen> createState() => _AccountSettingScreenState();
@@ -72,7 +79,7 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
 
           if (image.isNotEmpty) {
             if (image.startsWith('/')) {
-              image = 'https://intensely-optimal-unicorn.ngrok-free.app$image';
+              image = '${ApiService.defaultBaseUrl}$image';
             }
             await SharedPreferencesHelper.saveUserImage(image);
           }
@@ -111,10 +118,31 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
 
   void _saveProfile() async {
     final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
+
     if (name.isEmpty) {
       Get.snackbar(
         'Required',
         'Please enter your name',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (email.isEmpty) {
+      Get.snackbar(
+        'Required',
+        'Please enter your email',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (!GetUtils.isEmail(email)) {
+      Get.snackbar(
+        'Invalid Email',
+        'Please enter a valid email address',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -144,15 +172,26 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
       final response = await apiService.updateProfile(
         token: token,
         fullName: name,
-        phone: _phoneController.text.trim(),
+        email: email,
+        phone: phone,
         imagePath: _selectedImagePath,
       );
 
       if (response.status.isOk) {
         await SharedPreferencesHelper.saveName(name);
+        await SharedPreferencesHelper.saveEmail(email);
 
         // Save the new image URL returned by the API if present
         if (response.body != null && response.body is Map) {
+          final returnedName = response.body['full_name']?.toString() ??
+              response.body['name']?.toString();
+          if (returnedName != null && returnedName.isNotEmpty) {
+            await SharedPreferencesHelper.saveName(returnedName);
+          }
+          final returnedEmail = response.body['email']?.toString();
+          if (returnedEmail != null && returnedEmail.isNotEmpty) {
+            await SharedPreferencesHelper.saveEmail(returnedEmail);
+          }
           var updatedImage = response.body['image']?.toString() ?? '';
           if (updatedImage.isNotEmpty) {
             if (updatedImage.startsWith('/')) {
@@ -161,6 +200,16 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
             await SharedPreferencesHelper.saveUserImage(updatedImage);
           }
         }
+
+        // Immediately update HomeController so Home screen shows the new name & email
+        if (Get.isRegistered<HomeController>()) {
+          final homeController = Get.find<HomeController>();
+          homeController.userName.value = name;
+          homeController.userEmail.value = email;
+          homeController.refreshUserData();
+        }
+
+        widget.onProfileUpdated?.call();
 
         Get.snackbar(
           'Success',
@@ -173,14 +222,26 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
           Get.back(); // Go back to profile screen
         }
       } else {
-        final errorMessage = response.body != null && response.body is Map
-            ? (response.body['detail'] ??
-                  response.body['message'] ??
-                  'Failed to update profile')
-            : 'Failed to update profile';
+        String errorMessage = 'Failed to update profile';
+        if (response.body != null && response.body is Map) {
+          final body = response.body as Map;
+          if (body['detail'] != null) {
+            errorMessage = body['detail'].toString();
+          } else if (body['message'] != null) {
+            errorMessage = body['message'].toString();
+          } else if (body['email'] != null) {
+            final e = body['email'];
+            errorMessage = e is List ? e.first.toString() : e.toString();
+          } else if (body['non_field_errors'] != null) {
+            final e = body['non_field_errors'];
+            errorMessage = e is List ? e.first.toString() : e.toString();
+          } else {
+            errorMessage = body.values.first.toString();
+          }
+        }
         Get.snackbar(
           'Update Failed',
-          errorMessage.toString(),
+          errorMessage,
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withAlpha(26),
           colorText: Colors.red,
@@ -203,52 +264,96 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
     }
   }
 
-  void _showDeleteDialog(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final isTablet = size.width >= 600;
+  Future<void> _deleteAccount() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isTablet ? 16.0 : 16.r),
-          ),
-          content: Text(
-            'Are you sure to delete account',
-            style: GoogleFonts.poppins(
-              fontSize: isTablet ? 12.0 : 12.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF1A1A2E),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.poppins(
-                  fontSize: isTablet ? 12.0 : 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFF6FB6),
-                ),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Delete account',
-                style: GoogleFonts.poppins(
-                  fontSize: isTablet ? 12.0 : 12.sp,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFF5C5C),
-                ),
-              ),
-            ),
-          ],
+    try {
+      final token = await SharedPreferencesHelper.getAccessToken();
+      if (token == null || token.isEmpty) {
+        Get.snackbar(
+          'Error',
+          'Authentication token not found.',
+          snackPosition: SnackPosition.BOTTOM,
         );
-      },
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      final apiService = Get.isRegistered<ApiService>()
+          ? Get.find<ApiService>()
+          : Get.put(ApiService());
+
+      final response = await apiService.deleteAccount(token);
+
+      if (response.status.isOk ||
+          response.statusCode == 200 ||
+          response.statusCode == 204) {
+        final message = response.body is Map && response.body['message'] != null
+            ? response.body['message'].toString()
+            : 'Account deleted successfully.';
+
+        await SharedPreferencesHelper.clearAllData();
+
+        Get.offAllNamed(AppStrings.loginRoute);
+
+        Get.snackbar(
+          'Account Deleted',
+          message,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black.withAlpha(26),
+          colorText: Colors.black,
+        );
+      } else {
+        final errorMessage = response.body != null && response.body is Map
+            ? (response.body['detail'] ??
+                  response.body['message'] ??
+                  'Failed to delete account')
+            : 'Failed to delete account';
+        Get.snackbar(
+          'Delete Failed',
+          errorMessage.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.red,
+        );
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withAlpha(26),
+        colorText: Colors.red,
+      );
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showDeleteDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => const _DeleteAccountDialog(),
     );
+
+    if (confirmed == true && mounted) {
+      await _deleteAccount();
+    }
   }
 
   @override
@@ -360,7 +465,7 @@ class _AccountSettingScreenState extends State<AccountSettingScreen> {
                           label: 'Email',
                           controller: _emailController,
                           hintText: 'xyz@gmail.com',
-                          enabled: false, // email usually read-only
+                          keyboardType: TextInputType.emailAddress,
                         ),
                         SizedBox(height: isTablet ? 12.0 : 12.h),
                         _InputField(
@@ -395,13 +500,13 @@ class _InputField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final String hintText;
-  final bool enabled;
+  final TextInputType? keyboardType;
 
   const _InputField({
     required this.label,
     required this.controller,
     required this.hintText,
-    this.enabled = true,
+    this.keyboardType,
   });
 
   @override
@@ -423,7 +528,7 @@ class _InputField extends StatelessWidget {
         SizedBox(height: isTablet ? 6.0 : 6.h),
         TextField(
           controller: controller,
-          enabled: enabled,
+          keyboardType: keyboardType,
           style: GoogleFonts.poppins(fontSize: isTablet ? 13.0 : 13.sp),
           decoration: InputDecoration(
             hintText: hintText,
@@ -440,6 +545,154 @@ class _InputField extends StatelessWidget {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(isTablet ? 14.0 : 14.r),
               borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  const _DeleteAccountDialog();
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  late final TextEditingController _controller;
+  bool _isMatch = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onChanged(String value) {
+    final match = value.trim().toLowerCase() == 'delete';
+    if (match != _isMatch) {
+      setState(() {
+        _isMatch = match;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width >= 600;
+
+    return AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(isTablet ? 16.0 : 16.0),
+      ),
+      title: Text(
+        'Delete Account',
+        style: GoogleFonts.poppins(
+          fontSize: isTablet ? 16.0 : 16.0,
+          fontWeight: FontWeight.w600,
+          color: const Color(0xFF1A1A2E),
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This action cannot be undone. All your data and events will be permanently removed.',
+              style: GoogleFonts.poppins(
+                fontSize: isTablet ? 12.0 : 12.0,
+                fontWeight: FontWeight.w400,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 14.0),
+            RichText(
+              text: TextSpan(
+                style: GoogleFonts.poppins(
+                  fontSize: isTablet ? 11.0 : 11.0,
+                  color: Colors.black54,
+                ),
+                children: [
+                  const TextSpan(text: 'Please type '),
+                  TextSpan(
+                    text: 'delete',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFFF5C5C),
+                    ),
+                  ),
+                  const TextSpan(text: ' to confirm:'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8.0),
+            TextField(
+              controller: _controller,
+              onChanged: _onChanged,
+              autofocus: true,
+              style: GoogleFonts.poppins(
+                fontSize: isTablet ? 13.0 : 13.0,
+              ),
+              decoration: InputDecoration(
+                hintText: 'delete',
+                hintStyle: GoogleFonts.poppins(
+                  fontSize: isTablet ? 12.0 : 12.0,
+                  color: Colors.black38,
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF7F7FB),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14.0,
+                  vertical: 12.0,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: const BorderSide(color: Color(0xFFEDEDF2)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFFF5C5C),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(
+            'Cancel',
+            style: GoogleFonts.poppins(
+              fontSize: isTablet ? 12.0 : 12.0,
+              fontWeight: FontWeight.w600,
+              color: Colors.black54,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: _isMatch ? () => Navigator.of(context).pop(true) : null,
+          child: Text(
+            'Delete account',
+            style: GoogleFonts.poppins(
+              fontSize: isTablet ? 12.0 : 12.0,
+              fontWeight: FontWeight.w600,
+              color: _isMatch
+                  ? const Color(0xFFFF5C5C)
+                  : Colors.grey.shade400,
             ),
           ),
         ),

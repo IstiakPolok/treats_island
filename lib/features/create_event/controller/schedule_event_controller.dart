@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
+import '../../../core/utils/date_time_utils.dart';
 
 class ScheduleEventController extends GetxController {
   final RxInt durationDays = 5.obs;
@@ -63,11 +64,11 @@ class ScheduleEventController extends GetxController {
           if (eventData != null) {
             teamName.value = eventData['name']?.toString() ?? teamName.value;
             if (eventData['start_date'] != null) {
-              final parsedStart = DateTime.tryParse(
-                eventData['start_date'].toString(),
+              final parsedStart = DateTimeUtils.parseToLocal(
+                eventData['start_date'],
               );
               if (parsedStart != null) {
-                startDate.value = parsedStart.toLocal();
+                startDate.value = parsedStart;
               }
             }
             if (eventData['duration'] != null) {
@@ -295,7 +296,21 @@ class ScheduleEventController extends GetxController {
 
       if (response.status.isOk && response.body != null) {
         if (response.body is Map) {
-          createdEvent.value = Map<String, dynamic>.from(response.body);
+          final bodyMap = Map<String, dynamic>.from(response.body);
+          final eventMap = (bodyMap['event'] is Map)
+              ? Map<String, dynamic>.from(bodyMap['event'])
+              : bodyMap;
+          createdEvent.value = {
+            'event': eventMap,
+            ...bodyMap,
+          };
+          if (eventMap['start_date'] != null) {
+            final parsedStart =
+                DateTimeUtils.parseToLocal(eventMap['start_date']);
+            if (parsedStart != null) {
+              startDate.value = parsedStart;
+            }
+          }
         } else {
           createdEvent.value = <String, dynamic>{};
         }
@@ -394,10 +409,10 @@ class ScheduleEventController extends GetxController {
           final eventData = createdEvent['event'] as Map<String, dynamic>;
           teamName.value = eventData['name']?.toString() ?? teamName.value;
           if (eventData['start_date'] != null) {
-            final parsed = DateTime.tryParse(
-              eventData['start_date'].toString(),
+            final parsed = DateTimeUtils.parseToLocal(
+              eventData['start_date'],
             );
-            if (parsed != null) startDate.value = parsed.toLocal();
+            if (parsed != null) startDate.value = parsed;
           }
           if (eventData['estimated_participants'] != null) {
             final parsed = int.tryParse(
