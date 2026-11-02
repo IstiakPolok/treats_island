@@ -33,7 +33,7 @@ class EventPayoutManagerCard extends StatelessWidget {
           rawMap['is_creator'];
       final bool isMine = isMineValue != null
           ? (isMineValue == true ||
-              isMineValue.toString().toLowerCase() == 'true')
+                isMineValue.toString().toLowerCase() == 'true')
           : true;
 
       if (!isMine) {
@@ -96,7 +96,7 @@ class EventPayoutManagerCard extends StatelessWidget {
           children: [
             if (isPayoutsEnabled) ...[
               Text(
-                'Direct deposit is active. Your 50% profits are automatically deposited to your connected bank account.',
+                'Direct deposit is active. Your 50% profits are deposited to your connected bank account after the event ends.',
                 style: GoogleFonts.poppins(
                   fontSize: isTablet ? 12.0 : 12.sp,
                   color: Colors.black54,

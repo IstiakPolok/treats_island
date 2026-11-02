@@ -16,8 +16,8 @@ class ShopPayoutStatusBanner extends StatelessWidget {
     final bool isTablet = MediaQuery.of(context).size.width >= 600;
     final StripeConnectController controller =
         Get.isRegistered<StripeConnectController>()
-            ? Get.find<StripeConnectController>()
-            : Get.put(StripeConnectController());
+        ? Get.find<StripeConnectController>()
+        : Get.put(StripeConnectController());
 
     return Obx(() {
       final status = controller.status.value;
@@ -201,7 +201,9 @@ class ShopPayoutStatusBanner extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isConnected ? 'Transferred to Bank' : 'Pending Payout',
+                          isConnected
+                              ? 'Transferred to Bank'
+                              : 'Pending Payout',
                           style: GoogleFonts.poppins(
                             fontSize: isTablet ? 10.5 : 10.5.sp,
                             color: isConnected
@@ -384,7 +386,7 @@ class ShopPayoutStatusBanner extends StatelessWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            'Payouts are automatically sent to your connected bank account.',
+                            'Payouts are sent to your connected bank account after the event ends.',
                             style: GoogleFonts.poppins(
                               fontSize: isTablet ? 11.5 : 11.5.sp,
                               color: const Color(0xFF2E7D32),

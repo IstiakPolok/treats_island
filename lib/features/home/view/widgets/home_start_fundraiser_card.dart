@@ -14,7 +14,7 @@ class HomeStartFundraiserCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
-    required this.assetPath,
+    this.assetPath = 'assets/images/popupstorebg.PNG',
     this.onTap,
   });
 
@@ -34,7 +34,18 @@ class HomeStartFundraiserCard extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         ),
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(isTablet ? 24.0 : 24.r),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.black.withValues(alpha: 0.8),
+                Colors.black.withValues(alpha: 0.35),
+              ],
+            ),
+          ),
           padding: EdgeInsets.all(isTablet ? 16.0 : 16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -13,6 +13,7 @@ import 'fundraising_goal_screen.dart';
 import 'shop_created_success_screen.dart';
 import 'store_note_screen.dart';
 import 'widgets/circular_photo_adjust_screen.dart';
+import '../../create_event/view/widgets/video_player_screen.dart';
 
 class CreatePopUpStoreScreen extends StatelessWidget {
   const CreatePopUpStoreScreen({super.key});
@@ -25,21 +26,44 @@ class CreatePopUpStoreScreen extends StatelessWidget {
         ? Get.find<ScheduleEventController>()
         : Get.put(ScheduleEventController());
 
-    final fundraiserId = controller.fundraiserDetails['id'];
-    if (fundraiserId == null) {
-      Get.snackbar(
-        'Error',
-        'Fundraiser details not found.',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-      return;
-    }
-
     final token = await SharedPreferencesHelper.getAccessToken();
     if (token == null || token.isEmpty) {
       Get.snackbar(
         'Error',
         'Authentication required.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    dynamic fundraiserId = controller.fundraiserDetails['id'];
+    if (fundraiserId == null) {
+      final currentEventId =
+          controller.createdEvent['event']?['id'] ??
+          controller.createdEvent['id'];
+      if (currentEventId != null) {
+        try {
+          final apiService = Get.isRegistered<ApiService>()
+              ? Get.find<ApiService>()
+              : Get.put(ApiService());
+          final res = await apiService.getFundraiser(
+            token,
+            int.parse(currentEventId.toString()),
+          );
+          if (res.status.isOk && res.body is Map) {
+            controller.fundraiserDetails.assignAll(
+              Map<String, dynamic>.from(res.body),
+            );
+            fundraiserId = controller.fundraiserDetails['id'];
+          }
+        } catch (_) {}
+      }
+    }
+
+    if (fundraiserId == null) {
+      Get.snackbar(
+        'Error',
+        'Fundraiser details not found.',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
@@ -115,31 +139,32 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                         color: const Color(0xFF1A1A2E),
                       ),
                     ),
-                    onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
+                    onTap: () =>
+                        Navigator.pop(sheetContext, ImageSource.gallery),
                   ),
-                  ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(8.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFEAF4),
-                        borderRadius: BorderRadius.circular(10.r),
-                      ),
-                      child: Icon(
-                        Icons.camera_alt_rounded,
-                        color: const Color(0xFFFF6FB6),
-                        size: 22.sp,
-                      ),
-                    ),
-                    title: Text(
-                      'Take a Photo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF1A1A2E),
-                      ),
-                    ),
-                    onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
-                  ),
+                  // ListTile(
+
+                  //     padding: EdgeInsets.all(8.w),
+                  //     decoration: BoxDecoration(
+                  //       color: const Color(0xFFFFEAF4),
+                  //       borderRadius: BorderRadius.circular(10.r),
+                  //     ),
+                  //     child: Icon(
+                  //       Icons.camera_alt_rounded,
+                  //       color: const Color(0xFFFF6FB6),
+                  //       size: 22.sp,
+                  //     ),
+                  //   ),
+                  //   title: Text(
+                  //     'Take a Photo',
+                  //     style: GoogleFonts.poppins(
+                  //       fontSize: 14.sp,
+                  //       fontWeight: FontWeight.w500,
+                  //       color: const Color(0xFF1A1A2E),
+                  //     ),
+                  //   ),
+                  //   onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
+                  // ),
                 ],
               ),
             ),
@@ -202,9 +227,12 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       final List<String> supportedExtensions = [
         '.mp4',
         '.mov',
+        '.qt',
+        '.m4v',
         '.3gp',
         '.avi',
         '.mkv',
+        '.webm',
       ];
       final bool isSupported = supportedExtensions.any(
         (ext) => path.endsWith(ext),
@@ -212,7 +240,7 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       if (!isSupported) {
         Get.snackbar(
           'Invalid Format',
-          'Only MP4, MOV, AVI, 3GP, and MKV video formats are supported.',
+          'Only MP4, MOV, M4V, AVI, 3GP, and MKV video formats are supported.',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.withAlpha(26),
           colorText: Colors.black,
@@ -236,33 +264,32 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       }
 
       // Validate video duration (15 seconds limit)
-      final VideoPlayerController tempController = VideoPlayerController.file(
-        file,
-      );
       try {
-        await tempController.initialize();
-        final duration = tempController.value.duration;
-        await tempController.dispose();
-        if (duration.inSeconds > 15) {
-          Get.snackbar(
-            'Video Too Long',
-            'The selected video is ${duration.inSeconds} seconds. Maximum allowed duration is 15 seconds.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.withAlpha(26),
-            colorText: Colors.black,
-          );
-          return;
+        final VideoPlayerController tempController = VideoPlayerController.file(
+          file,
+        );
+        try {
+          await tempController.initialize();
+          final duration = tempController.value.duration;
+          // Allow leeway for 15s clips (up to 15.99s)
+          if (duration.inMilliseconds > 15999) {
+            Get.snackbar(
+              'Video Too Long',
+              'The selected video is ${duration.inSeconds} seconds. Maximum allowed duration is 15 seconds.',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.red.withAlpha(26),
+              colorText: Colors.black,
+            );
+            return;
+          }
+        } finally {
+          await tempController.dispose().catchError((_) {});
         }
       } catch (e) {
-        await tempController.dispose();
-        Get.snackbar(
-          'Validation Error',
-          'Failed to validate video duration: $e',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withAlpha(26),
-          colorText: Colors.black,
+        debugPrint(
+          'Warning: Could not verify video duration locally via VideoPlayerController: $e',
         );
-        return;
+        // Do not abort if local player initialization failed (e.g. simulator codec limitation)
       }
     }
 
@@ -300,28 +327,62 @@ class CreatePopUpStoreScreen extends StatelessWidget {
       Get.back(); // Dismiss the loading dialog
 
       if (response.status.isOk && response.body != null) {
-        final body = response.body as Map;
-        if (body.containsKey('fundraiser') && body['fundraiser'] is Map) {
-          controller.fundraiserDetails.value = Map<String, dynamic>.from(
-            body['fundraiser'],
+        if (response.body is Map) {
+          final body = response.body as Map;
+          if (body.containsKey('fundraiser') && body['fundraiser'] is Map) {
+            controller.fundraiserDetails.value = Map<String, dynamic>.from(
+              body['fundraiser'],
+            );
+          } else {
+            controller.fundraiserDetails.addAll(
+              Map<String, dynamic>.from(body),
+            );
+          }
+          controller.fundraiserDetails.refresh();
+          Get.snackbar(
+            'Success',
+            body['message']?.toString() ?? 'Media uploaded successfully',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        } else {
+          controller.fundraiserDetails.refresh();
+          Get.snackbar(
+            'Success',
+            'Media uploaded successfully',
+            snackPosition: SnackPosition.BOTTOM,
           );
         }
-        Get.snackbar(
-          'Success',
-          body['message']?.toString() ?? 'Media uploaded successfully',
-          snackPosition: SnackPosition.BOTTOM,
-        );
       } else {
         String errorMsg = 'Failed to upload media';
         if (response.body != null && response.body is Map) {
           final bodyMap = response.body as Map;
           if (bodyMap.containsKey('detail')) {
             errorMsg = bodyMap['detail'].toString();
+          } else if (bodyMap.containsKey('video')) {
+            final vError = bodyMap['video'];
+            errorMsg = vError is List ? vError.join(', ') : vError.toString();
+          } else if (bodyMap.containsKey('image')) {
+            final iError = bodyMap['image'];
+            errorMsg = iError is List ? iError.join(', ') : iError.toString();
           } else if (bodyMap.isNotEmpty) {
-            errorMsg = bodyMap.values.first.toString();
+            final firstVal = bodyMap.values.first;
+            errorMsg = firstVal is List
+                ? firstVal.join(', ')
+                : firstVal.toString();
           }
+        } else if (response.statusText != null &&
+            response.statusText!.isNotEmpty) {
+          errorMsg = response.statusText!;
+        } else if (response.statusCode != null) {
+          errorMsg = 'Upload failed with status code ${response.statusCode}';
         }
-        Get.snackbar('Error', errorMsg, snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          errorMsg,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withAlpha(26),
+          colorText: Colors.black,
+        );
       }
     } catch (e) {
       Get.back(); // Dismiss the loading dialog
@@ -331,6 +392,102 @@ class CreatePopUpStoreScreen extends StatelessWidget {
         snackPosition: SnackPosition.BOTTOM,
       );
     }
+  }
+
+  void _showVideoOptions(BuildContext context, String videoUrl) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isTablet = screenWidth >= 600;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            vertical: 16.h,
+            horizontal: isTablet ? 30.0 : 20.w,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Store Video',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF1A1A2E),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEAF4),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: const Color(0xFFFF6FB6),
+                    size: 22.sp,
+                  ),
+                ),
+                title: Text(
+                  'Watch Video',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  Get.to(() => VideoPlayerScreen(videoUrl: videoUrl));
+                },
+              ),
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFEAF4),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.replay_rounded,
+                    color: const Color(0xFFFF6FB6),
+                    size: 22.sp,
+                  ),
+                ),
+                title: Text(
+                  'Change Video',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _pickAndUploadMedia(context, isVideo: true);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -430,8 +587,13 @@ class CreatePopUpStoreScreen extends StatelessWidget {
                             buttonText: 'Add video',
                             mediaUrl: videoVal,
                             isVideo: true,
-                            onTap: () =>
-                                _pickAndUploadMedia(context, isVideo: true),
+                            onTap: () {
+                              if (videoVal != null && videoVal.isNotEmpty) {
+                                _showVideoOptions(context, videoVal);
+                              } else {
+                                _pickAndUploadMedia(context, isVideo: true);
+                              }
+                            },
                           ),
                         ),
                       ],
@@ -590,16 +752,7 @@ class _UploadCard extends StatelessWidget {
                         },
                       )
                     else
-                      Container(
-                        color: const Color(0xFF1A1A2E),
-                        child: const Center(
-                          child: Icon(
-                            Icons.play_circle_fill,
-                            size: 48,
-                            color: Color(0xFFFF6FB6),
-                          ),
-                        ),
-                      ),
+                      _VideoThumbnailWidget(videoUrl: mediaUrl!),
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -630,7 +783,7 @@ class _UploadCard extends StatelessWidget {
                           SizedBox(height: 2.h),
                           Text(
                             isVideo
-                                ? 'Tap to change \nThe video will be less the 15 sec '
+                                ? 'Tap to view or change'
                                 : 'Tap to change or adjust photo',
                             style: GoogleFonts.poppins(
                               fontSize: isTablet ? 9.5 : 9.5.sp,
@@ -704,6 +857,166 @@ class _UploadCard extends StatelessWidget {
                   ),
                 ),
         ),
+      ),
+    );
+  }
+}
+
+class _VideoThumbnailWidget extends StatefulWidget {
+  final String videoUrl;
+  const _VideoThumbnailWidget({required this.videoUrl});
+
+  @override
+  State<_VideoThumbnailWidget> createState() => _VideoThumbnailWidgetState();
+}
+
+class _VideoThumbnailWidgetState extends State<_VideoThumbnailWidget> {
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
+  bool _hasError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initThumbnail();
+  }
+
+  @override
+  void didUpdateWidget(covariant _VideoThumbnailWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl) {
+      _disposeController();
+      _isInitialized = false;
+      _hasError = false;
+      _initThumbnail();
+    }
+  }
+
+  bool _isDisposed = false;
+
+  void _disposeController() {
+    final c = _controller;
+    _controller = null;
+    c?.dispose().catchError((_) {});
+  }
+
+  Future<void> _initThumbnail() async {
+    final String url = widget.videoUrl.trim();
+    if (url.isEmpty) return;
+
+    try {
+      String cleanUrl = url;
+      if (cleanUrl.startsWith('file://')) {
+        cleanUrl = cleanUrl.replaceFirst('file://', '');
+      }
+
+      File localFile;
+      if (cleanUrl.startsWith('http')) {
+        final tempDir = Directory.systemTemp;
+        final String filename = 'video_${cleanUrl.hashCode}.mp4';
+        localFile = File('${tempDir.path}/$filename');
+
+        if (!localFile.existsSync() || await localFile.length() == 0) {
+          final client = HttpClient();
+          client.connectionTimeout = const Duration(seconds: 15);
+          final request = await client.getUrl(Uri.parse(cleanUrl));
+          final response = await request.close();
+          if (response.statusCode == 200) {
+            final IOSink sink = localFile.openWrite();
+            await response.pipe(sink);
+            await sink.close();
+          } else {
+            throw Exception(
+              'Server returned status code ${response.statusCode}',
+            );
+          }
+        }
+      } else {
+        localFile = File(cleanUrl);
+      }
+
+      if (_isDisposed) return;
+      if (!localFile.existsSync()) {
+        throw Exception('Video file does not exist at ${localFile.path}');
+      }
+
+      final controller = VideoPlayerController.file(localFile);
+      _controller = controller;
+      await controller.initialize();
+      if (!_isDisposed && mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading video thumbnail: $e');
+      if (!_isDisposed && mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _disposeController();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isInitialized && _controller != null) {
+      final size = _controller!.value.size;
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox(
+              width: size.width > 0 ? size.width : 160,
+              height: size.height > 0 ? size.height : 160,
+              child: VideoPlayer(_controller!),
+            ),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black45,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.play_arrow_rounded,
+                size: 32,
+                color: Color(0xFFFF6FB6),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      color: const Color(0xFF1A1A2E),
+      child: Center(
+        child: _hasError
+            ? const Icon(
+                Icons.play_circle_fill,
+                size: 48,
+                color: Color(0xFFFF6FB6),
+              )
+            : const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6FB6)),
+                ),
+              ),
       ),
     );
   }

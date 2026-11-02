@@ -249,7 +249,7 @@ class _VerificationRequiredScreenState
                             SizedBox(height: 14.h),
                             Text(
                               isConnected
-                                  ? 'Your bank details are verified with Stripe. Transfers are initiated automatically.'
+                                  ? 'Your bank details are verified with Stripe. Transfers are initiated after the event ends.'
                                   : 'Customers can purchase candy right now, and your 50% profits are safely held until you connect your bank account.',
                               style: GoogleFonts.poppins(
                                 fontSize: isTablet ? 12.0 : 12.sp,

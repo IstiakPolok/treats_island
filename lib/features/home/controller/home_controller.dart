@@ -57,6 +57,13 @@ class HomeController extends GetxController {
     }
   }
 
+  Future<void> refreshHomeData() async {
+    await Future.wait([
+      refreshUserData(),
+      fetchMyEvents(),
+    ]);
+  }
+
   Future<void> refreshUserData() async {
     await loadHomeState();
     await fetchProfileData();

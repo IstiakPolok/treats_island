@@ -47,14 +47,18 @@ class _HomeScreenState extends State<HomeScreen> {
             constraints: BoxConstraints(
               maxWidth: isTablet ? 650.0 : double.infinity,
             ),
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: isTablet ? 24.0 : 24.w,
-                vertical: isTablet ? 16.0 : 16.h,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: RefreshIndicator(
+              onRefresh: () => controller.refreshHomeData(),
+              color: const Color(0xFF1A1A2E),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 24.0 : 24.w,
+                  vertical: isTablet ? 16.0 : 16.h,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   // ── Header (Greeting, User Name, Live Time, Logo) ───────────
                   Obx(
                     () => HomeHeader(
@@ -109,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: 'START A FUNDRAISER',
                       subtitle:
                           'Launch your fundraiser campaign in under 90 seconds',
-                      assetPath: 'assets/images/unsplash_lhTF57zrDRs.png',
+                      assetPath: 'assets/images/popupstorebg.PNG',
                       onTap: () => Get.toNamed(AppStrings.launchEventRoute),
                     );
                   }),
@@ -221,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

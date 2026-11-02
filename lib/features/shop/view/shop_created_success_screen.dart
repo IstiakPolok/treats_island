@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../create_event/controller/schedule_event_controller.dart';
 import '../../create_event/view/event_overview_screen.dart';
@@ -185,12 +186,43 @@ class _ShopCreatedSuccessScreenState extends State<ShopCreatedSuccessScreen> {
                               ],
                             ),
                             SizedBox(height: 8.h),
-                            SelectableText(
-                              shareLink,
-                              style: GoogleFonts.poppins(
-                                fontSize: isTablet ? 14.0 : 14.sp,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1A1A2E),
+                            InkWell(
+                              onTap: () async {
+                                if (shareLink.trim().isEmpty) return;
+                                try {
+                                  final uri = Uri.parse(
+                                    shareLink.startsWith('http://') ||
+                                            shareLink.startsWith('https://')
+                                        ? shareLink
+                                        : 'https://$shareLink',
+                                  );
+                                  if (!await launchUrl(
+                                    uri,
+                                    mode: LaunchMode.externalApplication,
+                                  )) {
+                                    Get.snackbar(
+                                      'Error',
+                                      'Could not open link in browser.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                } catch (e) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Invalid URL: $e',
+                                    snackPosition: SnackPosition.BOTTOM,
+                                  );
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6.r),
+                              child: Text(
+                                shareLink,
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 14.0 : 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1565C0),
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
                             SizedBox(height: 14.h),

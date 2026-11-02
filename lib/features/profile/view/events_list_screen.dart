@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/services/api_service.dart';
 import '../../../core/services/shared_preferences_helper.dart';
@@ -75,6 +79,109 @@ class _EventsListScreenState extends State<EventsListScreen> {
         _isLoading = false;
         _errorMessage = 'An error occurred: $e';
       });
+    }
+  }
+
+  Future<void> _downloadSalesReportPdf(dynamic eventId, String eventTitle) async {
+    if (eventId == null) {
+      Get.snackbar(
+        'Error',
+        'Invalid Event ID',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    final apiService = Get.isRegistered<ApiService>()
+        ? Get.find<ApiService>()
+        : Get.put(ApiService());
+    final pdfUrl = apiService.getSalesReportPdfUrl(eventId);
+
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A2E)),
+        ),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      final token = await SharedPreferencesHelper.getAccessToken();
+      final client = HttpClient();
+      client.connectionTimeout = const Duration(seconds: 25);
+      final request = await client.getUrl(Uri.parse(pdfUrl));
+      if (token != null && token.isNotEmpty) {
+        request.headers.set('Authorization', 'Bearer $token');
+      }
+      final response = await request.close();
+
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      if (response.statusCode == 200) {
+        final List<int> bytes = [];
+        await for (final chunk in response) {
+          bytes.addAll(chunk);
+        }
+
+        final tempDir = await getTemporaryDirectory();
+        final sanitizedTitle = eventTitle.replaceAll(RegExp(r'[^\w\s\.-]'), '_').trim();
+        final fileName = 'Sales_Report_${sanitizedTitle.isNotEmpty ? sanitizedTitle : eventId}.pdf';
+        final file = File('${tempDir.path}/$fileName');
+        await file.writeAsBytes(bytes, flush: true);
+
+        await SharePlus.instance.share(
+          ShareParams(
+            files: [
+              XFile(
+                file.path,
+                mimeType: 'application/pdf',
+                name: fileName,
+              ),
+            ],
+            text: 'Sales Report for $eventTitle',
+            title: 'Sales Report PDF',
+          ),
+        );
+      } else {
+        // Fallback to launching in external browser / viewer if direct download is blocked or fails
+        final uri = Uri.parse(pdfUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          Get.snackbar(
+            'Error',
+            'Failed to download sales report (Code: ${response.statusCode})',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      }
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+      debugPrint('Error downloading PDF: $e');
+      // Attempt fallback to open browser URL
+      try {
+        final uri = Uri.parse(pdfUrl);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          Get.snackbar(
+            'Error',
+            'Could not download PDF: $e',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        }
+      } catch (_) {
+        Get.snackbar(
+          'Error',
+          'Failed to download sales report.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
@@ -245,7 +352,9 @@ class _EventsListScreenState extends State<EventsListScreen> {
                                       : img;
                                 }
 
+                                final eventId = event['id'];
                                 return _EventItem(
+                                  eventId: eventId,
                                   imagePath: imagePath,
                                   title:
                                       event['name']?.toString() ?? 'Unnamed Event',
@@ -259,6 +368,12 @@ class _EventsListScreenState extends State<EventsListScreen> {
                                         event['total_achieved']?.toString() ?? '0',
                                       ) ??
                                       0.0,
+                                  onDownloadPdf: eventId != null
+                                      ? () => _downloadSalesReportPdf(
+                                            eventId,
+                                            event['name']?.toString() ?? 'Event',
+                                          )
+                                      : null,
                                 );
                               },
                             ),
@@ -304,18 +419,22 @@ class _EventsListScreenState extends State<EventsListScreen> {
 }
 
 class _EventItem extends StatelessWidget {
+  final dynamic eventId;
   final String imagePath;
   final String title;
   final String date;
   final String status;
   final double totalAchieved;
+  final VoidCallback? onDownloadPdf;
 
   const _EventItem({
+    this.eventId,
     required this.imagePath,
     required this.title,
     required this.date,
     required this.status,
     required this.totalAchieved,
+    this.onDownloadPdf,
   });
 
   @override
@@ -422,13 +541,63 @@ class _EventItem extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: isTablet ? 4.0 : 4.h),
-                Text(
-                  'Total Achieved: \$${totalAchieved.toStringAsFixed(2)}',
-                  style: GoogleFonts.poppins(
-                    fontSize: isTablet ? 11.0 : 11.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A2E),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Total Achieved: \$${totalAchieved.toStringAsFixed(2)}',
+                      style: GoogleFonts.poppins(
+                        fontSize: isTablet ? 11.0 : 11.sp,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF1A1A2E),
+                      ),
+                    ),
+                    if (onDownloadPdf != null)
+                      InkWell(
+                        onTap: onDownloadPdf,
+                        borderRadius: BorderRadius.circular(isTablet ? 6.0 : 6.r),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 8.0 : 8.w,
+                            vertical: isTablet ? 4.0 : 4.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF4F4F6),
+                            borderRadius: BorderRadius.circular(isTablet ? 6.0 : 6.r),
+                            border: Border.all(
+                              color: const Color(0xFFE2E2E8),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.picture_as_pdf_outlined,
+                                size: isTablet ? 13.0 : 13.sp,
+                                color: const Color(0xFFE53935),
+                              ),
+                              SizedBox(width: isTablet ? 4.0 : 4.w),
+                              Text(
+                                'Report',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isTablet ? 10.0 : 10.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF1A1A2E),
+                                ),
+                              ),
+                              SizedBox(width: isTablet ? 3.0 : 3.w),
+                              Icon(
+                                Icons.file_download_outlined,
+                                size: isTablet ? 12.0 : 12.sp,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

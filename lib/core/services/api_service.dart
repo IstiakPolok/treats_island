@@ -224,6 +224,12 @@ class ApiService extends GetConnect {
     );
   }
 
+  /// Returns the sales report PDF endpoint URL for a given event ID.
+  String getSalesReportPdfUrl(dynamic eventId) {
+    final String base = httpClient.baseUrl ?? defaultBaseUrl;
+    return '$base/event/$eventId/sales-report/pdf/';
+  }
+
   /// Sends a POST request with Bearer token to join an event.
   Future<Response> joinEvent(String token, String code) {
     return post(
@@ -326,22 +332,58 @@ class ApiService extends GetConnect {
   }) {
     final Map<String, dynamic> fields = {};
     if (imagePath != null && imagePath.isNotEmpty) {
-      final file = io.File(imagePath);
+      String cleanImagePath = imagePath;
+      if (cleanImagePath.startsWith('file://')) {
+        cleanImagePath = cleanImagePath.replaceFirst('file://', '');
+      }
+      final file = io.File(cleanImagePath);
       if (file.existsSync()) {
+        final fileName = cleanImagePath.split('/').last;
+        final ext = fileName.split('.').last.toLowerCase();
+        String contentType = 'image/jpeg';
+        if (ext == 'png') {
+          contentType = 'image/png';
+        } else if (ext == 'webp') {
+          contentType = 'image/webp';
+        }
         fields['image'] = MultipartFile(
           file.readAsBytesSync(),
-          filename: imagePath.split('/').last,
+          filename: fileName,
+          contentType: contentType,
         );
+      } else {
+        debugPrint('WARNING: Image file does not exist at $cleanImagePath');
       }
     }
     if (videoPath != null && videoPath.isNotEmpty) {
-      final file = io.File(videoPath);
+      String cleanVideoPath = videoPath;
+      if (cleanVideoPath.startsWith('file://')) {
+        cleanVideoPath = cleanVideoPath.replaceFirst('file://', '');
+      }
+      final file = io.File(cleanVideoPath);
       if (file.existsSync()) {
         final bytes = file.readAsBytesSync();
+        final fileName = cleanVideoPath.split('/').last;
+        final ext = fileName.split('.').last.toLowerCase();
+        String contentType = 'video/mp4';
+        if (ext == 'mov' || ext == 'qt') {
+          contentType = 'video/quicktime';
+        } else if (ext == '3gp') {
+          contentType = 'video/3gpp';
+        } else if (ext == 'avi') {
+          contentType = 'video/x-msvideo';
+        } else if (ext == 'mkv') {
+          contentType = 'video/x-matroska';
+        } else if (ext == 'webm') {
+          contentType = 'video/webm';
+        }
         fields['video'] = MultipartFile(
           bytes,
-          filename: videoPath.split('/').last,
+          filename: fileName,
+          contentType: contentType,
         );
+      } else {
+        debugPrint('WARNING: Video file does not exist at $cleanVideoPath');
       }
     }
 
